@@ -1,120 +1,151 @@
-/* xComplexityMax = 12
-   xComplexityMin = 4
-
-   yComplexityMax = 4
-   yComplexityMin = 0
-
-   modelLevels = 6 
-   how many levels of detail we have
-
-
-
-
-*/
-
-
-void Renderer::createModels1(int index)
-{
-    //cout << "Renderer::createModels1() beg" << endl;    
-    // simple Model
+	float radius    = objectParams.at(index).at(4);
+    float cylLength = objectParams.at(index).at(5);
     
-    float modelXScale = objectParams.at(index).at(1);
-    float modelYScale = objectParams.at(index).at(2);
-    float modelZScale = objectParams.at(index).at(3);
-    
-
-    //draws line (for simplified view)
-
-    modelListSimpleIndex.at(index) = glGenLists(1);
-    glNewList(modelListSimpleIndex.at(index), GL_COMPILE);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0,  modelZScale );
-    glVertex3f(0, 0, -modelZScale );
-    glEnd();
-    glEndList();
-    
-    modelListIndex.at(index) = glGenLists(modelLevels);
-    
-    if( objectParams.at(index).at(12) != 0 )
-    {
-	createModels1Wireframe(index);
-	return;
-    }
-    
+    float fv[3];
     for( int actLev = 0; actLev < modelLevels; ++actLev )
     {
-	int actXCompl = (int) ( modelXComplexity_max + actLev * ((modelXComplexity_min - modelXComplexity_max) / (modelLevels - 1.0)) );
-	int actYCompl = (int) ( modelYComplexity_max + actLev * ((modelYComplexity_min - modelYComplexity_max) / (modelLevels - 1.0)) );
+	glNewList( modelListIndex.at(index) + actLev, GL_COMPILE );
 	
-	glNewList(modelListIndex.at(index) + actLev, GL_COMPILE);
-	float yPiece = (float) (M_PI / ((actYCompl + 1) * 2));
-	float xPiece = (float) (2 * M_PI / actXCompl);
-	float fv[3];
+	int xCompl = (int) ( modelXComplexity_max + actLev * ( (modelXComplexity_min - modelXComplexity_max) / (modelLevels - 1.0) ) );
+	int yCompl = xCompl/4;
 	
-	glBegin(GL_TRIANGLE_STRIP);
-	for( int i = 0; i < actYCompl * 2; ++i )
+	float xPiece = M_PI*2 /  xCompl;
+	float yPiece = M_PI*2 / (yCompl*4);
+	
+	for( int yEbene = 0; yEbene < (yCompl-1); ++yEbene )
 	{
-	    for( int j = 0; j < actXCompl + 1; ++j )
+	    glBegin(GL_TRIANGLE_STRIP);
+	    for( int xPart = 0; xPart <= xCompl; ++xPart ) 
 	    {
-		// Oben
-		if( j == 0 || j == actXCompl )
+		if( xPart == 0 || xPart == xCompl ) 
 		{
-		    fv[0] = (float) ( -modelXScale * sin((i + 1) * yPiece) );
+		    fv[0] = (float) ( -1 * sin((yEbene + 1) * yPiece) ) * radius ;
 		    fv[1] = 0;
-		}
+		} 
 		else
 		{
-		    fv[0] =  (float) ( -cos(j * xPiece) * modelXScale * sin((i + 1) * yPiece) );
-		    fv[1] = -(float) (  sin(j * xPiece) * modelYScale * sin((i + 1) * yPiece) );
+		    fv[0] =  (float) ( -cos(xPart  * xPiece) * sin((yEbene + 1) * yPiece) ) * radius;
+		    fv[1] = -(float) (  sin(xPart  * xPiece) * sin((yEbene + 1) * yPiece) ) * radius;
 		}
-		fv[2] = (float) ( cos((i + 1) * yPiece) * modelZScale );
+		fv[2] = (float) ( cos((yEbene + 1) * yPiece) ) * radius;
 		
-		glNormal3fv( normalizeV(fv, modelXScale, modelYScale, modelZScale) );
+		glNormal3fv( normalizeV(fv, 1, 1, 1) );
+		fv[2] += cylLength/2;
 		glVertex3fv(fv);
 		
 		// Unten
-		if( j == 0 || j == actXCompl )
+		if( xPart == 0 || xPart == xCompl )
 		{
-		    fv[0] = (float) ( -modelXScale * sin((i + 2) * yPiece) );
+		    fv[0] = (float) ( -1 * sin((yEbene+2) * yPiece) ) * radius;
 		    fv[1] = 0;
 		}
 		else
 		{
-		    fv[0] =  (float) ( -cos(j * xPiece) * modelXScale * sin((i + 2) * yPiece) );
-		    fv[1] = -(float) (  sin(j * xPiece) * modelYScale * sin((i + 2) * yPiece) );
+		    fv[0] =  (float) ( -cos(xPart * xPiece) * sin((yEbene + 2) * yPiece) ) * radius;
+		    fv[1] = -(float) (  sin(xPart * xPiece) * sin((yEbene + 2) * yPiece) ) * radius;
 		}
-		fv[2] = (float) ( cos((i + 2) * yPiece) * modelZScale );
+		fv[2] = (float) ( cos((yEbene+2) * yPiece) ) * radius;
 		
-		glNormal3fv( normalizeV(fv, modelXScale, modelYScale, modelZScale) );
+		glNormal3fv( normalizeV(fv, 1, 1, 1) );
+		fv[2] += cylLength/2;
 		glVertex3fv(fv);
 	    }
+	    glEnd();
+	}
+	
+	glBegin(GL_TRIANGLE_STRIP);
+	for( int xPart = 0; xPart <= xCompl; ++xPart ) 
+	{
+	    if( xPart == 0 || xPart == xCompl ) 
+	    {
+		fv[0] = -1 * radius;
+		fv[1] = 0;
+	    }
+	    else
+	    {
+		fv[0] =  (float) ( -cos(xPart * xPiece) ) * radius;
+		fv[1] = -(float) (  sin(xPart * xPiece) ) * radius;
+	    }
+	    fv[2] = 0;
+	    
+	    glNormal3fv( normalizeV(fv, 1, 1, 1) );
+	    fv[2] += cylLength/2;
+	    glVertex3fv(fv);
+	    
+	    fv[2] = 0;
+	    glNormal3fv( normalizeV(fv, 1, 1, 1) );
+	    fv[2] -= cylLength/2;
+	    glVertex3fv(fv);
 	}
 	glEnd();
+	
+	for( int yEbene = yCompl-1; yEbene < 2*(yCompl-1); ++yEbene ) 
+	{
+	    glBegin(GL_TRIANGLE_STRIP);
+	    for( int xPart = 0; xPart <= xCompl; ++xPart ) 
+	    {
+		if( xPart  == 0 || xPart  == xCompl ) 
+		{
+		    fv[0] = (float) ( -1 * sin((yEbene + 1) * yPiece) ) * radius;
+		    fv[1] = 0;
+		} 
+		else
+		{
+		    fv[0] =  (float) ( -cos(xPart  * xPiece) * sin((yEbene + 1) * yPiece) ) * radius;
+		    fv[1] = -(float) (  sin(xPart  * xPiece) * sin((yEbene + 1) * yPiece) ) * radius;
+		}
+		fv[2] = (float) ( cos((yEbene  + 1) * yPiece) ) * radius;
+		
+		glNormal3fv( normalizeV(fv, 1, 1, 1) );
+		fv[2] -= cylLength/2;
+		glVertex3fv(fv);
+		
+		// Unten
+		if( xPart == 0 || xPart == xCompl )
+		{
+		    fv[0] = (float) ( -1 * sin((yEbene+2) * yPiece) ) * radius;
+		    fv[1] = 0;
+		} 
+		else 
+		{
+		    fv[0] =  (float) ( -cos(xPart * xPiece) * sin((yEbene + 2) * yPiece) ) * radius;
+		    fv[1] = -(float) (  sin(xPart * xPiece) * sin((yEbene + 2) * yPiece) ) * radius;
+		}
+		fv[2] = (float) ( cos((yEbene + 2) * yPiece) ) * radius;
+		
+		glNormal3fv( normalizeV(fv, 1, 1, 1) );
+		fv[2] -= cylLength/2;
+		glVertex3fv(fv);
+	    }
+	    glEnd();
+	}
 	
 	// OBEN
 	glBegin(GL_TRIANGLE_FAN);
 	fv[0] = 0;
 	fv[1] = 0;
-	fv[2] = modelZScale;
+	fv[2] = radius;
 	
-	glNormal3fv( normalizeV(fv, modelXScale, modelYScale, modelZScale) );
+	glNormal3fv( normalizeV(fv, 1, 1, 1) );
+	fv[2] += cylLength/2;
 	glVertex3fv(fv);
 	
-	for( int j = 0; j < actXCompl + 1; ++j )
+	for( int j = 0; j <=  xCompl; ++j )
 	{
-	    if( j == 0 || j == actXCompl )
+	    if( j == 0 || j == xCompl )
 	    {
-		fv[0] = (float) ( -modelXScale * sin(yPiece) );
+		fv[0] = (float) ( - sin(yPiece) * radius );
 		fv[1] = 0;
 	    }
 	    else
 	    {
-		fv[0] =  (float) ( -cos(j * xPiece) * modelXScale * sin(yPiece) );
-		fv[1] = -(float) (  sin(j * xPiece) * modelYScale * sin(yPiece) );
+		fv[0] =  (float) ( - cos(j * xPiece) * sin(yPiece) * radius );
+		fv[1] = -(float) (   sin(j * xPiece) * sin(yPiece) * radius );
 	    }
-	    fv[2] = (float) ( cos(yPiece) * modelZScale );
+	    fv[2] = (float) ( cos(yPiece) * radius );
 	    
-	    glNormal3fv( normalizeV(fv, modelXScale, modelYScale, modelZScale) );
+	    glNormal3fv( normalizeV(fv, 1, 1, 1) );
+	    fv[2] += cylLength/2;
 	    glVertex3fv(fv);
 	}
 	glEnd();
@@ -123,66 +154,32 @@ void Renderer::createModels1(int index)
 	glBegin(GL_TRIANGLE_FAN);
 	fv[0] = 0;
 	fv[1] = 0;
-	fv[2] = -modelZScale;
+	fv[2] = -radius;
 	
-	glNormal3fv( normalizeV(fv, modelXScale, modelYScale, modelZScale) );
+	glNormal3fv( normalizeV(fv, 1, 1, 1) );
+	fv[2] -= cylLength/2;
 	glVertex3fv(fv);
 	
-	for( int j = actXCompl; j >= 0; --j )
+	for( int j = xCompl; j >= 0; --j )
 	{
-	    if( j == 0 || j == actXCompl )
+	    if( j == 0 || j == xCompl )
 	    {
-		fv[0] = (float) ( -modelXScale * sin(yPiece) );
+		fv[0] = (float) ( -1 * sin(yPiece) * radius );
 		fv[1] = 0;
-	    }
+	    } 
 	    else
 	    {
-		fv[0] =  (float) ( -cos(j * xPiece) * modelXScale * sin(yPiece) );
-		fv[1] = -(float) (  sin(j * xPiece) * modelYScale * sin(yPiece) );
+		fv[0] =  (float) ( -cos(j * xPiece) * sin(yPiece) * radius );
+		fv[1] = -(float) (  sin(j * xPiece) * sin(yPiece) * radius );
 	    }
-	    fv[2] = (float) ( -cos(yPiece) * modelZScale );
+	    fv[2] = (float) ( -cos(yPiece) * radius );
 	    
-	    glNormal3fv( normalizeV(fv, modelXScale, modelYScale, modelZScale) );
+	    glNormal3fv( normalizeV(fv, 1, 1, 1) );
+	    fv[2] -= cylLength/2;
 	    glVertex3fv(fv);
 	}
 	glEnd();
 	
 	glEndList();
     }
-    //cout << "Renderer::createModels1() end" << endl;    
-}
-
-
-  //top
-            // vertices.push(0.0);
-            // vertices.push(0.0);
-            // vertices.push(m.scale[Z]);
-            // for(var j = 0; j < actComplexity[X]+1; ++j){
-            //     if( j == 0 || j == actComplexity[X] ){
-            //         vertices.push(-m.scale[X] * Math.sin(piece[Y]));
-            //         vertices.push(0.0);
-            //     }
-            //     else
-            //     {
-            //         vertices.push(-Math.cos(j * piece[X]) * m.scale[X] * Math.sin(piece[Y]));
-            //         vertices.push(-Math.sin(j * piece[X]) * m.scale[Y] * Math.sin(piece[Y]));
-            //     }
-            //     vertices.push(Math.cos(piece[Y]) * m.scale[Z]);
-            // }
-
-            //bottom
-            // vertices.push(0.0);
-            // vertices.push(0.0);
-            // vertices.push(-m.scale[Z]);
-            // for(var j = actComplexity[X]; j <= 0; --j){
-            //     if( j == 0 || j == actComplexity[X] ){
-            //         vertices.push(-m.scale[X] * Math.sin(piece[Y]));
-            //         vertices.push(0.0);
-            //     }
-            //     else
-            //     {
-            //         vertices.push(-Math.cos(j * piece[X]) * m.scale[X] * Math.sin(piece[Y]));
-            //         vertices.push(-Math.sin(j * piece[X]) * m.scale[Y] * Math.sin(piece[Y]));
-            //     }
-            //     vertices.push(-Math.cos(piece[Y]) * m.scale[Z]);
-            //    }
+    //cout << "Renderer::createModels2() end" << endl;    

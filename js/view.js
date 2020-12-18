@@ -1,8 +1,11 @@
+
 class View{
     camera;
     lighting;
     bgColour;
     l;
+
+    origin;
 
     static AMBIENT = 0;
     static DIRECTIONAL = 1;
@@ -23,10 +26,41 @@ class View{
         this.bgColour = "#000000";
     }
 
-    setLighting(scene){
+    setLighting(){
         for(let l of this.lighting){
             scene.add(l.light);
         }
+    }
+
+    adjustCamera(direction){
+        let rotSpeed = .05;
+
+        let camera = this.camera;
+
+        let x = camera.position.x,
+        y = camera.position.y,
+        z = camera.position.z;
+
+        switch(direction){
+            case 'up':
+                camera.position.y = y * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+                camera.position.z = z * Math.cos(rotSpeed) - y * Math.sin(rotSpeed);
+                break;
+            case 'down':
+                camera.position.y = y * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
+                camera.position.z = z * Math.cos(rotSpeed) + y * Math.sin(rotSpeed);
+                break;
+            case 'left':
+                camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+                camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+                break;
+            case 'right':
+                camera.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
+                camera.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
+                break;
+        }
+
+        camera.lookAt(scene.position);
     }
 
     rgbToHex(r, g, b) {
@@ -62,78 +96,29 @@ class View{
                 case View.AMBIENT: 
                     this.colour = "#0ff0ff";
                     this.isDirectional = false;
-                    this.intensity = 0.2;
+                    this.intensity = 0.25;
                     this.light = new THREE.AmbientLight(this.colour, this.intensity);
                     break;
                 case View.DIRECTIONAL:
-                    this.colour = "#ffff00";
+                    // this.colour = "#ffff00";
+                    // this.isDirectional = true;
+                    // this.intensity = 0.5;
+                    // this.light = new THREE.DirectionalLight(this.colour, this.intensity);
+                    this.colour = "#ffffff";
                     this.isDirectional = true;
-                    this.intensity = 0.2;
-                    this.light = new THREE.DirectionalLight(this.colour, this.intensity);
+                    this.intensity = 1.0;
+                    this.light = new THREE.PointLight(this.colour, this.intensity);
+                    this.light.position.set(5,0,-2);
                     break;
                 case View.POINT:
                     this.colour = "#ffffff";
                     this.isDirectional = true;
                     this.intensity = 1.0;
                     this.light = new THREE.PointLight(this.colour, this.intensity);
+                    this.light.position.set(5,0,2);
                     break;
             }
         }
     }
 }
 
-class Model{
-    meshes;
-
-    constructor(){
-
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshLambertMaterial({color: 0xF7F7F7});   
-        this.meshes = [15];
-
-        for(var i = 0; i<15;i++) {
-        
-            var mesh = new THREE.Mesh(geometry, material);
-            mesh.position.x = (Math.random() - 0.5) * 10;
-            mesh.position.y = (Math.random() - 0.5) * 10;
-            mesh.position.z = (Math.random() - 0.5) * 10;
-
-            this.meshes[i] = mesh;
-        }
-    }
-
-    setMeshes(scene){
-        for(let m of this.meshes){
-            scene.add(m);
-        }
-
-    }
-}
-
-var scene = new THREE.Scene();
-var view = new View();
-var model = new Model();
-
-var renderer = new THREE.WebGLRenderer({antialias: true}); // TODO  toggle antialias
-renderer.setClearColor(view.bgColour);
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-model.setMeshes(scene);
-view.setLighting(scene);
-
-document.body.appendChild(renderer.domElement);
-
-
-var render = function() {
-    requestAnimationFrame(render);
-    renderer.render(scene, view.camera);
-}
-
-window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth,window.innerHeight);
-    view.camera.aspect = window.innerWidth / window.innerHeight;
-
-    view.camera.updateProjectionMatrix();
-})
-
-render();
