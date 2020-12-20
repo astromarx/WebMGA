@@ -22,7 +22,7 @@ class View{
     }
 
     setDefault(){
-        this.camera.position.z = 10;
+        this.camera.position.z = 30;
         this.bgColour = "#000000";
     }
 
@@ -106,7 +106,7 @@ class View{
                     // this.light = new THREE.DirectionalLight(this.colour, this.intensity);
                     this.colour = "#ffffff";
                     this.isDirectional = true;
-                    this.intensity = 1.0;
+                    this.intensity = 0.2;
                     this.light = new THREE.PointLight(this.colour, this.intensity);
                     this.light.position.set(5,0,-2);
                     break;
