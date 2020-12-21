@@ -2,8 +2,8 @@ class Shape {
 
     //complexity attributes
     levels = 2;
-    maxComplexity = [14, 14]
-    minComplexity = [0, 0]
+    maxComplexity = [20, 20]
+    minComplexity = [5 ,5]
 
     //shape model attributes
     args;
@@ -424,7 +424,7 @@ class Spheroplatelet extends Shape{
             actComplexity.push(this.maxComplexity[1] + currLevel * ((this.minComplexity[1] - this.maxComplexity[1]) / (this.levels - 1.0)));
 
             piece.push(2 * Math.PI / actComplexity[0]);
-            piece.push(Math.PI / ((actComplexity[1]) * 2));
+            piece.push(Math.PI / (actComplexity[1] * 2));
 
             for(let i = 0; i < actComplexity[1] * 2; ++i )
             {
@@ -493,6 +493,7 @@ class Spheroplatelet extends Shape{
 
 
             this.addGeometry(vertices, normals, 'strip');
+            console.log(vertices.length);
             vertices = [];
             normals = [];
 
@@ -504,23 +505,25 @@ class Spheroplatelet extends Shape{
             
             normals.push(...Shape.normalize(temp));
             vertices.push(...temp);
+            
             temp = [];
             
             for(let j = 0; j < actComplexity[0] + 1; ++j )
             {
                 if( j == 0 || j == actComplexity[0] )
                 {
-                temp.push(-radCircle);
-                temp.push(0);
+                    temp.push(-radCircle);
+                    temp.push(0);
                 }
                 else
                 {
-                temp.push( -Math.cos(j * piece[0]) * radCircle );
-                temp.push( -Math.sin(j * piece[0]) * radCircle );
+                    temp.push(-Math.cos(j * piece[0]) * radCircle);
+                    temp.push(-Math.sin(j * piece[0]) * radCircle);
                 }
-                
-                normals.push(plusZ);
-                vertices.push(temp);
+
+                temp.push(radSphere);
+                normals.push(...plusZ);
+                vertices.push(...temp);
                 temp = [];
             }
 
@@ -549,16 +552,160 @@ class Spheroplatelet extends Shape{
                     temp.push( -Math.cos(j * piece[0]) * radCircle );
                     temp.push( -Math.sin(j * piece[0]) * radCircle );
                 }
-                
-                normals.push(minusZ);
-                vertices.push(temp);
+
+                temp.push(-radSphere);
+                normals.push(...minusZ);
+                vertices.push(...temp);
                 temp = [];
             }
 
-            //this.addGeometry(vertices, normals, 'fan');            
+            this.addGeometry(vertices, normals, 'fan');            
             
         }
 
     }
 
+}
+
+class CutSphere extends Shape{
+
+    constructor(){
+        super(arguments);
+        this.genGeometries();
+    }
+
+    genGeometries(){
+        let radius = this.args[0],
+        zCut = this.args[1],
+        plusZ = [0,0,1],
+        minusZ = [0,0,-1],
+        angle = Math.acos(zCut/radius),
+        radiusFan = radius * Math.sin(angle),
+        actComplexity = [],
+        piece = [],
+        vertices = [],
+        normals = [],
+        temp = [];
+
+        for(let currLevel = 0; currLevel < this.levels; ++currLevel){
+            //calculates complexity of current render
+            actComplexity.push(this.maxComplexity[0] + currLevel * ((this.minComplexity[0] - this.maxComplexity[0]) / (this.levels - 1.0)));
+            actComplexity.push(this.maxComplexity[1] + currLevel * ((this.minComplexity[1] - this.maxComplexity[1]) / (this.levels - 1.0)));
+
+            piece.push(2 * Math.PI / actComplexity[0]);
+            piece.push((Math.PI-2*angle) / (actComplexity[1] * 2));
+
+            for(let i = 0; i < actComplexity[1] * 2; ++i )
+            {                
+                for(let j = 0; j < actComplexity[0]+1; ++j )
+                {
+                // Upper part of triangle strip
+                if( j == 0 || j == actComplexity[0] )
+                {
+                    temp.push(-radius * Math.sin(angle + i * piece[1]));
+                    temp.push(0);
+                }
+                else
+                {
+                    temp.push(-Math.cos(j * piece[0]) * radius * Math.sin(angle + i * piece[1]));
+                    temp.push(-Math.sin(j * piece[0]) * radius * Math.sin(angle + i * piece[1]));
+                }
+                temp.push(Math.cos(angle + i * piece[1]) * radius);
+                
+                normals.push(...Shape.normalize(temp));
+                vertices.push(...temp);
+                temp = [];
+                
+                // Lower part of triangle strip
+                if( j == 0 || j == actComplexity[0] )
+                {
+                    temp.push(-radius * Math.sin(angle + (i + 1) * piece[1]));
+                    temp.push(0);
+                }
+                else
+                {
+                    temp.push(-Math.cos(j * piece[0]) * radius * Math.sin(angle + (i + 1) * piece[1]));
+                    temp.push(-Math.sin(j * piece[0]) * radius * Math.sin(angle + (i + 1) * piece[1]));
+                }
+                temp.push(Math.cos(angle + (i + 1) * piece[1]) * radius);
+                
+                normals.push(...Shape.normalize(temp));                
+                vertices.push(...temp);
+                temp = [];
+                }
+            }
+
+
+            this.addGeometry(vertices, normals, 'strip');
+            console.log(vertices.length);
+            vertices = [];
+            normals = [];
+
+
+            // upper plane
+            temp.push(0);
+            temp.push(0);
+            temp.push(zCut);
+            
+            normals.push(...Shape.normalize(temp));
+            vertices.push(...temp);
+            
+            temp = [];
+            
+            for(let j = 0; j < actComplexity[0] + 1; ++j )
+            {
+                if( j == 0 || j == actComplexity[0] )
+                {
+                    temp.push(-radiusFan);
+                    temp.push(0);
+                }
+                else
+                {
+                    temp.push(-Math.cos(j * piece[0]) * radiusFan);
+                    temp.push(-Math.sin(j * piece[0]) * radiusFan);
+                }
+
+                temp.push(zCut);
+                normals.push(...plusZ);
+                vertices.push(...temp);
+                temp = [];
+            }
+
+            this.addGeometry(vertices, normals, 'fan');
+            vertices = [];
+            normals = [];
+            
+            // lower plane
+            temp.push(0);
+            temp.push(0);
+            temp.push(-zCut);
+            
+            normals.push(...Shape.normalize(temp));
+            vertices.push(...temp);
+            temp = [];
+            
+            for(let j = actComplexity[0]; j >= 0; --j)
+            {
+                if( j == 0 || j == actComplexity[0] )
+                {
+                    temp.push(-radiusFan);
+                    temp.push(0);
+                }
+                else
+                {
+                    temp.push( -Math.cos(j * piece[0]) * radiusFan );
+                    temp.push( -Math.sin(j * piece[0]) * radiusFan );
+                }
+
+                temp.push(-zCut);
+                normals.push(...minusZ);
+                vertices.push(...temp);
+                temp = [];
+            }
+
+            this.addGeometry(vertices, normals, 'fan');            
+            
+        }
+
+    }
 }
