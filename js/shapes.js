@@ -1,8 +1,14 @@
-class Shape {
+import {BufferGeometry,
+        BufferAttribute,
+        TriangleFanDrawMode,
+        TriangleStripDrawMode} from './lib/three.module.js';
+import { BufferGeometryUtils } from './lib/BufferGeometryUtils.js';
+
+export class Shape {
 
     //complexity attributes
     levels = 2;
-    maxComplexity = [20, 20]
+    maxComplexity = [20, 20];
     minComplexity = [5 ,5]
 
     //shape model attributes
@@ -11,6 +17,7 @@ class Shape {
     //graphics components
     stripGeometries = [];
     fanGeometries = [];
+    stripGeometry;
 
     constructor(){
         this.args = arguments[0];
@@ -30,8 +37,11 @@ class Shape {
         return vec;
     }
 
-    translate(){
-        // to do 
+    translate(x, y, z){
+        for(let f of this.fanGeometries){
+            f.translate(x, y, z);
+        }
+        this.stripGeometry.translate(x, y, z);
     }
 
     rotate(){
@@ -39,25 +49,34 @@ class Shape {
     }
 
     addGeometry(vertices, normals, type){
-        let g = new THREE.BufferGeometry();
-        g.addAttribute('position', new THREE.BufferAttribute(Float32Array.from(vertices), 3));
-        g.addAttribute('normal', new THREE.BufferAttribute(Float32Array.from(normals), 3));
+        let g = new BufferGeometry();
+        
+        g.setAttribute('position', new BufferAttribute(Float32Array.from(vertices), 3));
+        g.setAttribute('normal', new BufferAttribute(Float32Array.from(normals), 3));
         
 
         if (type.localeCompare('strip') == 0){
+            g = BufferGeometryUtils.toTrianglesDrawMode(g, TriangleStripDrawMode);
             this.stripGeometries.push(g);
         }else{
+            g = BufferGeometryUtils.toTrianglesDrawMode(g, TriangleFanDrawMode);
             this.fanGeometries.push(g);
         }
 
     }
+
+    mergeGeometries(){
+        this.stripGeometry = BufferGeometryUtils.mergeBufferGeometries(this.stripGeometries);
+    }
+
 }
 
-class Ellipsoid extends Shape {
+export class Ellipsoid extends Shape {
     
     constructor(){
         super(arguments);
         this.genGeometries();
+        this.mergeGeometries();
     }
 
 
@@ -184,12 +203,13 @@ class Ellipsoid extends Shape {
 
 }
 
-class Spherocylinder extends Shape {
+export class Spherocylinder extends Shape {
     
     
     constructor(){
         super(arguments);
         this.genGeometries();
+        this.mergeGeometries();
     }
 
     genGeometries(){
@@ -398,11 +418,12 @@ class Spherocylinder extends Shape {
     }
 }
 
-class Spheroplatelet extends Shape{
+export class Spheroplatelet extends Shape{
 
     constructor(){
         super(arguments);
         this.genGeometries();
+        this.mergeGeometries();
     }
 
     genGeometries(){
@@ -493,7 +514,6 @@ class Spheroplatelet extends Shape{
 
 
             this.addGeometry(vertices, normals, 'strip');
-            console.log(vertices.length);
             vertices = [];
             normals = [];
 
@@ -567,11 +587,12 @@ class Spheroplatelet extends Shape{
 
 }
 
-class CutSphere extends Shape{
+export class CutSphere extends Shape{
 
     constructor(){
         super(arguments);
         this.genGeometries();
+        this.mergeGeometries();
     }
 
     genGeometries(){
@@ -637,7 +658,6 @@ class CutSphere extends Shape{
 
 
             this.addGeometry(vertices, normals, 'strip');
-            console.log(vertices.length);
             vertices = [];
             normals = [];
 
@@ -648,8 +668,7 @@ class CutSphere extends Shape{
             temp.push(zCut);
             
             normals.push(...Shape.normalize(temp));
-            vertices.push(...temp);
-            
+            vertices.push(...temp); 
             temp = [];
             
             for(let j = 0; j < actComplexity[0] + 1; ++j )
@@ -674,6 +693,8 @@ class CutSphere extends Shape{
             this.addGeometry(vertices, normals, 'fan');
             vertices = [];
             normals = [];
+
+
             
             // lower plane
             temp.push(0);
@@ -702,7 +723,7 @@ class CutSphere extends Shape{
                 vertices.push(...temp);
                 temp = [];
             }
-
+            
             this.addGeometry(vertices, normals, 'fan');            
             
         }

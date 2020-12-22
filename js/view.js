@@ -1,10 +1,14 @@
+import {PerspectiveCamera,
+    AmbientLight,
+    DirectionalLight,
+    PointLight} from './lib/three.module.js';
+import { OrbitControls } from './lib/OrbitControls.js';
 
-class View{
+export class View{
     camera;
     lighting;
     bgColour;
-    l;
-
+    controls;
     origin;
 
     static AMBIENT = 0;
@@ -13,7 +17,7 @@ class View{
 
 
     constructor(){
-        this.camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+        this.camera = new PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
         this.lighting = [
             new this.Light(View.AMBIENT),
             new this.Light(View.DIRECTIONAL),
@@ -26,13 +30,20 @@ class View{
         this.bgColour = "#000000";
     }
 
-    setLighting(){
+    setControls(domElement){
+        this.controls = new OrbitControls(this.camera, domElement);
+        this.controls.enableKeys = true;
+        this.controls.autoRotate = true;
+    }
+
+    setLighting(scene){
         for(let l of this.lighting){
             scene.add(l.light);
         }
+
     }
 
-    adjustCamera(direction){
+    adjustCamera(direction, scene){
         let rotSpeed = .05;
 
         let camera = this.camera;
@@ -96,25 +107,20 @@ class View{
                 case View.AMBIENT: 
                     this.colour = "#0ff0ff";
                     this.isDirectional = false;
-                    this.intensity = 0.25;
-                    this.light = new THREE.AmbientLight(this.colour, this.intensity);
+                    this.intensity = 0.4;
+                    this.light = new AmbientLight(this.colour, this.intensity);
                     break;
                 case View.DIRECTIONAL:
-                    // this.colour = "#ffff00";
-                    // this.isDirectional = true;
-                    // this.intensity = 0.5;
-                    // this.light = new THREE.DirectionalLight(this.colour, this.intensity);
-                    this.colour = "#ffffff";
+                    this.colour = "#ffff00";
                     this.isDirectional = true;
-                    this.intensity = 0.2;
-                    this.light = new THREE.PointLight(this.colour, this.intensity);
-                    this.light.position.set(5,0,-2);
+                    this.intensity = 0.5;
+                    this.light = new DirectionalLight(this.colour, this.intensity);
                     break;
                 case View.POINT:
                     this.colour = "#ffffff";
                     this.isDirectional = true;
                     this.intensity = 1.0;
-                    this.light = new THREE.PointLight(this.colour, this.intensity);
+                    this.light = new PointLight(this.colour, this.intensity);
                     this.light.position.set(5,0,2);
                     break;
             }

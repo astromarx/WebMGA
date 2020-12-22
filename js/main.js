@@ -1,38 +1,24 @@
-var scene = new THREE.Scene();
+import { Model } from './model.js';
+import { View } from './view.js';
+import {Scene, WebGLRenderer} from './lib/three.module.js';
+
+var scene = new Scene();
 var model = new Model();
 var view = new View();
 
-var renderer = new THREE.WebGLRenderer({antialias: true}); // TODO  toggle antialias
+var renderer = new WebGLRenderer({antialias: true}); // TODO  toggle antialias
 renderer.setClearColor(view.bgColour);
 renderer.setSize(window.innerWidth,window.innerHeight);
 
 model.setShapes(scene);
 view.setLighting(scene);
+view.setControls(renderer.domElement);
 
 document.body.appendChild(renderer.domElement);
 
-document.onkeydown = checkKey;
-
-function checkKey(e) {
-    e = e || window.event;
-
-    if (e.keyCode == '38') {
-        view.adjustCamera('up');
-    }
-    else if (e.keyCode == '40') {
-        view.adjustCamera('down');
-    }
-    else if (e.keyCode == '37') {
-        view.adjustCamera('left');
-    }
-    else if (e.keyCode == '39') {
-       view.adjustCamera('right');
-    }
-}
-
-
 var render = function() {
     requestAnimationFrame(render);
+    view.controls.update();
     renderer.render(scene, view.camera);
 }
 
@@ -43,3 +29,5 @@ window.addEventListener('resize', () => {
 })
 
 render();
+
+
