@@ -1,112 +1,162 @@
 
-import { Dropdown, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider } from 'rsuite';
+import { Dropdown, Sidebar, Sidenav, Nav, Icon, Navbar, Tooltip, Whisper, Divider, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, IconButton } from 'rsuite';
 import React, { Component, useState } from "react";
-import { SliderSet, PositionForm } from './Tools'
+import { SliderSet, PositionForm, SliceSlider } from './Tools'
 
 const TITLE_LEFT_MARGIN = 30;
+const dividerStyle = {
+    color: '#A4A9A3'
+}
 
-export const CameraOptions = ({ ...props }) => (
-    <Dropdown panel title="View" eventKey="2" icon={<Icon icon="eye" />} {...props}>
-        <Dropdown.Item divider />
-        <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+const LODToolTip = (
+    <Tooltip>
+        Decreasing LOD will increase rendering speed.
+    </Tooltip>
+);
 
-        <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Camera Type </p>
+export const ViewOptions = ({ ...props }) => (
+    <div {...props}>
+
+        <Divider><strong style={dividerStyle}> Camera </strong></Divider>
         <Grid fluid>
 
             <Row className="show-grid">
                 <Col xs={2} />
                 <Col xs={12}>
 
-                    <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
                     <FormGroup controlId="radioList">
                         <RadioGroup name="radioList">
                             <Radio value="A">Perspective </Radio>
                             <Radio value="B">Orthographic </Radio>
                         </RadioGroup>
                     </FormGroup>
-                    <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+
+                </Col>
+            </Row>
+        </Grid>
+        <br />
+
+        <PositionForm title={"Look at"} />
+
+        <Grid fluid>
+                <Row className="show-grid">
+                    <Col xs={2} />
+                    <Col xs={12}>
+                        <Checkbox> AutoRotate</Checkbox>
+                    </Col>
+                </Row>
+            </Grid>
+
+        <Divider><strong style={dividerStyle}> Perfomance Tuning </strong></Divider>
+
+        <Grid fluid>
+
+            <Row className="show-grid">
+                <Col xs={2} />
+                <Col xs={12}>
+                    <Checkbox> Antialiasing </Checkbox>
                 </Col>
             </Row>
         </Grid>
 
-        <PositionForm title={"Look at"} />
-        <Dropdown.Item divider />
+        <br />
 
-    </Dropdown>
+        <Form style={{ marginLeft: TITLE_LEFT_MARGIN }} layout="inline">
+            <FormGroup>
+                <ControlLabel>Level of Detail</ControlLabel>
+                <Whisper placement="top" trigger="hover" speaker={LODToolTip}>
+                    <Icon circle icon="question-circle" size="md" style={{ marginTop: 12 }} />
+                </Whisper>
+            </FormGroup>
+        </Form>
+
+        <Slider
+
+            min={1}
+            step={1}
+            max={5}
+            defaultValue={4}
+            graduated
+            progress
+            style={{ width: 220, marginLeft: 40 }}
+            renderMark={mark => {
+                return mark;
+            }}
+        />
+
+    </div>
 );
+
+export const SlicingOptions = ({ ...props }) => {
+    
+    return (
+        <div>
+        <SliceSlider title="X : "/>
+        <SliceSlider title="Y : "/>
+        <SliceSlider title="Z : "/>
+        </div>
+    );
+
+}
 
 export const AdditionalLightOptions = ({ ...props }) => {
 
     return (
-        <Dropdown panel title="Additional Lighting" eventKey="5" icon={<Icon icon="creative" />} {...props}>
-            <Dropdown.Item divider />
-            <Checkbox> <strong>Point Light</strong> </Checkbox>
+        <div {...props}>
 
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+            <Divider><strong style={dividerStyle}> Point Light </strong></Divider>
+
+            <Checkbox> <strong>Enabled </strong> </Checkbox>
+
             <SliderSet titles={["RGB", "Intensity"]} additionalSlider />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
 
             <PositionForm title={"Position"} />
 
-            <Dropdown.Item divider />
-            <Checkbox> <strong> Directional Light</strong> </Checkbox>
+            <Divider><strong style={dividerStyle}>  Directional Light </strong></Divider>
 
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+            <Checkbox> <strong> Enabled</strong> </Checkbox>
+
             <SliderSet titles={["RGB", "Intensity"]} additionalSlider />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
 
             <PositionForm title={"Position"} />
-            <Dropdown.Item divider />
 
-        </Dropdown>
+
+
+        </div>
     );
 }
 
 export const AmbientLightOptions = ({ ...props }) => {
 
     return (
-        <Dropdown panel title="Ambient Lighting" eventKey="4" icon={<Icon icon="sun-o" />} {...props}>
-            <Dropdown.Item divider />
-            <strong>Ambient Light</strong>
+        <div {...props}>
 
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+            <Divider><strong style={dividerStyle}> Ambient Light </strong></Divider>
             <SliderSet titles={["RGB", "Intensity"]} additionalSlider />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
-
-            <Dropdown.Item divider />
-            <Checkbox> <strong> Background Color</strong> </Checkbox>
-
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+            <Divider><strong style={dividerStyle}> Background Colour</strong></Divider>
             <SliderSet titles={["RGB"]} />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
 
-            <Dropdown.Item divider />
 
-        </Dropdown>
+
+        </div>
     );
 }
 
-export const GridOptions = ({ ...props }) => {
+
+export const VisualElementsOptions = ({ ...props }) => {
 
     return (
-        <Dropdown panel title="Grid" eventKey="7" icon={<Icon icon="tree-open" />} {...props}>
-            <Dropdown.Item divider />
-            <Checkbox> <strong>Show Axes</strong> </Checkbox>
-            <Checkbox> <strong>Show Grid</strong> </Checkbox>
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
-            <SliderSet titles={["RGB", "Size"]} additionalSlider />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
-            <Dropdown.Item divider />
-        </Dropdown>
-    );
-}
+        <div>
+            <Divider><strong style={dividerStyle}> Bounding Shape </strong></Divider>
+            <Grid fluid>
+                <Row className="show-grid">
+                    <Col xs={2} />
+                    <Col xs={12}>
+                        <Checkbox> Enabled </Checkbox>
+                    </Col>
+                </Row>
+            </Grid>
 
-export const BoundingShapesOptions = ({ ...props }) => {
-
-    return (
-        <Dropdown panel title="Bounding Shapes" eventKey="10" icon={<Icon icon="cube" />} {...props}>
-            <Dropdown.Item divider />
-            <Checkbox> Enabled </Checkbox>
             <Grid fluid>
 
                 <Row className="show-grid">
@@ -119,13 +169,28 @@ export const BoundingShapesOptions = ({ ...props }) => {
                                 <Radio value="B">Cylinder </Radio>
                             </RadioGroup>
                         </FormGroup>
-                        <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+                        <br />
                     </Col>
                 </Row>
             </Grid>
             <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> PRINT SHAPE INFO HERE</p>
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
-            <Dropdown.Item divider />
-        </Dropdown>
+         
+            <Divider><strong style={dividerStyle}> Grid </strong></Divider>
+            <Grid fluid>
+                <Row className="show-grid">
+                    <Col xs={2} />
+                    <Col xs={12}>
+                        <Checkbox> Show Axes</Checkbox>
+                        <Checkbox> Show Grid</Checkbox>
+                    </Col>
+                </Row>
+            </Grid>
+
+
+
+            <br />
+            <SliderSet titles={["RGB", "Size"]} additionalSlider />
+            <br />
+        </div>
     );
 }

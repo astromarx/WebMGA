@@ -1,9 +1,69 @@
 
 
-import { Dropdown, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider } from 'rsuite';
+import { Dropdown, RangeSlider, InputGroup, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider } from 'rsuite';
 import React, { Component, useState } from "react";
 
 const TITLE_LEFT_MARGIN = 30;
+
+export const SliceSlider = (props) => {
+    const [value, setValue] = React.useState([-50, 50]);
+    return (
+        <div>
+            <br/><br/>
+            <Row>
+                <Col md={5}>
+                    <p style={{ marginTop: 10, marginLeft: 30 }}>{props.title}</p>
+                </Col>
+                <Col md={1}/>
+                <Col md={16}>
+                    <InputGroup>
+                        <InputNumber
+                            min={-50}
+                            max={50}
+                            value={value[0]}
+                            
+                            onChange={nextValue => {
+                                const [start, end] = value;
+                                if (nextValue > end) {
+                                    return;
+                                }
+                                setValue([nextValue, end]);
+                            }}
+                        />
+                        <InputGroup.Addon>to</InputGroup.Addon>
+                        <InputNumber
+                            min={-50}
+                            max={50}
+                            value={value[1]}
+                            onChange={nextValue => {
+                                const [start, end] = value;
+                                if (start > nextValue) {
+                                    return;
+                                }
+                                setValue([start, nextValue]);
+                            }}
+                        />
+                    </InputGroup>
+                </Col>
+            </Row>
+            <Row>
+                <Col md={21}>
+                    <RangeSlider
+                        min={-50}
+                        max={50}
+                        progress
+                        style={{ marginLeft: 35, marginTop: 30 }}
+                        value={value}
+                        onChange={value => {
+                            setValue(value);
+                        }}
+                    />
+                </Col>
+
+            </Row>
+        </div>
+    );
+}
 
 export const CustomSlider = (props) => {
 
@@ -18,7 +78,7 @@ export const CustomSlider = (props) => {
         <Row>
             <Col md={10}>
                 <Slider
-                    style={{ marginLeft: 25, marginTop: 16, width: 175 }}
+                    style={{ marginLeft: 25, marginTop: 16, width: 170 }}
                     value={value}
                     min={min}
                     max={max}
@@ -30,7 +90,7 @@ export const CustomSlider = (props) => {
             </Col>
             <Col md={4}>
                 <InputNumber
-                    style={{ marginLeft: 85, width: 70 }}
+                    style={{ marginLeft: 80, marginTop: 3, marginBottom: 3, width: 70, height: 35 }}
                     min={min}
                     max={max}
                     value={value}
@@ -53,9 +113,7 @@ export const SliderSet = (props) => {
         <div>
             <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> {titles[0]} </p>
             <CustomSlider disabled={false} boundaries={[1, 256]} />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
             <CustomSlider disabled={false} boundaries={[1, 256]} />
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
             <CustomSlider disabled={false} boundaries={[1, 256]} />
         </div>
     );
@@ -84,7 +142,7 @@ export const PositionForm = (props) => {
     return (
         <div>
             <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> {title} </p>
-            <Dropdown.Item panel style={{ padding: 5, width: 300 }}></Dropdown.Item>
+            <Panel style={{ height: 8 }} />
             <FlexboxGrid justify='center'>
                 <Row className="show-grid">
 
@@ -92,15 +150,15 @@ export const PositionForm = (props) => {
 
                         <FormGroup>
                             <ControlLabel>x</ControlLabel>
-                            <FormControl name="x" style={{ width: 50 }} />
+                            <FormControl name="x" style={{ width: 55 }} />
                         </FormGroup>
                         <FormGroup>
                             <ControlLabel>y</ControlLabel>
-                            <FormControl name="y" style={{ width: 50 }} />
+                            <FormControl name="y" style={{ width: 55 }} />
                         </FormGroup>
                         <FormGroup>
                             <ControlLabel>z</ControlLabel>
-                            <FormControl name="z" style={{ width: 50 }} />
+                            <FormControl name="z" style={{ width: 55 }} />
                         </FormGroup>
                     </Form>
                 </Row>

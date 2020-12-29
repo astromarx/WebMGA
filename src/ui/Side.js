@@ -1,74 +1,144 @@
 
-import {Sidebar, Sidenav, Nav, Icon, Navbar} from 'rsuite';
+import { Sidebar, Whisper, Tooltip, Nav, Icon, Row, Col, Navbar, Container, Content, IconButton } from 'rsuite';
 import React, { Component } from "react";
-import {CameraOptions, AdditionalLightOptions, AmbientLightOptions, GridOptions, BoundingShapesOptions} from './SubMenus'
+import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, VisualElementsOptions, SlicingOptions } from './SubMenus'
 
 
 const NavToggle = ({ expand, onChange }) => {
     return (
         <Navbar appearance="subtle" className="nav-toggle">
             <Navbar.Body>
-
                 <Nav pullRight>
-                    <Nav.Item onClick={onChange} style={{ width: 56, textAlign: 'center' }}>
-                        <Icon icon={expand ? 'angle-left' : 'angle-right'} />
-                    </Nav.Item>
+                    <IconButton
+                        circle
+                        style={{ textAlign: 'center', margin: 10 }}
+                        onClick={onChange}
+                        appearance="default"
+                        icon={<Icon icon={expand ? 'angle-left' : 'angle-right'} />} />
                 </Nav>
             </Navbar.Body>
         </Navbar>
     );
 };
 
+const CustomNav = ({ active, onSelect, ...props }) => {
+    return (
+            <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010' }}>
+                <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="shapes" />}>
+                </Nav.Item>
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
+                <Nav.Item eventKey="View" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="eye" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
+                    <Nav.Item eventKey="Ambient Light" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="sun-o" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
+                    <Nav.Item eventKey="Other Lighting" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="creative" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
+                    <Nav.Item eventKey="Slicing" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="cut" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Visual Elements</Tooltip>)}> */}
+                    <Nav.Item eventKey="Visual Elements" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="cube" />} />
+                {/* </Whisper> */}
+                <Nav.Item panel style={{ height: 800 }} />
+            </Nav>
+    );
+};
+
+const MenuContent = ({ active, expand, onChange }) => {
+
+    var menuContent = [];
+
+    if (!expand) {
+        menuContent.push(<NavToggle expand={expand} onChange={onChange} />);
+    } else {
+        menuContent.push(
+            <Nav>
+                <Navbar appearance="subtle">
+                    <Nav pullLeft>
+                        <h3 style={{ marginTop: 15, marginLeft: 30 }}>{active}</h3>
+                    </Nav>
+                    <Nav pullRight>
+                        <NavToggle expand={expand} onChange={onChange} />
+                    </Nav>
+                </Navbar>
+
+            </Nav>
+        );
+    }
+
+    if (expand) {
+        switch (active) {
+            case "Models":
+                break;
+            case "View":
+                menuContent.push(<ViewOptions />);
+                break;
+            case "Ambient Light":
+                menuContent.push(<AmbientLightOptions />);
+                break;
+            case "Other Lighting":
+                menuContent.push(<AdditionalLightOptions />);
+                break;
+            case "Slicing":
+                menuContent.push(<SlicingOptions />);
+                break;
+            case "Visual Elements":
+                menuContent.push(<VisualElementsOptions />);
+                break;
+        }
+    }
+
+    return menuContent;
+
+}
+
 
 class SideMenu extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            expand: true
+            expand: true,
+            active: 'Models'
         };
         this.handleToggle = this.handleToggle.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
     }
     handleToggle() {
         this.setState({
             expand: !this.state.expand
         });
     }
+    handleSelect(activeKey) {
+        this.setState({
+            active: activeKey
+        });
+
+        if (!this.state.expand){
+            this.handleToggle();
+        }
+
+    }
     render() {
         const { expand } = this.state;
+        const { active } = this.state;
         return (
             <div>
                 <Sidebar
                     style={{ display: 'flex', flexDirection: 'column' }}
-                    width={expand ? 300 : 56}
+                    width={expand ? 356 : 56}
                     collapsible
                 >
-                    <Sidenav
-                        defaultOpenKeys={['3']}
-                        appearance="subtle"
-                        expanded={expand}
-                    >
-                        <Sidenav.Body>
-                            <Nav>
-                                <Nav.Item eventKey="1" icon={<Icon icon="shapes" />}>
-                                    Models
-                                </Nav.Item>
-                                <CameraOptions/>
-                                <AmbientLightOptions />
-                                <AdditionalLightOptions />
-                                <Nav.Item eventKey="2" icon={<Icon icon="cut" />}>
-                                    Slicing
-                                </Nav.Item>
-                                <BoundingShapesOptions/>
-                                <GridOptions/>
-                                <Nav.Item eventKey="2" icon={<Icon icon="setting" />}>
-                                    Performance Tuning
-                                </Nav.Item>
-                               
-                            </Nav>
-                        </Sidenav.Body>
+                    <Container>
+                        <Sidebar width={56} >
+                            <CustomNav vertical appearance="subtle" active={active} onSelect={this.handleSelect} />
+                        </Sidebar>
+                        <Content >
+                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} />
+                        </Content>
 
-                    </Sidenav>
-                    <NavToggle expand={expand} onChange={this.handleToggle} />
+                    </Container>
 
                 </Sidebar>
             </div>
