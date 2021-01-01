@@ -4,49 +4,9 @@ import {Mesh,
     Quaternion,
     Euler
     } from 'three';
-import * as SHAPE from './shapes.js';
-import sample from './config/sample1.txt';
+import * as SHAPE from './Shapes.js';
 
-export class Model{
-    configuration = [];
-
-
-    load(data){
-        let particleSets = data.split("$");
-        let setData, ps;
-        for(let particleSet of particleSets){
-            if (particleSet == ""){
-                return;
-            }
-            else{
-                setData = particleSet.split("\n");
-                ps = new ParticleSet(setData[0], setData[1], setData.slice(2));
-                this.configuration.push(ps);
-            } 
-        }
-    }
-
-    loadSample(scene){
-        fetch(sample)
-        .then(res => res.text())
-        .then(configData => {
-              this.load(configData);
-              this.setConfiguration(scene);
-         });
-    }
-
-
-    setConfiguration(scene){
-        for(let set of this.configuration){
-            for(const m of set.meshes){
-                scene.add(m);
-            }
-        }
-    }    
-
-}
-
-class ParticleSet{
+export class ParticleSet{
     name;
     shape;
     shapeType;
@@ -101,10 +61,10 @@ class ParticleSet{
 
             euler = this.getRotations(this.orientationType, orientation);
 
-            console.log(i);
-            i++;
-            console.log('attributes');
-            console.log(attributes);
+            // console.log(i);
+            // i++;
+            // console.log('attributes');
+            // console.log(attributes);
 
             geoms.push(this.shape.stripGeometry.clone());
             geoms.push(this.shape.fanGeometries[0].clone());
@@ -199,3 +159,5 @@ class ParticleSet{
 
     }
 }
+
+export default ParticleSet;

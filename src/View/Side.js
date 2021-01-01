@@ -1,7 +1,7 @@
 
 import { Sidebar, Whisper, Tooltip, Nav, Icon, Row, Col, Navbar, Container, Content, IconButton } from 'rsuite';
 import React, { Component } from "react";
-import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, VisualElementsOptions, SlicingOptions } from './SubMenus'
+import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, VisualElementsOptions, SlicingOptions, ModelsOptions } from './SubMenus'
 
 
 const NavToggle = ({ expand, onChange }) => {
@@ -21,25 +21,27 @@ const NavToggle = ({ expand, onChange }) => {
     );
 };
 
+const navItemStyle = { margin: 6.5 };
+
 const CustomNav = ({ active, onSelect, ...props }) => {
     return (
             <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010' }}>
-                <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="shapes" />}>
+                <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
                 </Nav.Item>
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
-                <Nav.Item eventKey="View" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="eye" />} />
+                <Nav.Item eventKey="View" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
-                    <Nav.Item eventKey="Ambient Light" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="sun-o" />} />
+                    <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
-                    <Nav.Item eventKey="Other Lighting" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="creative" />} />
+                    <Nav.Item eventKey="Other Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
-                    <Nav.Item eventKey="Slicing" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="cut" />} />
+                    <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Visual Elements</Tooltip>)}> */}
-                    <Nav.Item eventKey="Visual Elements" icon={<Icon style={{ margin: 6.5 }} size="lg" icon="cube" />} />
+                    <Nav.Item eventKey="Visual Elements" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
                 {/* </Whisper> */}
                 <Nav.Item panel style={{ height: 800 }} />
             </Nav>
@@ -71,6 +73,7 @@ const MenuContent = ({ active, expand, onChange }) => {
     if (expand) {
         switch (active) {
             case "Models":
+                menuContent.push(<ModelsOptions />);
                 break;
             case "View":
                 menuContent.push(<ViewOptions />);
@@ -102,6 +105,7 @@ class SideMenu extends Component {
             expand: true,
             active: 'Models'
         };
+        this.toggleExpanded = props.f;
         this.handleToggle = this.handleToggle.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
     }
@@ -109,7 +113,9 @@ class SideMenu extends Component {
         this.setState({
             expand: !this.state.expand
         });
+        this.toggleExpanded();
     }
+    
     handleSelect(activeKey) {
         this.setState({
             active: activeKey

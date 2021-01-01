@@ -52,12 +52,12 @@ const SamplesDropdown = ({ ...props }) => (
 
 
 const Top = ({ ...props }) => (
-    <Header>
+    <Header style={{height : 56}}>
         <Navbar>
             <Navbar.Body>
                 <Nav pullRight >
                     <ButtonToolbar>
-                        <Nav.Item active>fps</Nav.Item>
+                        <Nav.Item active>fps {props.fps}</Nav.Item>
                         <Nav.Item appearance="subtle" icon={<Icon icon="keyboard-o" />}>Reference</Nav.Item>
                         <Nav.Item appearance="subtle" icon={<Icon icon="question" />}>Manual</Nav.Item>
                         <SamplesDropdown title="Samples" trigger='click' placement="bottomEnd" icon={<Icon icon="folder-o" />} />
