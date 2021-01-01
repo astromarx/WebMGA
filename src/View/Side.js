@@ -105,7 +105,6 @@ class SideMenu extends Component {
             expand: true,
             active: 'Models'
         };
-        this.toggleExpanded = props.f;
         this.handleToggle = this.handleToggle.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
     }
@@ -113,9 +112,7 @@ class SideMenu extends Component {
         this.setState({
             expand: !this.state.expand
         });
-        this.toggleExpanded();
     }
-    
     handleSelect(activeKey) {
         this.setState({
             active: activeKey

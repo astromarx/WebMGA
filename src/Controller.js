@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import Model  from "./Model/Model";
 import View from "./View/View"
 import 'rsuite/dist/styles/rsuite-dark.css';
@@ -74,6 +73,9 @@ class Controller {
             //g
             if (key == 71) {
                 this.model.toggleGrid();
+            }
+            if (key == 69) {
+                this.view.toggleSidebar();
             }
         }
     }

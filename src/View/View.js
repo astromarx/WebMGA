@@ -8,14 +8,14 @@ export class View {
 
     constructor(m){
         this.model = m;
-
         this.header = <Top fps = {20}/>;
-        this.sidebar = <Side f={this.toggleSideMenu}/>;
-
+        this.sidebar = <Side />
+        ;
     }
 
-    toggleSideMenu(){
-        this.model.toggleSidebarExpanded();
+    toggleSidebar(){
+        this.model.toggleSidebar();
+        this.sidebar.handleToggle();
     }
 
 }

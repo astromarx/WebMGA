@@ -69,10 +69,13 @@ export class Model {
         this.renderer.render(this.scene, this.camera);
     }
 
-    toggleSidebarExpanded(){
+    toggleSidebar(){
         this.sidebarExpanded = !this.sidebarExpanded;
+        this.updateDimensions();
+    }
 
-         this.height = (window.innerHeight-56);
+    updateDimensions(){
+        this.height = (window.innerHeight-56);
         if(this.sidebarExpanded){
             this.width = window.innerWidth - 356;
         }else{
@@ -84,7 +87,6 @@ export class Model {
         this.camera.aspect = this.width / this.height;
         this.camera.updateProjectionMatrix();
     }
-
 
     toggleGrid() {
         this.gridEnabled = !this.gridEnabled;
