@@ -6,9 +6,6 @@ import {
 
 export class Light {
     light;
-    colour;
-    intensity;
-    isDirectional;
 
     static AMBIENT = 0;
     static DIRECTIONAL = 1;
@@ -18,25 +15,23 @@ export class Light {
         this.setDefaultLights(lightType);
     }
 
+    update(c, i){
+        //console.log();
+
+        this.light.color.setHex(parseInt(c.substring(1), 16));
+        this.light.intensity = i * 0.01;
+    }
+
     setDefaultLights(lightType) {
         switch (lightType) {
-            case Light.AMBIENT:
-                this.colour = "#0ff0ff";
-                this.isDirectional = false;
-                this.intensity = 0.4;
-                this.light = new AmbientLight(this.colour, this.intensity);
+            case 'ambient':
+                this.light = new AmbientLight("#0ff0ff", 0.4);
                 break;
-            case Light.DIRECTIONAL:
-                this.colour = "#ffff00";
-                this.isDirectional = true;
-                this.intensity = 0.5;
-                this.light = new DirectionalLight(this.colour, this.intensity);
+            case 'directional':
+                this.light = new DirectionalLight("#ffff00", 0.5);
                 break;
-            case Light.POINT:
-                this.colour = "#ffffff";
-                this.isDirectional = true;
-                this.intensity = 0.6;
-                this.light = new PointLight(this.colour, this.intensity);
+            case 'point':
+                this.light = new PointLight("#ffffff", 0.6);
                 this.light.position.set(5, 0, 2);
                 break;
         }

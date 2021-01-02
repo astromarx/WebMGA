@@ -16,7 +16,7 @@ export const ParameterSet = (props) => {
         }
         set.push(
             <ParameterInput title={props.titles[i]} values={val} numerical />
-            );
+        );
     }
 
     return set;
@@ -49,7 +49,7 @@ export const ParameterInput = (props) => {
         listItems.push(<Dropdown.Item panel style={{ width: 150 }}></Dropdown.Item>);
 
         InputBox = (
-            <ButtonToolbar style={{ width: 120}}>
+            <ButtonToolbar style={{ width: 120 }}>
                 <Dropdown style={{ width: 200 }} title={props.active}>
                     {listItems}
                 </Dropdown>
@@ -59,7 +59,7 @@ export const ParameterInput = (props) => {
 
     return (
         <div style={{}}>
-            <Row style={{marginTop: 15}}>
+            <Row style={{ marginTop: 15 }}>
 
                 <Col md={10}><p style={{ marginTop: 10, marginLeft: 30 }}>{props.title}</p></Col>
                 <Col md={8} />
@@ -73,7 +73,6 @@ export const ParameterInput = (props) => {
 
 export const SliceSlider = (props) => {
     const [value, setValue] = React.useState([-50, 50]);
-
 
     return (
         <div>
@@ -135,7 +134,8 @@ export const SliceSlider = (props) => {
 
 export const CustomSlider = (props) => {
 
-    var [value, setValue] = useState(props.start);
+    var f = props.f;
+    var [value, setValue] = useState(props.val);
     var [disabled, disable] = useState(false);
 
     disabled = props.disabled;
@@ -153,6 +153,7 @@ export const CustomSlider = (props) => {
                     disabled={disabled}
                     onChange={value => {
                         setValue(value);
+                        f(value);
                     }}
                 />
             </Col>
@@ -165,6 +166,7 @@ export const CustomSlider = (props) => {
                     disabled={disabled}
                     onChange={value => {
                         setValue(value);
+                        f(value)
                     }}
                 />
             </Col>
@@ -173,46 +175,6 @@ export const CustomSlider = (props) => {
 
 }
 
-export const SliderSet = (props) => {
-    const titles = props.titles;
-    const additionalSlider = props.additionalSlider;
-    var boundaries;
-    var start;
-
-    if (props.rgb) {
-        boundaries = [1, 256];
-        start = 1;
-    } else if (props.pos) {
-        boundaries = [-50, 50];
-        start = 0;
-    }
-
-    var threeSet = (
-        <div>
-            <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> {titles[0]} </p>
-            <CustomSlider disabled={false} boundaries={boundaries} start={start} />
-            <CustomSlider disabled={false} boundaries={boundaries} start={start} />
-            <CustomSlider disabled={false} boundaries={boundaries} start={start} />
-        </div>
-    );
-
-    var additional = (
-        <div>
-            <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> {titles[1]} </p>
-            <CustomSlider disabled={false} boundaries={[0, 100]} start={start} />
-        </div>
-    );
-
-    return (
-        <div>
-            <FormGroup>
-                {threeSet}
-                {additionalSlider ? additional : null}
-            </FormGroup>
-        </div>
-    );
-
-}
 
 export const PositionForm = (props) => {
     const title = props.title;

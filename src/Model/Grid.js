@@ -14,12 +14,30 @@ export class Grid {
     constructor(s, c){
         this.size = s;
         this.colour = c;
-        this.subGrid = new GridHelper(s, s, c, c);
+        
         this.genAxes();
+        this.genSubgrid();
         
     }
 
+    updateColour(colour){
+        this.colour = colour;
+        this.genAxes();
+        this.genSubgrid();
+    }
+
+    updateSize(size){
+        this.size = size;
+        this.genAxes();
+        this.genSubgrid();
+    }
+
+    genSubgrid(){
+        this.subGrid = new GridHelper(this.size, this.size, this.colour, this.colour);
+    }
+
     genAxes(){
+        this.axes=[];
         var axesMaterial = new LineBasicMaterial( {
             color: this.colour,
             linewidth: 3

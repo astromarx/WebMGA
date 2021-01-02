@@ -25,30 +25,30 @@ const navItemStyle = { margin: 6.5 };
 
 const CustomNav = ({ active, onSelect, ...props }) => {
     return (
-            <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010' }}>
-                <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
-                </Nav.Item>
-                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
-                <Nav.Item eventKey="View" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
-                {/* </Whisper> */}
-                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
-                    <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
-                {/* </Whisper> */}
-                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
-                    <Nav.Item eventKey="Other Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
-                {/* </Whisper> */}
-                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
-                    <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
-                {/* </Whisper> */}
-                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Visual Elements</Tooltip>)}> */}
-                    <Nav.Item eventKey="Visual Elements" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
-                {/* </Whisper> */}
-                <Nav.Item panel style={{ height: 800 }} />
-            </Nav>
+        <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010' }}>
+            <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
+            </Nav.Item>
+            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
+            <Nav.Item eventKey="View" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
+            {/* </Whisper> */}
+            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
+            <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
+            {/* </Whisper> */}
+            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
+            <Nav.Item eventKey="Other Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
+            {/* </Whisper> */}
+            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
+            <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
+            {/* </Whisper> */}
+            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Visual Elements</Tooltip>)}> */}
+            <Nav.Item eventKey="Visual Elements" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
+            {/* </Whisper> */}
+            <Nav.Item panel style={{ height: 800 }} />
+        </Nav>
     );
 };
 
-const MenuContent = ({ active, expand, onChange }) => {
+const MenuContent = ({ active, expand, onChange, model }) => {
 
     var menuContent = [];
 
@@ -73,22 +73,22 @@ const MenuContent = ({ active, expand, onChange }) => {
     if (expand) {
         switch (active) {
             case "Models":
-                menuContent.push(<ModelsOptions />);
+                menuContent.push(<ModelsOptions model={model}/>);
                 break;
             case "View":
-                menuContent.push(<ViewOptions />);
+                menuContent.push(<ViewOptions model={model}/>);
                 break;
             case "Ambient Light":
-                menuContent.push(<AmbientLightOptions />);
+                menuContent.push(<AmbientLightOptions model={model}/>);
                 break;
             case "Other Lighting":
-                menuContent.push(<AdditionalLightOptions />);
+                menuContent.push(<AdditionalLightOptions model={model}/>);
                 break;
             case "Slicing":
-                menuContent.push(<SlicingOptions />);
+                menuContent.push(<SlicingOptions model={model} />);
                 break;
             case "Visual Elements":
-                menuContent.push(<VisualElementsOptions />);
+                menuContent.push(<VisualElementsOptions model={model}/>);
                 break;
         }
     }
@@ -97,14 +97,14 @@ const MenuContent = ({ active, expand, onChange }) => {
 
 }
 
-
 class SideMenu extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            expand: true,
+            expand: props.sidebarExpanded,
             active: 'Models'
         };
+        this.model = props.model;
         this.handleToggle = this.handleToggle.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
     }
@@ -112,13 +112,15 @@ class SideMenu extends Component {
         this.setState({
             expand: !this.state.expand
         });
+        this.model.toggleSidebar();
+
     }
     handleSelect(activeKey) {
         this.setState({
             active: activeKey
         });
 
-        if (!this.state.expand){
+        if (!this.state.expand) {
             this.handleToggle();
         }
 
@@ -138,7 +140,7 @@ class SideMenu extends Component {
                             <CustomNav vertical appearance="subtle" active={active} onSelect={this.handleSelect} />
                         </Sidebar>
                         <Content >
-                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} />
+                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} model={this.model}/>
                         </Content>
 
                     </Container>

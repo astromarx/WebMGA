@@ -1,7 +1,8 @@
 
 import { Dropdown, Sidebar, Sidenav, Nav, Icon, Navbar, ButtonGroup, Tooltip, Whisper, Divider, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, IconButton } from 'rsuite';
 import React, { Component, useState } from "react";
-import { SliderSet, SliceSlider, ParameterInput, ParameterSet } from './Tools'
+import { SliceSlider, ParameterInput, ParameterSet, CustomSlider } from './Tools'
+import View from './View'
 
 const TITLE_LEFT_MARGIN = 30;
 const dividerStyle = {
@@ -36,7 +37,11 @@ export const ModelsOptions = ({ ...props }) => (
 
             </Col>
         </Row>
-        <SliderSet titles={["RGB"]} rgb />
+
+        <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
+        <CustomSlider disabled={false} boundaries={[1, 256]} val={20} />
+        <CustomSlider disabled={false} boundaries={[1, 256]} val={40} />
+        <CustomSlider disabled={false} boundaries={[1, 256]} val={90} />
 
     </div>
 );
@@ -76,8 +81,8 @@ export const ViewOptions = ({ ...props }) => (
             </Row>
         </Grid>
 
-        <ParameterSet titles={["X position", "Y position", "Z position"]}/>
-        <br/>
+        <ParameterSet titles={["X position", "Y position", "Z position"]} />
+        <br />
 
         <Grid fluid>
 
@@ -172,82 +177,252 @@ export class AdditionalLightOptions extends React.Component {
                         </Col>
                     </Row>
                 </Grid>
-                <SliderSet titles={["RGB", "Intensity"]} additionalSlider rgb />
-                <SliderSet titles={["Position XYZ"]} pos />
 
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
+                <CustomSlider disabled={false} boundaries={[1, 256]} val={20} />
+                <CustomSlider disabled={false} boundaries={[1, 256]} val={40} />
+                <CustomSlider disabled={false} boundaries={[1, 256]} val={90} />
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Intensity </p>
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={70} />
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Position XYZ </p>
+                <CustomSlider disabled={false} boundaries={[-50, 50]} val={20} />
+                <CustomSlider disabled={false} boundaries={[-50, 50]} val={40} />
+                <CustomSlider disabled={false} boundaries={[-50, 50]} val={-30} />
 
             </div>
         );
     }
 }
 
-export const AmbientLightOptions = ({ ...props }) => {
+export class AmbientLightOptions extends React.Component {
+    
+    constructor(props) {
+        super();
 
-    return (
-        <div {...props}>
+        this.state = View.AmbientLightState;
 
-            <Divider><strong style={dividerStyle}> Ambient Light </strong></Divider>
-            <SliderSet titles={["RGB", "Intensity"]} additionalSlider rgb />
-            <Divider><strong style={dividerStyle}> Background Colour</strong></Divider>
-            <SliderSet titles={["RGB"]} rgb />
+        this.model = props.model;
 
+        this.updateAR = this.updateAR.bind(this);
+        this.updateAG = this.updateAG.bind(this);
+        this.updateAB = this.updateAB.bind(this);
+        this.updateI = this.updateI.bind(this);
+        this.updateBR = this.updateBR.bind(this);
+        this.updateBG = this.updateBG.bind(this);
+        this.updateBB = this.updateBB.bind(this);
+    }
+    updateAR(value) {
+        this.setState({
+            aR: value
+        });
+        this.model.updateLight(0, value, this.state.aB, this.state.aG, this.state.i);
+        View.AmbientLightState.aR = value;
+    }
+    updateAG(value) {
+        this.setState({
+            aG: value
+        });
+        this.model.updateLight(0, this.state.aR, value, this.state.aG, this.state.i);
+        View.AmbientLightState.aG = value;
+    }
+    updateAB(value) {
+        this.setState({
+            aB: value
+        });
+        this.model.updateLight(0, this.state.aR, this.state.aB, value, this.state.i);
+        View.AmbientLightState.aB = value;
+    }
+    updateI(value) {
+        this.setState({
+            i: value
+        });
+        this.model.updateLight(0, this.state.aR, this.state.aB, this.state.aG, value);
+        View.AmbientLightState.i = value;
+    }
+    updateBR(value) {
+        this.setState({
+            bR: value
+        });
+        this.model.updateBg(value, this.state.bG, this.state.bB);
+        View.AmbientLightState.bR = value;
+    }
+    updateBG(value) {
+        this.setState({
+            bG: value
+        });
+        this.model.updateBg(this.state.bR, value, this.state.bB);
+        View.AmbientLightState.bG = value;
+    }
+    updateBB(value) {
+        this.setState({
+            bB: value
+        });
+        this.model.updateBg(this.state.bR, this.state.bG , value);
+        View.AmbientLightState.bB = value;
+    }
 
+    render() {
+        const aR = this.state.aR;
+        const aB = this.state.aB;
+        const aG = this.state.aG;
+        const i = this.state.i;
+        const bR = this.state.bR;
+        const bG = this.state.bG;
+        const bB = this.state.bB;
+        return (
+            <div>
 
-        </div>
-    );
+                <Divider><strong style={dividerStyle}> Ambient Light </strong></Divider>
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={aR} f={this.updateAR} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={aB} f={this.updateAG} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={aG} f={this.updateAB} />
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Intensity </p>
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={i} f={this.updateI} />
+                <Divider><strong style={dividerStyle}> Background Colour</strong></Divider>
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={bR} f={this.updateBR}/>
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={bG} f={this.updateBG}/>
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={bB} f={this.updateBB}/>
+            </div>
+        );
+    }
 }
 
 
-export const VisualElementsOptions = ({ ...props }) => {
+export class VisualElementsOptions extends React.Component {
 
-    return (
-        <div>
-            <Divider><strong style={dividerStyle}> Bounding Shape </strong></Divider>
+    constructor(props) {
+        super();
+        this.state = View.VisualElementsState;
 
-            <Grid fluid>
+        this.model = props.model;
+        this.toggleBoundingShapeEnabled = this.toggleBoundingShapeEnabled.bind(this);
+        this.selectShape = this.selectShape.bind(this);
+        this.toggleAxes = this.toggleAxes.bind(this);
+        this.toggleGrid = this.toggleGrid.bind(this);
+        this.updateR = this.updateR.bind(this);
+        this.updateG = this.updateG.bind(this);
+        this.updateB = this.updateB.bind(this);
+        this.updateSize = this.updateSize.bind(this);
 
-                <Row className="show-grid">
-                    <Col xs={1} />
-                    <Col xs={12}>
+    }
+    updateR(value) {
+        this.setState({
+            r: value
+        });
+        this.model.updateGridColour(value, this.state.g, this.state.b);
+        View.VisualElementsState.r = value;
+    }
+    updateG(value) {
+        this.setState({
+            g: value
+        });
+        this.model.updateGridColour(this.state.r, value, this.state.b);
+        View.VisualElementsState.g = value;
+    }
+    updateB(value) {
+        this.setState({
+            b: value
+        });
+        this.model.updateGridColour(this.state.r, this.state.g, value);
+        View.VisualElementsState.b = value;
+    }
+    updateSize(value) {
+        this.setState({
+            size: value
+        });
+        this.model.updateGridSize(value);
+        View.VisualElementsState.size = value;
+    }
+    toggleBoundingShapeEnabled() {
+        this.setState({
+            boundingShapeEnabled: !this.state.boundingShapeEnabled
+        });
+        View.VisualElementsState.boundingShapeEnabled = !View.VisualElementsState.boundingShapeEnabled;
+    }
+    selectShape(value) {
+        this.setState({
+            activeShape: value
+        });
+        View.VisualElementsState.activeShape = value;
+    }
+    toggleAxes() {
+        this.setState({
+            showAxes: !this.state.showAxes
+        });
+        this.model.toggleAxes();
+        View.VisualElementsState.showAxes = !View.VisualElementsState.showAxes;
+    }
+    toggleGrid() {
+        this.setState({
+            showGrid: !this.state.showGrid
+        });
+        this.model.toggleGrid();
+        View.VisualElementsState.showGrid = !View.VisualElementsState.showGrid;
+    }
 
-                        <Checkbox> Enabled </Checkbox>
-                        <br />
+    render() {
+        const enabled = this.state.boundingShapeEnabled;
+        const activeShape = this.state.activeShape;
+        const showAxes = this.state.showAxes;
+        const showGrid = this.state.showGrid;
+        const r = this.state.r;
+        const g = this.state.g;
+        const b = this.state.b;
+        const size = this.state.size;
+        return (
+            <div>
+                <Divider><strong style={dividerStyle}> Bounding Shape </strong></Divider>
 
-                    </Col>
-                </Row>
-                <Row className="show-grid">
-                    <Col xs={2} />
-                    <Col xs={12}>
-                        <FormGroup controlId="radioList">
-                            <RadioGroup name="radioList">
-                                <p>Shapes</p>
-                                <Radio value="A">Box </Radio>
-                                <Radio value="B">Sphere </Radio>
-                                <Radio value="B">Cylinder </Radio>
-                            </RadioGroup>
-                        </FormGroup>
-                        <br />
-                    </Col>
-                </Row>
-            </Grid>
-            <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> PRINT SHAPE INFO HERE</p>
+                <Grid fluid>
 
-            <Divider><strong style={dividerStyle}> Grid </strong></Divider>
-            <Grid fluid>
-                <Row className="show-grid">
-                    <Col xs={1} />
-                    <Col xs={12}>
-                        <Checkbox> Show Axes</Checkbox>
-                        <Checkbox> Show Grid</Checkbox>
-                    </Col>
-                </Row>
-            </Grid>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox checked={enabled} onClick={this.toggleBoundingShapeEnabled}> Enabled </Checkbox>
+                            <br />
 
+                        </Col>
+                    </Row>
+                    <Row className="show-grid">
+                        <Col xs={2} />
+                        <Col xs={12}>
+                            <FormGroup controlId="radioList">
+                                <RadioGroup name="radioList" value={activeShape} onChange={this.selectShape}>
+                                    <p>Shapes</p>
+                                    <Radio disabled={!enabled} value="box"  >Box </Radio>
+                                    <Radio disabled={!enabled} value="sphere" >Sphere </Radio>
+                                    <Radio disabled={!enabled} value="cylinder" >Cylinder </Radio>
+                                </RadioGroup>
+                            </FormGroup>
+                            <br />
+                        </Col>
+                    </Row>
+                </Grid>
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> PRINT SHAPE INFO HERE</p>
 
+                <Divider><strong style={dividerStyle}> Grid </strong></Divider>
+                <Grid fluid>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox checked={showAxes} onClick={this.toggleAxes}> Show Axes</Checkbox>
+                            <Checkbox checked={showGrid} onClick={this.toggleGrid}> Show Grid</Checkbox>
+                        </Col>
+                    </Row>
+                </Grid>
 
-            <br />
-            <SliderSet titles={["RGB", "Size"]} additionalSlider rgb />
-            <br />
-        </div>
-    );
+                <br />
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={r} f={this.updateR} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={g} f={this.updateG} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={b} f={this.updateB} />
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Size </p>
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateSize} />
+
+                <br />
+            </div>
+        );
+    }
 }

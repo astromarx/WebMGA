@@ -46,9 +46,9 @@ export class Model {
         this.camera.position.z = 30;
         //this.camera = new OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 0.1, 1000);
         this.lighting = [
-            new Light(Light.AMBIENT),
-            new Light(Light.DIRECTIONAL),
-            new Light(Light.POINT)];
+            new Light('ambient'),
+            new Light('directional'),
+            new Light('point')];
 
         this.grid = new Grid(50, 0xffffff);
 
@@ -72,6 +72,58 @@ export class Model {
     toggleSidebar(){
         this.sidebarExpanded = !this.sidebarExpanded;
         this.updateDimensions();
+    }
+
+    updateBg(r, g, b){
+        this.bgColour = this.rgbToHex(r,g,b);
+        this.renderer.setClearColor(this.bgColour);
+    }
+
+    updateLight(type, r, g, b, i){
+        this.lighting[type].update(this.rgbToHex(r,g,b), i);
+    }
+
+    updateGridColour(r, g, b){
+        let passGrid = false;
+        let passAxes = false;
+        if(this.gridEnabled){
+            this.toggleGrid();
+            passGrid = true;
+        }
+        if(this.axesEnabled){
+            this.toggleAxes();
+            passAxes = true;
+        }
+        var colour = this.rgbToHex(r,g,b);
+        this.grid.updateColour(colour);
+        if(passGrid){
+            this.toggleGrid();
+        }
+        if(passAxes){
+            this.toggleAxes();
+        }
+    }
+
+    updateGridSize(size){
+        let passGrid = false;
+        let passAxes = false;
+        if(this.gridEnabled){
+            this.toggleGrid();
+            passGrid = true;
+        }
+        if(this.axesEnabled){
+            this.toggleAxes();
+            passAxes = true;
+        }
+
+        this.grid.updateSize(size);
+
+        if(passGrid){
+            this.toggleGrid();
+        }
+        if(passAxes){
+            this.toggleAxes();
+        }
     }
 
     updateDimensions(){
