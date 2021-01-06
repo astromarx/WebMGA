@@ -15,9 +15,11 @@ export class Light {
         this.setDefaultLights(lightType);
     }
 
-    update(c, i){
-        //console.log();
+    updatePosition(x, y, z){
+        this.light.position.set(x, y, z);
+    }
 
+    updateColour(c, i){
         this.light.color.setHex(parseInt(c.substring(1), 16));
         this.light.intensity = i * 0.01;
     }

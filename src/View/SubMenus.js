@@ -151,43 +151,130 @@ export const AdditionalLightsNav = ({ active, onSelect }) => {
 
 export class AdditionalLightOptions extends React.Component {
 
-    constructor() {
+    constructor(props) {
         super();
-        this.state = {
-            active: 'point'
-        };
+        this.state = View.PointLightState;
+        this.model = props.model;
+        this.reset = 0;
         this.handleSelect = this.handleSelect.bind(this);
+        this.updateColour = this.updateColour.bind(this);
+        this.updatePosition = this.updatePosition.bind(this);
+        this.toggleLightEnabled = this.toggleLightEnabled.bind(this);
+        
     }
-    handleSelect(activeKey) {
-        this.setState({ active: activeKey });
+    handleSelect() {
+        if (this.state.active.localeCompare('point') == 0) {
+            this.setState(View.DirectionalLightState);
+        } else {
+            this.setState(View.PointLightState);
+        }
+        if (this.reset > 5){
+            this.reset = 0;
+        }
+
+        this.setState({reset: ++this.reset});
     }
+    toggleLightEnabled() {
+        let enabled = !this.state.enabled;
+        this.setState({
+            enabled: enabled
+        });
+        if (this.state.active.localeCompare('point') == 0) {
+            View.PointLightState.enabled = enabled;
+        } else {
+            View.DirectionalLightState.enabled = enabled;
+        }
+
+        if(enabled){
+            this.updateColour(60, 'i');
+        }else{
+            this.updateColour(0, 'i');
+        }
+        this.setState({reset: ++this.reset});
+    }
+    updateColour(value, type) {
+        let colour = this.state.colour;
+
+        switch (type) {
+            case 'r':
+                colour.r = value;
+                break;
+            case 'g':
+                colour.g = value;
+                break;
+            case 'b':
+                colour.b = value;
+                break;
+            case 'i':
+                colour.i = value;
+                break;
+            default:
+                break;
+        }
+
+        if (this.state.active.localeCompare('point') == 0) {
+            this.model.updateLight(2, colour);
+            View.PointLightState.colour = colour;
+        } else {
+            this.model.updateLight(1, colour);
+            View.DirectionalLightState.colour = colour;
+        }
+    }
+    updatePosition(value, type) {
+        let position = this.state.position;
+
+        switch (type) {
+            case 'x':
+                position.x = value;
+                break;
+            case 'y':
+                position.y = value;
+                break;
+            case 'z':
+                position.z = value;
+                break;
+        }
+
+        if (this.state.active.localeCompare('point') == 0) {
+            this.model.updateLightPosition(2, position);
+            View.PointLightState.position = position;
+        } else {
+            this.model.updateLightPosition(1, position);
+            View.DirectionalLightState.position = position;
+        }
+    }
+
     render() {
-        const { active } = this.state;
+        const active = this.state.active;
+
+        const lightState = this.state;
+
         return (
 
-            <div >
+            <div key={lightState.reset}>
+                <br />
                 <AdditionalLightsNav active={active} onSelect={this.handleSelect} />
                 <br />
                 <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox> <strong>Enabled </strong> </Checkbox>
+                            <Checkbox checked={lightState.enabled} onClick={this.toggleLightEnabled}> <strong>Enabled </strong> </Checkbox>
                             <br />
                         </Col>
                     </Row>
                 </Grid>
 
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[1, 256]} val={20} />
-                <CustomSlider disabled={false} boundaries={[1, 256]} val={40} />
-                <CustomSlider disabled={false} boundaries={[1, 256]} val={90} />
+                <CustomSlider disabled={!lightState.enabled} boundaries={[0, 255]} val={lightState.colour.r} f={this.updateColour} type={'r'}/>
+                <CustomSlider disabled={!lightState.enabled} boundaries={[0, 255]} val={lightState.colour.g} f={this.updateColour} type={'g'}/>
+                <CustomSlider disabled={!lightState.enabled} boundaries={[0, 255]} val={lightState.colour.b} f={this.updateColour} type={'b'}/>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Intensity </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={70} />
+                <CustomSlider disabled={!lightState.enabled} boundaries={[0, 100]} val={lightState.colour.i} f={this.updateColour} type={'i'}/>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Position XYZ </p>
-                <CustomSlider disabled={false} boundaries={[-50, 50]} val={20} />
-                <CustomSlider disabled={false} boundaries={[-50, 50]} val={40} />
-                <CustomSlider disabled={false} boundaries={[-50, 50]} val={-30} />
+                <CustomSlider disabled={!lightState.enabled} boundaries={[-50, 50]} val={lightState.position.x} f={this.updatePosition} type={'x'}/>
+                <CustomSlider disabled={!lightState.enabled} boundaries={[-50, 50]} val={lightState.position.y} f={this.updatePosition} type={'y'}/>
+                <CustomSlider disabled={!lightState.enabled} boundaries={[-50, 50]} val={lightState.position.z} f={this.updatePosition} type={'z'}/>
 
             </div>
         );
@@ -195,7 +282,7 @@ export class AdditionalLightOptions extends React.Component {
 }
 
 export class AmbientLightOptions extends React.Component {
-    
+
     constructor(props) {
         super();
 
@@ -203,92 +290,68 @@ export class AmbientLightOptions extends React.Component {
 
         this.model = props.model;
 
-        this.updateAR = this.updateAR.bind(this);
-        this.updateAG = this.updateAG.bind(this);
-        this.updateAB = this.updateAB.bind(this);
-        this.updateI = this.updateI.bind(this);
-        this.updateBR = this.updateBR.bind(this);
-        this.updateBG = this.updateBG.bind(this);
-        this.updateBB = this.updateBB.bind(this);
+        this.updateAmbientLightColour = this.updateAmbientLightColour.bind(this);
+        this.updateBackgroundColour = this.updateBackgroundColour.bind(this);
     }
-    updateAR(value) {
-        this.setState({
-            aR: value
-        });
-        this.model.updateLight(0, value, this.state.aB, this.state.aG, this.state.i);
-        View.AmbientLightState.aR = value;
-    }
-    updateAG(value) {
-        this.setState({
-            aG: value
-        });
-        this.model.updateLight(0, this.state.aR, value, this.state.aG, this.state.i);
-        View.AmbientLightState.aG = value;
-    }
-    updateAB(value) {
-        this.setState({
-            aB: value
-        });
-        this.model.updateLight(0, this.state.aR, this.state.aB, value, this.state.i);
-        View.AmbientLightState.aB = value;
-    }
-    updateI(value) {
-        this.setState({
-            i: value
-        });
-        this.model.updateLight(0, this.state.aR, this.state.aB, this.state.aG, value);
-        View.AmbientLightState.i = value;
-    }
-    updateBR(value) {
-        this.setState({
-            bR: value
-        });
-        this.model.updateBg(value, this.state.bG, this.state.bB);
-        View.AmbientLightState.bR = value;
-    }
-    updateBG(value) {
-        this.setState({
-            bG: value
-        });
-        this.model.updateBg(this.state.bR, value, this.state.bB);
-        View.AmbientLightState.bG = value;
-    }
-    updateBB(value) {
-        this.setState({
-            bB: value
-        });
-        this.model.updateBg(this.state.bR, this.state.bG , value);
-        View.AmbientLightState.bB = value;
-    }
+    updateAmbientLightColour(value, type) {
+        let colour = this.state.ambientLightColour;
 
+        switch (type) {
+            case 'r':
+                colour.r = value;
+                break;
+            case 'g':
+                colour.g = value;
+                break;
+            case 'b':
+                colour.b = value;
+                break;
+            case 'i':
+                colour.i = value;
+                break;
+        }
+        this.model.updateLight(0, colour);
+        View.AmbientLightState.ambientLightColour = colour;
+    }
+    updateBackgroundColour(value, type) {
+        let colour = this.state.backgroundColour;
+
+        switch (type) {
+            case 'r':
+                colour.r = value;
+                break;
+            case 'g':
+                colour.g = value;
+                break;
+            case 'b':
+                colour.b = value;
+                break;
+        }
+        this.model.updateBg(colour);
+        View.AmbientLightState.backgroundColour = colour;
+    }
     render() {
-        const aR = this.state.aR;
-        const aB = this.state.aB;
-        const aG = this.state.aG;
-        const i = this.state.i;
-        const bR = this.state.bR;
-        const bG = this.state.bG;
-        const bB = this.state.bB;
+        const ambientLightColour = this.state.ambientLightColour;
+        const backgroundColour = this.state.backgroundColour;
         return (
             <div>
 
                 <Divider><strong style={dividerStyle}> Ambient Light </strong></Divider>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={aR} f={this.updateAR} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={aB} f={this.updateAG} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={aG} f={this.updateAB} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.r} f={this.updateAmbientLightColour} type={'r'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.g} f={this.updateAmbientLightColour} type={'g'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.b} f={this.updateAmbientLightColour} type={'b'} />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Intensity </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={i} f={this.updateI} />
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={ambientLightColour.i} f={this.updateAmbientLightColour} type={'i'} />
                 <Divider><strong style={dividerStyle}> Background Colour</strong></Divider>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={bR} f={this.updateBR}/>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={bG} f={this.updateBG}/>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={bB} f={this.updateBB}/>
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.r} f={this.updateBackgroundColour} type={'r'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.g} f={this.updateBackgroundColour} type={'g'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.b} f={this.updateBackgroundColour} type={'b'} />
             </div>
         );
     }
 }
-
 
 export class VisualElementsOptions extends React.Component {
 
@@ -301,37 +364,28 @@ export class VisualElementsOptions extends React.Component {
         this.selectShape = this.selectShape.bind(this);
         this.toggleAxes = this.toggleAxes.bind(this);
         this.toggleGrid = this.toggleGrid.bind(this);
-        this.updateR = this.updateR.bind(this);
-        this.updateG = this.updateG.bind(this);
-        this.updateB = this.updateB.bind(this);
-        this.updateSize = this.updateSize.bind(this);
+        this.updateGridColour = this.updateGridColour.bind(this);
+        this.updateGridSize = this.updateGridSize.bind(this);
 
     }
-    updateR(value) {
-        this.setState({
-            r: value
-        });
-        this.model.updateGridColour(value, this.state.g, this.state.b);
-        View.VisualElementsState.r = value;
+    updateGridColour(value, type) {
+        let rgb = this.state.gridColour;
+
+        switch (type) {
+            case 'r':
+                rgb.r = value;
+                break;
+            case 'g':
+                rgb.g = value;
+                break;
+            case 'b':
+                rgb.b = value;
+                break;
+        }
+        this.model.updateGridColour(rgb);
+        View.VisualElementsState.gridColour = rgb;
     }
-    updateG(value) {
-        this.setState({
-            g: value
-        });
-        this.model.updateGridColour(this.state.r, value, this.state.b);
-        View.VisualElementsState.g = value;
-    }
-    updateB(value) {
-        this.setState({
-            b: value
-        });
-        this.model.updateGridColour(this.state.r, this.state.g, value);
-        View.VisualElementsState.b = value;
-    }
-    updateSize(value) {
-        this.setState({
-            size: value
-        });
+    updateGridSize(value) {
         this.model.updateGridSize(value);
         View.VisualElementsState.size = value;
     }
@@ -367,9 +421,7 @@ export class VisualElementsOptions extends React.Component {
         const activeShape = this.state.activeShape;
         const showAxes = this.state.showAxes;
         const showGrid = this.state.showGrid;
-        const r = this.state.r;
-        const g = this.state.g;
-        const b = this.state.b;
+        const colour = this.state.gridColour;
         const size = this.state.size;
         return (
             <div>
@@ -415,11 +467,11 @@ export class VisualElementsOptions extends React.Component {
 
                 <br />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={r} f={this.updateR} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={g} f={this.updateG} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={b} f={this.updateB} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.r} f={this.updateGridColour} type={'r'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.g} f={this.updateGridColour} type={'g'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.b} f={this.updateGridColour} type={'b'} />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Size </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateSize} />
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateGridSize} />
 
                 <br />
             </div>

@@ -138,6 +138,14 @@ export const CustomSlider = (props) => {
     var [value, setValue] = useState(props.val);
     var [disabled, disable] = useState(false);
 
+    var type;
+
+    if(props.type == null){
+        type = null;
+    }else{
+        type = props.type;
+    }
+
     disabled = props.disabled;
     const [min, max] = props.boundaries;
 
@@ -153,7 +161,7 @@ export const CustomSlider = (props) => {
                     disabled={disabled}
                     onChange={value => {
                         setValue(value);
-                        f(value);
+                        f(value, type);
                     }}
                 />
             </Col>
@@ -166,7 +174,7 @@ export const CustomSlider = (props) => {
                     disabled={disabled}
                     onChange={value => {
                         setValue(value);
-                        f(value)
+                        f(value, props.type)
                     }}
                 />
             </Col>

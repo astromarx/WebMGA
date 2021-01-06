@@ -74,16 +74,24 @@ export class Model {
         this.updateDimensions();
     }
 
-    updateBg(r, g, b){
-        this.bgColour = this.rgbToHex(r,g,b);
+    updateBg(colour){
+        this.bgColour = this.rgbToHex(colour.r,colour.g,colour.b);
         this.renderer.setClearColor(this.bgColour);
     }
 
-    updateLight(type, r, g, b, i){
-        this.lighting[type].update(this.rgbToHex(r,g,b), i);
+    toggleLight(type, enabled){
+        this.lighting[type].visible = enabled;
     }
 
-    updateGridColour(r, g, b){
+    updateLight(type, colour){
+        this.lighting[type].updateColour(this.rgbToHex(colour.r, colour.g, colour.b), colour.i);
+    }
+
+    updateLightPosition(type, pos){
+        this.lighting[type].updatePosition(pos.x, pos.y, pos.z);
+    }
+
+    updateGridColour(rgb){
         let passGrid = false;
         let passAxes = false;
         if(this.gridEnabled){
@@ -94,7 +102,7 @@ export class Model {
             this.toggleAxes();
             passAxes = true;
         }
-        var colour = this.rgbToHex(r,g,b);
+        var colour = this.rgbToHex(rgb.r,rgb.g,rgb.b);
         this.grid.updateColour(colour);
         if(passGrid){
             this.toggleGrid();
