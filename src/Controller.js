@@ -53,10 +53,12 @@ class Controller {
 
         window.addEventListener('resize', () => {
             this.model.updateDimensions();
+            this.model.updateCamera();
         });
 
         document.addEventListener('fullscreenchange', () => {
             this.model.updateDimensions();
+            this.model.updateCamera();
         });
 
 

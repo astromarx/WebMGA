@@ -1,6 +1,6 @@
 
 
-import { Dropdown, RangeSlider, InputGroup, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, ButtonToolbar } from 'rsuite';
+import { Dropdown, RangeSlider, InputGroup, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, ButtonToolbar, Input } from 'rsuite';
 import React, { Component, useState } from "react";
 
 const TITLE_LEFT_MARGIN = 30;
@@ -15,60 +15,82 @@ export const ParameterSet = (props) => {
             val = props.values[i];
         }
         set.push(
-            <ParameterInput title={props.titles[i]} values={val} numerical />
+            <ParameterInput title={props.titles[i]} values={val} numerical f={props.f} index={i} />
         );
     }
 
     return set;
 }
 
-export const ParameterInput = (props) => {
+export class ParameterInput extends React.Component {
 
-    var InputBox;
 
-    if (props.numerical) {
-        const defaultVal = props.values;
-        console.log(defaultVal);
-        InputBox =
-            (<div style={{ width: 140 }}>
-                <InputNumber defaultValue={defaultVal} step={0.1} />
-            </div>);
-    } else {
-
-        const vals = props.values;
-        const active = props.active;
-
-        var listItems = [];
-        let act;
-
-        for (let val of vals) {
-            (active.localeCompare(val)) ? act = false : act = true;
-            listItems.push(<Dropdown.Item active={act} >{val}</Dropdown.Item>);
-        }
-
-        listItems.push(<Dropdown.Item panel style={{ width: 150 }}></Dropdown.Item>);
-
-        InputBox = (
-            <ButtonToolbar style={{ width: 120 }}>
-                <Dropdown style={{ width: 200 }} title={props.active}>
-                    {listItems}
-                </Dropdown>
-            </ButtonToolbar>
-        );
+    constructor(props) {
+        super();
+        this.active = props.active;
+        this.f = props.f;
+        this.title = props.title;
+        this.values = props.values;
+        this.numerical = props.numerical;
+        this.index = props.index;
+        this.state = {
+            value: 0
+        };
+        this.changeValue = this.changeValue.bind(this);
     }
 
-    return (
-        <div style={{}}>
-            <Row style={{ marginTop: 15 }}>
+    changeValue(value) {
+        this.f(value, this.index);
+    }
 
-                <Col md={10}><p style={{ marginTop: 10, marginLeft: 30 }}>{props.title}</p></Col>
-                <Col md={8} />
-                <Col md={10}>{InputBox}</Col>
+    render() {
+        var InputBox;
 
-            </Row>
-        </div>
-    );
+        if (this.numerical) {
+            const defaultVal = this.values;
+            InputBox =
+                (<div style={{ width: 140 }}>
+                    <InputNumber defaultValue={defaultVal} step={0.1} onChange={this.changeValue} />
+                </div>);
+        } else {
+
+            const vals = this.values;
+            const active = this.active;
+
+            var listItems = [];
+            let act;
+
+            for (let val of vals) {
+                (active.localeCompare(val)) ? act = false : act = true;
+                listItems.push(<Dropdown.Item active={act} >{val}</Dropdown.Item>);
+            }
+
+            listItems.push(<Dropdown.Item panel style={{ width: 150 }}></Dropdown.Item>);
+
+            InputBox = (
+                <ButtonToolbar style={{ width: 120 }}>
+                    <Dropdown style={{ width: 200 }} title={this.active}>
+                        {listItems}
+                    </Dropdown>
+                </ButtonToolbar>
+            );
+
+        }
+
+        return (
+            <div >
+                <Row style={{ marginTop: 15 }}>
+
+                    <Col md={10}><p style={{ marginTop: 10, marginLeft: 30 }}>{this.title}</p></Col>
+                    <Col md={8} />
+                    <Col md={10}>{InputBox}</Col>
+
+                </Row>
+            </div>
+        );
+    }
 }
+
 
 
 export const SliceSlider = (props) => {
@@ -138,16 +160,17 @@ export const CustomSlider = (props) => {
     var [value, setValue] = useState(props.val);
     var [disabled, disable] = useState(false);
 
-    var type;
+    var type, graduated, progress;
 
-    if(props.type == null){
+    if (props.type == null) {
         type = null;
-    }else{
+    } else {
         type = props.type;
     }
 
     disabled = props.disabled;
     const [min, max] = props.boundaries;
+
 
     return (
 

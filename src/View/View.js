@@ -12,6 +12,8 @@ export class View {
     static AmbientLightState;
     static PointLightState;
     static DirectionalLightState;
+    static ViewOptionsState;
+    static ModelState;
 
     constructor(m) {
         this.model = m;
@@ -22,6 +24,22 @@ export class View {
         View.AmbientLightState = this.AmbientLightDefaultState;
         View.PointLightState = this.PointLightDefaultState;
         View.DirectionalLightState = this.DirectionalLightDefaultState;
+        View.ViewOptionsState = this.ViewOptionsDefaultState;
+    }
+
+    ModelDefaultState = {
+        fun: 'no'
+    }
+
+    ViewOptionsDefaultState = {
+        rotating: false,
+        type: 'perspective',
+        lookAt: {
+            x: 0,
+            y: 0,
+            z: 0
+        },
+        LOD : 4
     }
 
     PointLightDefaultState = {

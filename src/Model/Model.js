@@ -2,7 +2,8 @@ import {
     Scene,
     WebGLRenderer,
     PerspectiveCamera,
-    OrthographicCamera
+    OrthographicCamera,
+    Vector3
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import ParticleSet from './ParticleSet.js'
@@ -17,7 +18,7 @@ export class Model {
     lighting;
     bgColour;
     controls;
-    origin;
+    lookAt;
     grid;
     renderer;
 
@@ -28,23 +29,23 @@ export class Model {
     axesEnabled = false;
     sidebarExpanded = false;
 
+    cameraType = 'perspective';
+
     constructor() {
         this.scene = new Scene();
         this.setDefault();
     }
 
     setDefault() {
-        this.height = window.innerHeight - 56;
-        this.width = window.innerWidth;
 
         this.renderer = new WebGLRenderer({ antialias: true });
-
-        this.renderer.setSize(this.width, this.height);
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
-        this.camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.z = 30;
-        //this.camera = new OrthographicCamera(window.innerWidth/-2, window.innerWidth/2, window.innerHeight/2, window.innerHeight/-2, 0.1, 1000);
+        this.lookAt = new Vector3(0,0,0);
+
+        this.updateDimensions();
+        this.setCamera(this.cameraType);
+
         this.lighting = [
             new Light('ambient'),
             new Light('directional'),
@@ -55,9 +56,7 @@ export class Model {
         this.bgColour = "#000000";
         this.renderer.setClearColor(this.bgColour);
 
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.autoRotate = false;
-        
+
         for (let l of this.lighting) {
             this.scene.add(l.light);
         }
@@ -69,84 +68,117 @@ export class Model {
         this.renderer.render(this.scene, this.camera);
     }
 
-    toggleSidebar(){
+    updateDimensions() {
+        this.height = (window.innerHeight - 56);
+
+        if (this.sidebarExpanded) {
+            this.width = window.innerWidth - 356;
+        } else {
+            this.width = window.innerWidth - 56;
+        }
+
+        this.renderer.setSize(this.width, this.height);
+    }
+
+    setCamera(type) {
+        if (type == 'perspective') {
+            this.camera = new PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
+        } else {
+            this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, 0.1, 1000);
+            this.camera.zoom = 10;
+            console.log(this.camera.zoom);
+        }
+
+        this.camera.position.z = 30;
+        
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target = this.lookAt;
+    }
+
+    updateCamera() {
+        if (this.cameraType == 'perspective') {
+            this.camera.aspect = this.width / this.height;
+        } else {
+            this.camera.left = this.width / - 2;
+            this.camera.right = this.width / 2;
+            this.camera.top = this.height / 2;
+            this.camera.bottom = this.height / 2;
+        }
+        this.camera.updateProjectionMatrix();
+    }
+
+    updateLookAt(l){
+        this.lookAt = new Vector3(l.x,l.y,l.z);
+        this.controls.target = this.lookAt;
+        this.controls.update();
+
+    }
+
+    toggleSidebar() {
         this.sidebarExpanded = !this.sidebarExpanded;
         this.updateDimensions();
     }
 
-    updateBg(colour){
-        this.bgColour = this.rgbToHex(colour.r,colour.g,colour.b);
+    updateBg(colour) {
+        this.bgColour = this.rgbToHex(colour.r, colour.g, colour.b);
         this.renderer.setClearColor(this.bgColour);
     }
 
-    toggleLight(type, enabled){
+    toggleLight(type, enabled) {
         this.lighting[type].visible = enabled;
     }
 
-    updateLight(type, colour){
+    updateLight(type, colour) {
         this.lighting[type].updateColour(this.rgbToHex(colour.r, colour.g, colour.b), colour.i);
     }
 
-    updateLightPosition(type, pos){
+    updateLightPosition(type, pos) {
         this.lighting[type].updatePosition(pos.x, pos.y, pos.z);
     }
 
-    updateGridColour(rgb){
+    updateGridColour(rgb) {
         let passGrid = false;
         let passAxes = false;
-        if(this.gridEnabled){
+        if (this.gridEnabled) {
             this.toggleGrid();
             passGrid = true;
         }
-        if(this.axesEnabled){
+        if (this.axesEnabled) {
             this.toggleAxes();
             passAxes = true;
         }
-        var colour = this.rgbToHex(rgb.r,rgb.g,rgb.b);
+        var colour = this.rgbToHex(rgb.r, rgb.g, rgb.b);
         this.grid.updateColour(colour);
-        if(passGrid){
+        if (passGrid) {
             this.toggleGrid();
         }
-        if(passAxes){
+        if (passAxes) {
             this.toggleAxes();
         }
     }
 
-    updateGridSize(size){
+    updateGridSize(size) {
         let passGrid = false;
         let passAxes = false;
-        if(this.gridEnabled){
+        if (this.gridEnabled) {
             this.toggleGrid();
             passGrid = true;
         }
-        if(this.axesEnabled){
+        if (this.axesEnabled) {
             this.toggleAxes();
             passAxes = true;
         }
 
         this.grid.updateSize(size);
 
-        if(passGrid){
+        if (passGrid) {
             this.toggleGrid();
         }
-        if(passAxes){
+        if (passAxes) {
             this.toggleAxes();
         }
     }
 
-    updateDimensions(){
-        this.height = (window.innerHeight-56);
-        if(this.sidebarExpanded){
-            this.width = window.innerWidth - 356;
-        }else{
-            this.width = window.innerWidth - 56;
-        }
-        
-        this.renderer.setSize(this.width, this.height);
-
-        this.camera.aspect = this.width / this.height;
-        this.camera.updateProjectionMatrix();
-    }
 
     toggleGrid() {
         this.gridEnabled = !this.gridEnabled;
@@ -184,15 +216,6 @@ export class Model {
             return hex.length == 1 ? "0" + hex : hex;
         }
         return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-    }
-
-    hexToRgb(hex) {
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
     }
 
     load(data) {
