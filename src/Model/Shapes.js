@@ -2,7 +2,11 @@ import {
     BufferGeometry,
     BufferAttribute,
     TriangleFanDrawMode,
-    TriangleStripDrawMode
+    TriangleStripDrawMode,
+    SphereBufferGeometry,
+    ConeBufferGeometry,
+    CylinderBufferGeometry,
+    TorusBufferGeometry
 } from 'three';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -10,8 +14,8 @@ export class Shape {
 
     //complexity attributes
     levels = 2;
-    maxComplexity = [20, 20];
-    minComplexity = [5, 5]
+    LOD;
+    complexity;
 
     //shape model attributes
     args;
@@ -20,9 +24,21 @@ export class Shape {
     stripGeometries = [];
     fanGeometries = [];
     stripGeometry;
+    presetGeometry;
+
+    isPreset;
 
     constructor() {
         this.args = arguments[0];
+        this.isPreset = false;
+        this.LOD = 1;
+        this.complexity = [6,12,18,24,32];
+    }
+
+    clear(){
+        this.presetGeometry = [];
+        this.stripGeometries = [];
+        this.fanGeometries = [];
     }
 
     static normalize(vec, scale) {
@@ -39,29 +55,6 @@ export class Shape {
         return vec;
     }
 
-    translate(x, y, z) {
-        for (let f of this.fanGeometries) {
-            f.translate(x, y, z);
-        }
-        this.stripGeometry.translate(x, y, z);
-    }
-
-    rotate(e) {
-        for (let f of this.fanGeometries) {
-            f.rotateX(e.x);
-        }
-        this.stripGeometry.rotateX(e.x);
-
-        for (let f of this.fanGeometries) {
-            f.rotateY(e.y);
-        }
-        this.stripGeometry.rotateY(e.y);
-
-        for (let f of this.fanGeometries) {
-            f.rotateY(e.z);
-        }
-        this.stripGeometry.rotateY(e.z);
-    }
 
     addGeometry(vertices, normals, type) {
         let g = new BufferGeometry();
@@ -86,14 +79,46 @@ export class Shape {
 
 }
 
+export class Preset extends Shape {
+
+    constructor(type, parameters) {
+        super();
+        this.isPreset = true;
+        this.type = type;
+        this.parameters = parameters;
+    }
+
+    generate(){
+        this.clear();
+
+        switch (this.type) {
+            case 'Sphere':
+                this.presetGeometry = new SphereBufferGeometry(this.parameters, this.complexity[this.LOD], this.complexity[this.LOD]);
+                break;
+            case 'Cone':
+                this.presetGeometry = new ConeBufferGeometry(...this.parameters, this.complexity[this.LOD]);
+                break;
+            case 'Cylinder':
+                this.presetGeometry = new CylinderBufferGeometry(...this.parameters, this.complexity[this.LOD]);
+                break;
+            case 'Torus':
+                this.presetGeometry = new TorusBufferGeometry(...this.parameters, this.complexity[this.LOD]);
+                break;
+        }
+    }
+}
+
 export class Ellipsoid extends Shape {
 
     constructor() {
         super(arguments);
+    }
+
+    generate(){
+        this.clear();
         this.genGeometries();
         this.mergeGeometries();
     }
-
 
     genGeometries() {
         let actComplexity = [],
@@ -106,8 +131,8 @@ export class Ellipsoid extends Shape {
         //renders ellipsoid body vertices and normals
         for (let currLevel = 0; currLevel < this.levels; ++currLevel) {
             //calculates complexity of current render
-            actComplexity.push(this.maxComplexity[0] + currLevel * ((this.minComplexity[0] - this.maxComplexity[0]) / (this.levels - 1.0)));
-            actComplexity.push(this.maxComplexity[1] + currLevel * ((this.minComplexity[1] - this.maxComplexity[1]) / (this.levels - 1.0)));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (-this.complexity[this.LOD]) / (this.levels - 1.0));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (-this.complexity[this.LOD]) / (this.levels - 1.0));
 
             piece.push(2 * Math.PI / actComplexity[0]);
             piece.push(Math.PI / ((actComplexity[1] + 1) * 2));
@@ -218,6 +243,10 @@ export class Spherocylinder extends Shape {
 
     constructor() {
         super(arguments);
+    }
+
+    generate(){
+        this.clear();
         this.genGeometries();
         this.mergeGeometries();
     }
@@ -233,7 +262,7 @@ export class Spherocylinder extends Shape {
 
         for (let currLevel = 0; currLevel < this.levels; ++currLevel) {
             //calculates complexity of current render
-            actComplexity.push(this.maxComplexity[0] + currLevel * ((this.minComplexity[0] - this.maxComplexity[0]) / (this.levels - 1.0)));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (- this.complexity[this.LOD]) / (this.levels - 1.0));
             actComplexity.push(actComplexity[0] / 4);
 
             piece.push(2 * Math.PI / actComplexity[0]);
@@ -416,6 +445,10 @@ export class Spheroplatelet extends Shape {
 
     constructor() {
         super(arguments);
+    }
+
+    generate(){
+        this.clear();
         this.genGeometries();
         this.mergeGeometries();
     }
@@ -435,8 +468,8 @@ export class Spheroplatelet extends Shape {
 
         for (let currLevel = 0; currLevel < this.levels; ++currLevel) {
             //calculates complexity of current render
-            actComplexity.push(this.maxComplexity[0] + currLevel * ((this.minComplexity[0] - this.maxComplexity[0]) / (this.levels - 1.0)));
-            actComplexity.push(this.maxComplexity[1] + currLevel * ((this.minComplexity[1] - this.maxComplexity[1]) / (this.levels - 1.0)));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (-this.complexity[this.LOD]) / (this.levels - 1.0));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (-this.complexity[this.LOD]) / (this.levels - 1.0));
 
             piece.push(2 * Math.PI / actComplexity[0]);
             piece.push(Math.PI / (actComplexity[1] * 2));
@@ -569,6 +602,10 @@ export class CutSphere extends Shape {
 
     constructor() {
         super(arguments);
+    }
+
+    generate(){
+        this.clear();
         this.genGeometries();
         this.mergeGeometries();
     }
@@ -588,8 +625,8 @@ export class CutSphere extends Shape {
 
         for (let currLevel = 0; currLevel < this.levels; ++currLevel) {
             //calculates complexity of current render
-            actComplexity.push(this.maxComplexity[0] + currLevel * ((this.minComplexity[0] - this.maxComplexity[0]) / (this.levels - 1.0)));
-            actComplexity.push(this.maxComplexity[1] + currLevel * ((this.minComplexity[1] - this.maxComplexity[1]) / (this.levels - 1.0)));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (-this.complexity[this.LOD]) / (this.levels - 1.0));
+            actComplexity.push(this.complexity[this.LOD] + currLevel * (-this.complexity[this.LOD]) / (this.levels - 1.0));
 
             piece.push(2 * Math.PI / actComplexity[0]);
             piece.push((Math.PI - 2 * angle) / (actComplexity[1] * 2));

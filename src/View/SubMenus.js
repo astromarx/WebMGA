@@ -15,34 +15,155 @@ const LODToolTip = (
     </Tooltip>
 );
 
-export const ModelsOptions = ({ ...props }) => (
-    <div>
-        <Divider><strong style={dividerStyle}> Configuration</strong></Divider>
-        <ParameterInput title="Set" values={["Set A", "Set B", "Set C", "Set D"]} active={"Set C"} />
-        <ParameterInput title="Shape" values={["Ellipsoid", "Sphere", "Spherocylinder", "Spheroplatelet", "Cut Sphere", "Cone", "Cylinder"]} active={"Spheroplatelet"} />
-        <ParameterInput title="Material" values={["Basic", "Lambert", "Phong", "Matcap"]} active={"Lambert"} />
-        <ParameterInput title="Display As" values={["Figure", "Line", "Wireframe"]} active={"Figure"} />
-        <br />
-        <Divider><strong style={dividerStyle}>  Parameters </strong></Divider>
-        <ParameterSet titles={["Radius", "Length"]} values={[4.0, 3.0]} />
-        <Divider><strong style={dividerStyle}>  Colour </strong></Divider>
-        <Row className="show-grid">
-            <Col xs={1} />
-            <Col xs={20}>
+export class ModelsOptions extends React.Component {
 
-                <Checkbox> Set from Director </Checkbox>
-                <br />
+    constructor(props) {
+        super();
+        this.state = View.ModelState;
+        this.model = props.model;
 
-            </Col>
-        </Row>
+        this.selectShape = this.selectShape.bind(this);
+        this.selectSet = this.selectSet.bind(this);
+        this.updateParameter = this.updateParameter.bind(this);
+        this.toggleWireframe = this.toggleWireframe.bind(this);
+        this.toggleColour = this.toggleColour.bind(this);
+        this.updateShininess = this.updateShininess.bind(this);
+        this.updateUserColour = this.updateUserColour.bind(this);
+    }
 
-        <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-        <CustomSlider disabled={false} boundaries={[1, 256]} val={20} />
-        <CustomSlider disabled={false} boundaries={[1, 256]} val={40} />
-        <CustomSlider disabled={false} boundaries={[1, 256]} val={90} />
+    updateShininess(val){
+        this.setState({
+            shininess : val
+        });
+        View.ModelState.configurations[this.state.active].shininess = val;
+        this.model.updateShininess(this.state.active, val)
+    }
 
-    </div>
-);
+    updateUserColour(value, type) {
+        let colour = this.state.configurations[this.state.active].colour;
+
+        switch (type) {
+            case 'r':
+                colour.r = value;
+                break;
+            case 'g':
+                colour.g = value;
+                break;
+            case 'b':
+                colour.b = value;
+                break;
+        }
+        this.model.updateUserColour(this.state.active, colour);
+        View.ModelState.configurations[this.state.active].colour = colour;
+    }
+
+    toggleColour(){
+        let toggle = !this.state.configurations[this.state.active].colourFromDirector;
+        this.setState({
+            colourFromDirector : toggle
+        });
+        View.ModelState.configurations[this.state.active].colourFromDirector = toggle;
+        this.model.toggleUserColour(this.state.active, toggle);
+    }
+
+    toggleWireframe(){
+        let toggle = !this.state.configurations[this.state.active].displayAsWireframe;
+        this.setState({
+            displayAsWireframe : toggle
+        });
+        View.ModelState.configurations[this.state.active].displayAsWireframe = toggle;
+        this.model.toggleWireframe(this.state.active, toggle);
+    }
+
+    updateParameter(val, index){
+        this.state.configurations[this.state.active].parameters.vals[index] = parseFloat(val);
+        this.reset();
+        View.ModelState.configurations[this.state.active].parameters.vals[index] = parseFloat(val);
+        this.model.updateShape(this.state.shape, this.state.active, this.state.configurations[this.state.active].parameters);
+    }
+
+    reset(){
+        let i;
+        if(this.state.reset > 50){
+            i = 0;
+        }else{
+            i = ++this.state.reset;
+        }
+        this.setState(
+            {
+                reset: i
+            }
+        );
+    }
+
+    selectSet(val){
+        for(let i = 0; i < this.state.sets.length; i++){
+            if(this.state.sets[i].localeCompare(val) == 0){
+                this.setState({
+                    active: i
+                })
+                View.ModelState.active = i;
+                break;
+            }
+        }
+        this.reset();
+    }
+
+    selectShape(val){
+        let parameters = this.model.getParameters(val);
+        this.setState(
+            {
+                shape: val,
+                parameters: parameters
+            }
+        );
+
+        this.reset();
+        View.ModelState.configurations[this.state.active].shape = val;
+        View.ModelState.configurations[this.state.active].parameters = parameters;
+        
+
+        this.model.updateShape(val, this.state.active, parameters);
+    }
+
+    render() {
+        const configState = this.state.configurations[this.state.active];
+        const reset = this.state.reset;
+        const title = configState.title;
+        const shapes = ["Ellipsoid", "Sphere", "Spherocylinder", "Spheroplatelet", "Cut Sphere", "Cone", "Cylinder", "Torus"];
+        const sets = this.state.sets;
+
+        return (
+            <div key={reset}>
+
+
+                <Divider><strong style={dividerStyle}> Configuration</strong></Divider>
+                <ParameterInput f={this.selectSet} selectingSet title="Set" values={sets} active={title} />
+                <ParameterInput f={this.selectShape} title="Shape" values={shapes} active={configState.shape} />
+                <ParameterSet f={this.updateParameter} titles={configState.parameters.names} values={configState.parameters.vals} />
+                <br/>
+                <Divider><strong style={dividerStyle}>  Material </strong></Divider>
+
+                <Row className="show-grid">
+                    <Col xs={1} />
+                    <Col xs={20}>
+                        <Checkbox checked={configState.displayAsWireframe} onClick={this.toggleWireframe}> Display as Wireframe </Checkbox>
+                        <Checkbox checked={configState.colourFromDirector} onClick={this.toggleColour}> Colour from Director </Checkbox>
+                        <br/>
+                    </Col>
+                </Row>
+                
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
+                <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.r} type={'r'} />
+                <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.g} type={'g'} />
+                <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.b} type={'b'} />
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Shininess </p>
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={configState.shininess} f={this.updateShininess}/>
+
+            </div>
+        );
+    }
+}
 
 export class ViewOptions extends React.Component {
 
@@ -76,7 +197,7 @@ export class ViewOptions extends React.Component {
             LOD: value
         });
         View.ViewOptionsState.LOD = value;
-        // TODO LOD UPDATES
+        this.model.updateLOD(value - 1);
     }
 
     updateLookat(value, type) {
@@ -103,7 +224,6 @@ export class ViewOptions extends React.Component {
     render() {
         const cameraType = this.state.type;
         const rotating = this.state.rotating;
-        const antialiasing = this.state.antialiasing;
 
         return (
             <div >
@@ -143,7 +263,7 @@ export class ViewOptions extends React.Component {
                     </Row>
                 </Grid>
 
-                <ParameterSet titles={["X position", "Y position", "Z position"]} f={this.updateLookat} />
+                <ParameterSet titles={["X position", "Y position", "Z position"]} values={[0.0,0.0,0.0]} f={this.updateLookat} />
                 <br />
 
 
@@ -154,7 +274,7 @@ export class ViewOptions extends React.Component {
                     <FormGroup>
                         <ControlLabel>Level of Detail</ControlLabel>
                         <Whisper placement="top" trigger="hover" speaker={LODToolTip}>
-                            <Icon circle icon="question-circle" size="md" style={{ marginTop: 12 }} />
+                            <Icon icon="question-circle" size="lg" style={{ marginTop: 12 }} />
                         </Whisper>
                     </FormGroup>
                 </Form>
@@ -436,16 +556,19 @@ export class VisualElementsOptions extends React.Component {
         View.VisualElementsState.size = value;
     }
     toggleBoundingShapeEnabled() {
+        let toggle = !View.VisualElementsState.boundingShapeEnabled;
         this.setState({
-            boundingShapeEnabled: !this.state.boundingShapeEnabled
+            boundingShapeEnabled: toggle
         });
-        View.VisualElementsState.boundingShapeEnabled = !View.VisualElementsState.boundingShapeEnabled;
+        View.VisualElementsState.boundingShapeEnabled = toggle;
+        this.model.updateBoundingShape(this.state.activeShape, toggle);
     }
     selectShape(value) {
         this.setState({
             activeShape: value
         });
         View.VisualElementsState.activeShape = value;
+        this.model.updateBoundingShape(value, this.state.boundingShapeEnabled);
     }
     toggleAxes() {
         this.setState({

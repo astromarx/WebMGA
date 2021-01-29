@@ -2,20 +2,17 @@
 
 import { Dropdown, RangeSlider, InputGroup, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, ButtonToolbar, Input } from 'rsuite';
 import React, { Component, useState } from "react";
+import View from './View';
 
 const TITLE_LEFT_MARGIN = 30;
 
 export const ParameterSet = (props) => {
     var set = [];
-    let val;
+
     for (let i = 0; i < props.titles.length; i++) {
-        if (!props.values) {
-            val = 0;
-        } else {
-            val = props.values[i];
-        }
+
         set.push(
-            <ParameterInput title={props.titles[i]} values={val} numerical f={props.f} index={i} />
+            <ParameterInput title={props.titles[i]} values={props.values[i]} numerical f={props.f} index={i} />
         );
     }
 
@@ -33,13 +30,12 @@ export class ParameterInput extends React.Component {
         this.values = props.values;
         this.numerical = props.numerical;
         this.index = props.index;
-        this.state = {
-            value: 0
-        };
+        this.selectingSet = props.selectingSet;
         this.changeValue = this.changeValue.bind(this);
     }
 
     changeValue(value) {
+        this.active = value;
         this.f(value, this.index);
     }
 
@@ -49,26 +45,25 @@ export class ParameterInput extends React.Component {
         if (this.numerical) {
             const defaultVal = this.values;
             InputBox =
-                (<div style={{ width: 140 }}>
+                (<div style={{ width: 130, marginLeft: 10 }}>
                     <InputNumber defaultValue={defaultVal} step={0.1} onChange={this.changeValue} />
                 </div>);
         } else {
 
-            const vals = this.values;
-            const active = this.active;
-
+            var vals = this.values;
+            var active = this.active;
             var listItems = [];
             let act;
 
             for (let val of vals) {
                 (active.localeCompare(val)) ? act = false : act = true;
-                listItems.push(<Dropdown.Item active={act} >{val}</Dropdown.Item>);
+                listItems.push(<Dropdown.Item eventKey={val} active={act} onSelect={this.changeValue}>{val}</Dropdown.Item>);
             }
 
-            listItems.push(<Dropdown.Item panel style={{ width: 150 }}></Dropdown.Item>);
+            listItems.push(<Dropdown.Item eventKey={'panel'} panel style={{ width: 150 }}></Dropdown.Item>);
 
             InputBox = (
-                <ButtonToolbar style={{ width: 120 }}>
+                <ButtonToolbar style={{ width: 10, marginLeft: 0 }}>
                     <Dropdown style={{ width: 200 }} title={this.active}>
                         {listItems}
                     </Dropdown>
@@ -82,7 +77,7 @@ export class ParameterInput extends React.Component {
                 <Row style={{ marginTop: 15 }}>
 
                     <Col md={10}><p style={{ marginTop: 10, marginLeft: 30 }}>{this.title}</p></Col>
-                    <Col md={8} />
+                    <Col md={14} />
                     <Col md={10}>{InputBox}</Col>
 
                 </Row>

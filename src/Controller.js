@@ -64,21 +64,21 @@ class Controller {
 
         document.body.onkeydown = (e) => {
             var key = e.keyCode;
-            //spacebar
-            if (key == 32) {
-                this.model.toggleCameraRotation();
-            }
-            //a
-            if (key == 65) {
-                this.model.toggleAxes();
-            }
-            //g
-            if (key == 71) {
-                this.model.toggleGrid();
-            }
-            if (key == 69) {
-                this.view.toggleSidebar();
-            }
+            // //spacebar
+            // if (key == 32) {
+            //     this.model.toggleCameraRotation();
+            // }
+            // //a
+            // if (key == 65) {
+            //     this.model.toggleAxes();
+            // }
+            // //g
+            // if (key == 71) {
+            //     this.model.toggleGrid();
+            // }
+            // if (key == 69) {
+            //     this.view.toggleSidebar();
+            // }
         }
     }
 

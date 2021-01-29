@@ -2,6 +2,7 @@
 import { Sidebar, Whisper, Tooltip, Nav, Icon, Row, Col, Navbar, Container, Content, IconButton } from 'rsuite';
 import React, { Component } from "react";
 import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, VisualElementsOptions, SlicingOptions, ModelsOptions } from './SubMenus'
+import { CatmullRomCurve3 } from 'three';
 
 
 const NavToggle = ({ expand, onChange }) => {
@@ -23,9 +24,12 @@ const NavToggle = ({ expand, onChange }) => {
 
 const navItemStyle = { margin: 6.5 };
 
+var sidebarHeight = window.innerHeight - 56; 
+
 const CustomNav = ({ active, onSelect, ...props }) => {
     return (
-        <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010' }}>
+        <div>
+        <Nav {...props} activeKey={active} onSelect={onSelect} style={{  backgroundColor: '#101010', height: sidebarHeight }}>
             <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
             </Nav.Item>
             {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
@@ -40,11 +44,12 @@ const CustomNav = ({ active, onSelect, ...props }) => {
             {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
             <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
             {/* </Whisper> */}
-            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Visual Elements</Tooltip>)}> */}
-            <Nav.Item eventKey="Visual Elements" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
+            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Reference Frame Frame</Tooltip>)}> */}
+            <Nav.Item eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
             {/* </Whisper> */}
-            <Nav.Item panel style={{ height: 800 }} />
+            
         </Nav>
+        </div>
     );
 };
 
@@ -56,6 +61,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
         menuContent.push(<NavToggle expand={expand} onChange={onChange} />);
     } else {
         menuContent.push(
+            <div  style={{backgroundColor: '#0F131B'}}>
             <Nav>
                 <Navbar appearance="subtle">
                     <Nav pullLeft>
@@ -67,6 +73,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
                 </Navbar>
 
             </Nav>
+            </div>
         );
     }
 
@@ -87,7 +94,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
             case "Slicing":
                 menuContent.push(<SlicingOptions model={model} />);
                 break;
-            case "Visual Elements":
+            case "Reference":
                 menuContent.push(<VisualElementsOptions model={model}/>);
                 break;
         }
@@ -134,6 +141,7 @@ class SideMenu extends Component {
                     style={{ display: 'flex', flexDirection: 'column' }}
                     width={expand ? 356 : 56}
                     collapsible
+                    appearance="default" 
                 >
                     <Container>
                         <Sidebar width={56} >

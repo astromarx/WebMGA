@@ -19,16 +19,50 @@ export class View {
         this.model = m;
         this.header = <Top fps={60} />;
         this.sidebar = <Side model={this.model} />;
+        this.setDefaultStates();
+    }
 
+    setDefaultStates() {
         View.VisualElementsState = this.VisualElementsDefaultState;
         View.AmbientLightState = this.AmbientLightDefaultState;
         View.PointLightState = this.PointLightDefaultState;
         View.DirectionalLightState = this.DirectionalLightDefaultState;
         View.ViewOptionsState = this.ViewOptionsDefaultState;
+        View.ModelState = this.ModelDefaultState;
+
+        for (let i in View.ModelState.sets) {
+            let c = JSON.parse(JSON.stringify(this.ConfigurationDefaultState));
+            c.title = View.ModelState.sets[i];
+            View.ModelState.configurations.push(c);
+        }
+        console.log(View.ModelState);
     }
 
     ModelDefaultState = {
-        fun: 'no'
+        active: 0,
+        reset: 0,
+        sets: ['Set A', 'Set B', 'Set C'],
+        configurations: []
+    }
+
+    ConfigurationDefaultState = {
+        title: '',
+        shape: 'Ellipsoid',
+        parameters: {
+            names: ['X', 'Y', 'Z'],
+            vals: [0.5, 0.2, 0.2]
+        },
+        colour: {
+            r: 255,
+            g: 255,
+            b: 255
+        },
+        envMap: 'None',
+        shininess: 30,
+        reflectivity: 0.5,
+        refractivity: 0.5,
+        colourFromDirector: true,
+        displayAsWireframe: true
     }
 
     ViewOptionsDefaultState = {
@@ -39,11 +73,11 @@ export class View {
             y: 0,
             z: 0
         },
-        LOD : 4
+        LOD: 4
     }
 
     PointLightDefaultState = {
-        reset : 0,
+        reset: 0,
         active: 'point',
         enabled: true,
         colour: {
@@ -60,7 +94,7 @@ export class View {
     }
 
     DirectionalLightDefaultState = {
-        reset : 0,
+        reset: 0,
         active: 'directional',
         enabled: false,
         colour: {
