@@ -4,7 +4,8 @@ import {
     Vector3,
     Quaternion,
     Euler,
-    Color
+    Color,
+    DoubleSide
 } from 'three';
 import * as SHAPE from './Shapes.js';
 import Model from './Model';
@@ -21,13 +22,17 @@ export class Set {
     userColour;
     colourByDirector;
     lod;
+    clippingPlanes;
+    clipIntersections;
 
     elements = []
     meshes = [];
 
-    constructor(n, ot, d) {
+    constructor(n, ot, d, cp, ci) {
         this.name = n;
         this.orientationType = ot;
+        this.clippingPlanes = cp;
+        this.clipIntersections = ci;
         this.setDefaults();
         this.genElements(d);
         this.setElements();
@@ -45,7 +50,13 @@ export class Set {
             } else {
                 c = this.userColour;
             }
-            mat = new MeshPhongMaterial({ color: c });
+
+            mat = new MeshPhongMaterial({ 
+                color: c,
+                side: DoubleSide,
+                clippingPlanes: this.clippingPlanes,
+                clipIntersection: this.clipIntersections
+             });
             mat.wireframe = this.wireframe;
             mat.shininess = this.shininess;
 

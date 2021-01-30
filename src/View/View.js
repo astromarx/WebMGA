@@ -14,6 +14,7 @@ export class View {
     static DirectionalLightState;
     static ViewOptionsState;
     static ModelState;
+    static SlicingState; 
 
     constructor(m) {
         this.model = m;
@@ -29,13 +30,21 @@ export class View {
         View.DirectionalLightState = this.DirectionalLightDefaultState;
         View.ViewOptionsState = this.ViewOptionsDefaultState;
         View.ModelState = this.ModelDefaultState;
+        View.SlicingState = this.SlicingDefaultState;
 
         for (let i in View.ModelState.sets) {
             let c = JSON.parse(JSON.stringify(this.ConfigurationDefaultState));
             c.title = View.ModelState.sets[i];
             View.ModelState.configurations.push(c);
         }
-        console.log(View.ModelState);
+    }
+
+    SlicingDefaultState = {
+        clipIntersection : false,
+        helpers : [false, false, false],
+        x : [-50, 50],
+        y : [-50, 50],
+        z : [-50, 50]
     }
 
     ModelDefaultState = {

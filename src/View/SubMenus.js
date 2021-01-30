@@ -31,9 +31,9 @@ export class ModelsOptions extends React.Component {
         this.updateUserColour = this.updateUserColour.bind(this);
     }
 
-    updateShininess(val){
+    updateShininess(val) {
         this.setState({
-            shininess : val
+            shininess: val
         });
         View.ModelState.configurations[this.state.active].shininess = val;
         this.model.updateShininess(this.state.active, val)
@@ -57,36 +57,36 @@ export class ModelsOptions extends React.Component {
         View.ModelState.configurations[this.state.active].colour = colour;
     }
 
-    toggleColour(){
+    toggleColour() {
         let toggle = !this.state.configurations[this.state.active].colourFromDirector;
         this.setState({
-            colourFromDirector : toggle
+            colourFromDirector: toggle
         });
         View.ModelState.configurations[this.state.active].colourFromDirector = toggle;
         this.model.toggleUserColour(this.state.active, toggle);
     }
 
-    toggleWireframe(){
+    toggleWireframe() {
         let toggle = !this.state.configurations[this.state.active].displayAsWireframe;
         this.setState({
-            displayAsWireframe : toggle
+            displayAsWireframe: toggle
         });
         View.ModelState.configurations[this.state.active].displayAsWireframe = toggle;
         this.model.toggleWireframe(this.state.active, toggle);
     }
 
-    updateParameter(val, index){
+    updateParameter(val, index) {
         this.state.configurations[this.state.active].parameters.vals[index] = parseFloat(val);
         this.reset();
         View.ModelState.configurations[this.state.active].parameters.vals[index] = parseFloat(val);
         this.model.updateShape(this.state.shape, this.state.active, this.state.configurations[this.state.active].parameters);
     }
 
-    reset(){
+    reset() {
         let i;
-        if(this.state.reset > 50){
+        if (this.state.reset > 50) {
             i = 0;
-        }else{
+        } else {
             i = ++this.state.reset;
         }
         this.setState(
@@ -96,9 +96,9 @@ export class ModelsOptions extends React.Component {
         );
     }
 
-    selectSet(val){
-        for(let i = 0; i < this.state.sets.length; i++){
-            if(this.state.sets[i].localeCompare(val) == 0){
+    selectSet(val) {
+        for (let i = 0; i < this.state.sets.length; i++) {
+            if (this.state.sets[i].localeCompare(val) == 0) {
                 this.setState({
                     active: i
                 })
@@ -109,7 +109,7 @@ export class ModelsOptions extends React.Component {
         this.reset();
     }
 
-    selectShape(val){
+    selectShape(val) {
         let parameters = this.model.getParameters(val);
         this.setState(
             {
@@ -121,7 +121,7 @@ export class ModelsOptions extends React.Component {
         this.reset();
         View.ModelState.configurations[this.state.active].shape = val;
         View.ModelState.configurations[this.state.active].parameters = parameters;
-        
+
 
         this.model.updateShape(val, this.state.active, parameters);
     }
@@ -141,7 +141,7 @@ export class ModelsOptions extends React.Component {
                 <ParameterInput f={this.selectSet} selectingSet title="Set" values={sets} active={title} />
                 <ParameterInput f={this.selectShape} title="Shape" values={shapes} active={configState.shape} />
                 <ParameterSet f={this.updateParameter} titles={configState.parameters.names} values={configState.parameters.vals} />
-                <br/>
+                <br />
                 <Divider><strong style={dividerStyle}>  Material </strong></Divider>
 
                 <Row className="show-grid">
@@ -149,16 +149,16 @@ export class ModelsOptions extends React.Component {
                     <Col xs={20}>
                         <Checkbox checked={configState.displayAsWireframe} onClick={this.toggleWireframe}> Display as Wireframe </Checkbox>
                         <Checkbox checked={configState.colourFromDirector} onClick={this.toggleColour}> Colour from Director </Checkbox>
-                        <br/>
+                        <br />
                     </Col>
                 </Row>
-                
+
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
                 <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.r} type={'r'} />
                 <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.g} type={'g'} />
                 <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.b} type={'b'} />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Shininess </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={configState.shininess} f={this.updateShininess}/>
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={configState.shininess} f={this.updateShininess} />
 
             </div>
         );
@@ -263,7 +263,7 @@ export class ViewOptions extends React.Component {
                     </Row>
                 </Grid>
 
-                <ParameterSet titles={["X position", "Y position", "Z position"]} values={[0.0,0.0,0.0]} f={this.updateLookat} />
+                <ParameterSet titles={["X position", "Y position", "Z position"]} values={[0.0, 0.0, 0.0]} f={this.updateLookat} />
                 <br />
 
 
@@ -298,15 +298,88 @@ export class ViewOptions extends React.Component {
     }
 }
 
-export const SlicingOptions = ({ ...props }) => {
+export class SlicingOptions extends React.Component {
 
-    return (
-        <div>
-            <SliceSlider title="X : " />
-            <SliceSlider title="Y : " />
-            <SliceSlider title="Z : " />
-        </div>
-    );
+    constructor(props) {
+        super();
+        this.state = View.SlicingState;
+        this.model = props.model;
+
+        this.toggleIntersection = this.toggleIntersection.bind(this);
+        this.toggleHelper = this.toggleHelper.bind(this);
+        this.updateSlicer = this.updateSlicer.bind(this);
+    }
+
+    toggleIntersection(){
+        let toggle = !this.state.clipIntersection;
+        this.setState(
+            {
+                clipIntersection: toggle
+            }
+        );
+        View.SlicingState.clipIntersection = toggle;
+        //this.model.toggleClipIntersection(toggle);
+    }
+
+    toggleHelper(i){
+        let helpers = this.state.helpers;
+        helpers[i] = !helpers[i]
+        this.setState(
+            {
+                helpers: helpers
+            }
+        );
+        View.SlicingState.helpers = helpers;
+        //this.model.toggleHelper(i);
+    }
+
+    updateSlicer(i, vals){
+        console.log(i);
+        console.log(vals);
+    }
+
+    return() {
+        const state = this.state;
+        return (
+            <div>
+                <Grid fluid>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox checked={state.clipIntersection} onClick={this.toggleIntersection}> Slice Intersection</Checkbox>
+                        </Col>
+                    </Row>
+                </Grid>
+                <SliceSlider title="X : " f={this.updateSlicer} index={0}/>
+                <Grid fluid>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox checked={state.helpers[0]} value={0} onClick={this.toggleHelper}> Show Helper</Checkbox>
+                        </Col>
+                    </Row>
+                </Grid>
+                <SliceSlider title="Y : " f={this.updateSlicer} index={1}/>
+                <Grid fluid>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox checked={state.helpers[1]} value={1} onClick={this.toggleHelper}> Show Helper</Checkbox>
+                        </Col>
+                    </Row>
+                </Grid>
+                <SliceSlider title="Z : " f={this.updateSlicer} index={2}/>
+                <Grid fluid>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox checked={state.helpers[2]} value={2} onClick={this.toggleHelper}> Show Helper</Checkbox>
+                        </Col>
+                    </Row>
+                </Grid>
+            </div>
+        );
+    }
 
 }
 
@@ -614,7 +687,9 @@ export class VisualElementsOptions extends React.Component {
                                     <p>Shapes</p>
                                     <Radio disabled={!enabled} value="box"  >Box </Radio>
                                     <Radio disabled={!enabled} value="sphere" >Sphere </Radio>
-                                    <Radio disabled={!enabled} value="cylinder" >Cylinder </Radio>
+                                    {/* TO DO CYLINDER */}
+                                    <Radio disabled={true} value="cylinder" >Cylinder </Radio>
+
                                 </RadioGroup>
                             </FormGroup>
                             <br />

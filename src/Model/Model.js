@@ -4,7 +4,9 @@ import {
     PerspectiveCamera,
     OrthographicCamera,
     Vector3,
-    BufferGeometry
+    BufferGeometry,
+    PlaneHelper,
+    Plane
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Set from './Set.js'
@@ -34,7 +36,11 @@ export class Model {
     cameraType = 'perspective';
 
     selectedSet;
-    setsGeometry;
+
+    planeConstants;
+    clippingPlanes;
+    clippingHelpers;
+    clipIntersections;
 
     constructor() {
         this.scene = new Scene();
@@ -44,8 +50,11 @@ export class Model {
     setDefault() {
         this.selectedSet = 0;
 
+        this.initClippers();
+
         this.renderer = new WebGLRenderer({ antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.localClippingEnabled = true;
 
         this.lookAt = new Vector3(0, 0, 0);
 
@@ -67,13 +76,38 @@ export class Model {
             this.scene.add(l.light);
         }
         this.scene.add(this.camera);
-
-        this.setsGeometry = null;
     }
 
     update() {
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
+    }
+
+    initClippers() {
+        this.clippingIntersections = false;
+
+        this.clippingPlanes = [
+            new Plane(new Vector3(1, 0, 0), 50),
+            new Plane(new Vector3(-1, 0, 0), 50),
+            new Plane(new Vector3(0, 1, 0), 50),
+            new Plane(new Vector3(0, -1, 0), 50),
+            new Plane(new Vector3(0, 0, 1), 50),
+            new Plane(new Vector3(0, 0, -1), 50)
+        ];
+
+        this.clippingHelpers = [
+            new PlaneHelper(this.clippingPlanes[0], 100, 0xff0000),
+            new PlaneHelper(this.clippingPlanes[1], 100, 0xff0000),
+            new PlaneHelper(this.clippingPlanes[2], 100, 0x00ff00),
+            new PlaneHelper(this.clippingPlanes[3], 100, 0x00ff00),
+            new PlaneHelper(this.clippingPlanes[4], 100, 0x0000ff),
+            new PlaneHelper(this.clippingPlanes[5], 100, 0x0000ff)
+        ];
+
+        for(let helper of this.clippingHelpers){
+            helper.visible = true;
+            this.scene.add(helper);
+        }
     }
 
     updateDimensions() {
@@ -227,13 +261,11 @@ export class Model {
     }
 
     updateBoundingShape(type, enabled) {
-        console.log(type, enabled);
-        if (enabled){
-            this.scene.add(this.tools.genBoundingShape(type, this.setsGeometry));
-        }else{
-            this.scene.remove(this.tools.boundingShape);
+        this.scene.remove(this.tools.boundingShape);
+
+        if (enabled) {
+            this.scene.add(this.tools.genBoundingShape(type, this.sets));
         }
-        
     }
 
 
@@ -345,7 +377,7 @@ export class Model {
             }
             else {
                 setData = set.split("\n");
-                ps = new Set(setData[0], setData[1], setData.slice(2));
+                ps = new Set(setData[0], setData[1], setData.slice(2), this.clippingPlanes, this.clippingIntersections);
                 this.sets.push(ps);
             }
         }

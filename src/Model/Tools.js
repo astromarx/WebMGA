@@ -6,12 +6,19 @@ import {
     Line,
     WireframeGeometry,
     LineSegments,
-    Box3Helper
+    Box3Helper,
+    Box3,
+    SphereBufferGeometry,
+    MeshBasicMaterial,
+    Mesh
 } from 'three';
+import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
 export class Tools {
     subGrid;
     axes = [];
     boundingShape;
+    boundingShapeType;
     setsGeometry;
     size;
     colour;
@@ -29,43 +36,51 @@ export class Tools {
         this.genAxes();
         this.genSubgrid();
 
+        this.boundingShapeType = 'box';
         this.setsGeometry = null;
     }
 
     genBoundingShape(type, sets) {
+        this.boundingShape = null;
+
         if (this.setsGeometry == null) {
-            this.setsGeometry = new BufferGeometry();
-            for (let set in sets) {
-                for (let elem in set.elements) {
-                    for (let geom in elem.geometries) {
-                        this.setsGeometry.merge(geom);
-                    }
+            let geometries = [];
+            for (let set of sets) {
+                for (let elem of set.elements) {
+                    geometries.push(BufferGeometryUtils.mergeBufferGeometries(elem.geometries));
                 }
             }
+            this.setsGeometry = BufferGeometryUtils.mergeBufferGeometries(geometries);
         }
 
-        this.boundingShape = new BufferGeometry();
-        let helper;
+
 
         switch (type) {
             case 'box':
-                this.boundingShape = this.setsGeometry.computeBoundingBox();
-                helper = new Box3Helper( this.setsGeometry.computeBoundingBox(), 0xffff00 );
+                let box = new Box3();
+                this.setsGeometry.computeBoundingBox()
+                box.copy(this.setsGeometry.boundingBox);
+                this.boundingShape = new Box3Helper(box, 0xffff00);
                 break;
             case 'sphere':
-                this.boundingShape.copy(this.setsGeometry.computeBoundingSphere());
+                
+                this.setsGeometry.computeBoundingSphere();
+                let sphere = this.setsGeometry.boundingSphere;
+                console.log(sphere);
+                let geom = new SphereBufferGeometry(sphere.radius, 10, 10);
+                geom.translate(sphere.center.x, sphere.center.y, sphere.center.z);
+                let material = new MeshBasicMaterial({ color: 0xffff00 });
+                material.wireframe = true;
+                this.boundingShape = new Mesh(geom, material);
                 break;
             case 'cylinder':
-                this.boundingShape.copy(this.setsGeometry.computeBoundingBox());
-                break;
+            // this.boundingShape.copy(this.setsGeometry.computeBoundingBox());
+            // break;
         }
 
-        console.log(this.boundingShape);
 
-        const wireframe = new WireframeGeometry(this.boundingShape);
-        const line = new LineSegments(wireframe);
-        
-        return helper;
+
+        return this.boundingShape;
 
     }
 

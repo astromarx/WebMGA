@@ -90,6 +90,8 @@ export class ParameterInput extends React.Component {
 
 export const SliceSlider = (props) => {
     const [value, setValue] = React.useState([-50, 50]);
+    let f = props.f;
+    let i = props.index;
 
     return (
         <div>
@@ -112,6 +114,7 @@ export const SliceSlider = (props) => {
                                     return;
                                 }
                                 setValue([nextValue, end]);
+                                f(i, [nextValue,end]);
                             }}
                         />
                         <InputGroup.Addon>to</InputGroup.Addon>
@@ -125,6 +128,7 @@ export const SliceSlider = (props) => {
                                     return;
                                 }
                                 setValue([start, nextValue]);
+                                f(i, [nextValue,end]);
                             }}
                         />
                     </InputGroup>
