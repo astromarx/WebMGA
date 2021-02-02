@@ -23,7 +23,7 @@ export class Set {
     colourByDirector;
     lod;
     clippingPlanes;
-    clipIntersections;
+    clipIntersection;
 
     elements = []
     meshes = [];
@@ -32,11 +32,23 @@ export class Set {
         this.name = n;
         this.orientationType = ot;
         this.clippingPlanes = cp;
-        this.clipIntersections = ci;
+        this.clipIntersection = ci;
         this.setDefaults();
         this.genElements(d);
         this.setElements();
         this.genMeshes();
+    }
+
+    updateSlicers(i, vals){
+        this.clippingPlanes[2*i+1].constant = vals[1];
+        this.clippingPlanes[2*i].constant = -vals[0];
+    }
+
+    toggleClipIntersection(toggle){
+        this.clipIntersection = toggle;
+        for(let mesh of this.meshes){
+            mesh.material.clipIntersection = toggle;
+        }
     }
 
     genMeshes() {
@@ -55,7 +67,7 @@ export class Set {
                 color: c,
                 side: DoubleSide,
                 clippingPlanes: this.clippingPlanes,
-                clipIntersection: this.clipIntersections
+                clipIntersection: this.clipIntersection
              });
             mat.wireframe = this.wireframe;
             mat.shininess = this.shininess;
@@ -121,13 +133,13 @@ export class Set {
     }
 
     setDefaults() {
-        this.userColour = new Color("#FF55FF");
+        this.userColour = new Color("#FFFFFF");
         this.colourByDirector = true;
         this.wireframe = true;
         this.shininess = 30;
         this.lod = 4;
-        this.type = 'Ellipsoid'
-        this.parameters = Parameters.Ellipsoid.vals
+        this.type = 'Ellipsoid';
+        this.parameters = Parameters.Ellipsoid.vals;
         this.genGeometries();
     }
 

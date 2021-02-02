@@ -30,11 +30,12 @@ export class Light {
                 this.light = new AmbientLight("#0ff0ff", 0.4);
                 break;
             case 'directional':
-                this.light = new DirectionalLight("#ffff00", 0.5);
+                this.light = new DirectionalLight("#ffffff", 0.5);
+                this.light.position.set(-5, 0, -5);
                 break;
             case 'point':
                 this.light = new PointLight("#ffffff", 0.6);
-                this.light.position.set(5, 0, 2);
+                this.light.position.set(5, 0, 5);
                 break;
         }
     }

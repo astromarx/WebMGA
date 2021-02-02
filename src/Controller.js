@@ -6,11 +6,28 @@ import sample from './Samples/sample1.txt';
 class Controller {
     model;
     view;
+    io;
 
     constructor() {
+        this.io = [this.save, this.load, this.export];
         this.model = new Model();
-        this.view = new View(this.model);
+        this.view = new View(this.model, this.io);
         //this.stats = new Stats();
+    }
+
+
+    save = () => {
+        let file = this.model.setsToJSON();
+        file.push(this.view.statesToJSON());
+        console.log(file);
+    }
+
+    load = () => {
+        console.log('load');
+    }
+
+    export = () => {
+        console.log('export');
     }
 
     start = () => {

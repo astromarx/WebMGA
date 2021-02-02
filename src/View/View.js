@@ -16,11 +16,23 @@ export class View {
     static ModelState;
     static SlicingState; 
 
-    constructor(m) {
+    constructor(m, io) {
         this.model = m;
-        this.header = <Top fps={60} />;
+        this.header = <Top fps={60} functions={io} />;
         this.sidebar = <Side model={this.model} />;
         this.setDefaultStates();
+    }
+
+    statesToJSON(){
+        let states = [];
+        states.push(JSON.stringify(View.VisualElementsState));
+        states.push(JSON.stringify(View.SlicingState));
+        states.push(JSON.stringify(View.PointLightState));
+        states.push(JSON.stringify(View.DirectionalLightState));
+        states.push(JSON.stringify(View.AmbientLightState));
+        states.push(JSON.stringify(View.ViewOptionsState));
+        states.push(JSON.stringify(View.ModelState));
+        return states;
     }
 
     setDefaultStates() {
@@ -50,7 +62,7 @@ export class View {
     ModelDefaultState = {
         active: 0,
         reset: 0,
-        sets: ['Set A', 'Set B', 'Set C'],
+        sets: ['Set A'],
         configurations: []
     }
 
@@ -93,29 +105,29 @@ export class View {
             r: 255,
             g: 255,
             b: 255,
-            i: 100
+            i: 60
         },
         position: {
-            x: 0,
+            x: 5,
             y: 0,
-            z: 0
+            z: 5
         }
     }
 
     DirectionalLightDefaultState = {
         reset: 0,
         active: 'directional',
-        enabled: false,
+        enabled: true,
         colour: {
-            r: 70,
-            g: 80,
-            b: 90,
-            i: 100
+            r: 255,
+            g: 255,
+            b: 255,
+            i: 50
         },
         position: {
-            x: 0,
+            x: -5,
             y: 0,
-            z: 0
+            z: -5
         }
 
     }
@@ -136,10 +148,10 @@ export class View {
 
     AmbientLightDefaultState = {
         ambientLightColour: {
-            r: 50,
-            g: 50,
-            b: 50,
-            i: 90
+            r: 15,
+            g: 240,
+            b: 255,
+            i: 40
         },
         backgroundColour: {
             r: 0,

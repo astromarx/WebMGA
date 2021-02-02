@@ -23,7 +23,7 @@ const ExportDropdown = ({ ...props }) => (
         </FormGroup>
 
         <FlexboxGrid justify='center'>
-            <Button appearance='primary'> Export </Button>
+            <Button appearance='primary' onClick={props.f}> Export </Button>
         </FlexboxGrid>
 
         <Dropdown.Item panel style={{ padding: 5, width: 140 }}></Dropdown.Item>
@@ -50,7 +50,6 @@ const SamplesDropdown = ({ ...props }) => (
 );
 
 
-
 const Top = ({ ...props }) => (
     <Header style={{height : 56}}>
         <Navbar>
@@ -61,9 +60,9 @@ const Top = ({ ...props }) => (
                         <Nav.Item appearance="subtle" icon={<Icon icon="keyboard-o" />}>Reference</Nav.Item>
                         <Nav.Item appearance="subtle" icon={<Icon icon="question" />}>Manual</Nav.Item>
                         <SamplesDropdown title="Samples" trigger='click' placement="bottomEnd" icon={<Icon icon="folder-o" />} />
-                        <ExportDropdown title="Export" trigger='click' placement="bottomEnd" icon={<Icon icon="export" />} />
-                        <Nav.Item appearance="subtle" icon={<Icon icon="file-download" />}>Save</Nav.Item>
-                        <Nav.Item icon={<Icon icon="file-upload" />} >Upload</Nav.Item>
+                        <ExportDropdown title="Export" trigger='click' placement="bottomEnd" icon={<Icon icon="export" />} f={props.functions[2]} />
+                        <Nav.Item appearance="subtle" icon={<Icon icon="file-download" />} onSelect={props.functions[0]}>Save</Nav.Item>
+                        <Nav.Item icon={<Icon icon="file-upload" />} onSelect={props.functions[1]}>Upload</Nav.Item>
                     </ButtonToolbar>
                 </Nav>
                 <Nav pullLeft>

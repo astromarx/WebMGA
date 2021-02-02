@@ -86,16 +86,14 @@ export class ParameterInput extends React.Component {
     }
 }
 
-
-
 export const SliceSlider = (props) => {
-    const [value, setValue] = React.useState([-50, 50]);
+    const [value, setValue] = React.useState(props.vals);
     let f = props.f;
     let i = props.index;
 
     return (
         <div>
-            <br /><br />
+            <br/>
             <Row>
                 <Col md={5}>
                     <p style={{ marginTop: 10, marginLeft: 30 }}>{props.title}</p>
@@ -104,31 +102,32 @@ export const SliceSlider = (props) => {
                 <Col md={16}>
                     <InputGroup>
                         <InputNumber
-                            min={-50}
-                            max={50}
+                            min={-50.0}
+                            max={50.0}
                             value={value[0]}
-
+                            step={0.1}
                             onChange={nextValue => {
                                 const [start, end] = value;
-                                if (nextValue > end) {
+                                if (parseFloat(nextValue) > end) {
                                     return;
                                 }
-                                setValue([nextValue, end]);
-                                f(i, [nextValue,end]);
+                                setValue([parseFloat(nextValue), end]);
+                                f(i, [parseFloat(nextValue),end]);
                             }}
                         />
                         <InputGroup.Addon>to</InputGroup.Addon>
                         <InputNumber
-                            min={-50}
-                            max={50}
+                            min={-50.0}
+                            max={50.0}
                             value={value[1]}
-                            onChange={nextValue => {
+                            step={0.1}
+                            onChange={(nextValue) => {
                                 const [start, end] = value;
-                                if (start > nextValue) {
+                                if (start > parseFloat(nextValue)) {
                                     return;
                                 }
-                                setValue([start, nextValue]);
-                                f(i, [nextValue,end]);
+                                setValue([start, parseFloat(nextValue)]);
+                                f(i, [start, parseFloat(nextValue)]);
                             }}
                         />
                     </InputGroup>
@@ -137,13 +136,15 @@ export const SliceSlider = (props) => {
             <Row>
                 <Col md={21}>
                     <RangeSlider
-                        min={-50}
-                        max={50}
+                        min={-50.0}
+                        max={50.0}
                         progress
                         style={{ marginLeft: 35, marginTop: 30 }}
                         value={value}
                         onChange={value => {
                             setValue(value);
+
+                            f(i, value);
                         }}
                     />
                 </Col>
@@ -203,36 +204,4 @@ export const CustomSlider = (props) => {
         </Row>
     );
 
-}
-
-
-export const PositionForm = (props) => {
-    const title = props.title;
-
-    return (
-        <div>
-            <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> {title} </p>
-            <Panel style={{ height: 8 }} />
-            <FlexboxGrid justify='center'>
-                <Row className="show-grid">
-
-                    <Form layout="inline">
-
-                        <FormGroup>
-                            <ControlLabel>x</ControlLabel>
-                            <FormControl name="x" style={{ width: 55 }} />
-                        </FormGroup>
-                        <FormGroup>
-                            <ControlLabel>y</ControlLabel>
-                            <FormControl name="y" style={{ width: 55 }} />
-                        </FormGroup>
-                        <FormGroup>
-                            <ControlLabel>z</ControlLabel>
-                            <FormControl name="z" style={{ width: 55 }} />
-                        </FormGroup>
-                    </Form>
-                </Row>
-            </FlexboxGrid>
-        </div>
-    );
 }

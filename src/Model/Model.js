@@ -78,6 +78,14 @@ export class Model {
         this.scene.add(this.camera);
     }
 
+    setsToJSON(){
+        let setsJSON = [];
+        for (let s of this.sets){
+            setsJSON.push(JSON.stringify(s));
+        }
+        return setsJSON;
+    }
+
     update() {
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
@@ -105,8 +113,25 @@ export class Model {
         ];
 
         for(let helper of this.clippingHelpers){
-            helper.visible = true;
+            helper.visible = false;
             this.scene.add(helper);
+        }
+    }
+
+    toggleClipIntersection(toggle){
+        for(let set of this.sets){
+            set.toggleClipIntersection(toggle);
+        }
+    }
+
+    toggleHelper(i, toggle){
+        this.clippingHelpers[2*i].visible = toggle;
+        this.clippingHelpers[2*i+1].visible = toggle;
+    }
+
+    updateSlicer(i, vals){
+        for(let set of this.sets){
+            set.updateSlicers(i, vals);
         }
     }
 
@@ -126,12 +151,12 @@ export class Model {
         if (type == 'perspective') {
             this.camera = new PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
         } else {
-            this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, 0.1, 1000);
+            this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, 0.01, 10000);
             this.camera.zoom = 10;
             console.log(this.camera.zoom);
         }
 
-        this.camera.position.z = 30;
+        this.camera.position.z = -30;
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.target = this.lookAt;

@@ -306,11 +306,14 @@ export class SlicingOptions extends React.Component {
         this.model = props.model;
 
         this.toggleIntersection = this.toggleIntersection.bind(this);
-        this.toggleHelper = this.toggleHelper.bind(this);
+        this.toggleHelperX = this.toggleHelperX.bind(this);
+        this.toggleHelperY = this.toggleHelperY.bind(this);
+        this.toggleHelperZ = this.toggleHelperZ.bind(this);
+        this.updateHelpers = this.updateHelpers.bind(this);
         this.updateSlicer = this.updateSlicer.bind(this);
     }
 
-    toggleIntersection(){
+    toggleIntersection() {
         let toggle = !this.state.clipIntersection;
         this.setState(
             {
@@ -318,62 +321,97 @@ export class SlicingOptions extends React.Component {
             }
         );
         View.SlicingState.clipIntersection = toggle;
-        //this.model.toggleClipIntersection(toggle);
+        this.model.toggleClipIntersection(toggle);
     }
 
-    toggleHelper(i){
-        let helpers = this.state.helpers;
-        helpers[i] = !helpers[i]
+    updateHelpers(helpers){
         this.setState(
             {
                 helpers: helpers
             }
         );
         View.SlicingState.helpers = helpers;
-        //this.model.toggleHelper(i);
     }
 
-    updateSlicer(i, vals){
-        console.log(i);
-        console.log(vals);
+    toggleHelperX(){
+        let helpers = this.state.helpers;
+        let toggle = !helpers[0];
+        helpers[0] = toggle;
+        this.updateHelpers(helpers);
+        this.model.toggleHelper(0, toggle);
     }
 
-    return() {
+    toggleHelperY(){
+        let helpers = this.state.helpers;
+        let toggle = !helpers[1];
+        helpers[1] = toggle;
+        this.updateHelpers(helpers);
+        this.model.toggleHelper(1, toggle);
+    }
+
+    toggleHelperZ(){
+        let helpers = this.state.helpers;
+        let toggle = !helpers[2];
+        helpers[2] = toggle;
+        this.updateHelpers(helpers);
+        this.model.toggleHelper(2, toggle);
+    }
+
+    updateSlicer(i, vals) {
+        switch (i) {
+            case 0:
+                View.SlicingState.x = vals;
+                break;
+            case 1:
+                View.SlicingState.y = vals;
+                break;
+            case 2:
+                View.SlicingState.z = vals;
+                break;
+        }
+
+        this.model.updateSlicer(i, vals);
+    }
+    render() {
         const state = this.state;
         return (
             <div>
+                <br />
                 <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
-                        <Col xs={12}>
+                        <Col xs={20}>
                             <Checkbox checked={state.clipIntersection} onClick={this.toggleIntersection}> Slice Intersection</Checkbox>
                         </Col>
                     </Row>
                 </Grid>
-                <SliceSlider title="X : " f={this.updateSlicer} index={0}/>
+                <SliceSlider title="X : " f={this.updateSlicer} index={0} vals={state.x}/>
+                <br />
                 <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox checked={state.helpers[0]} value={0} onClick={this.toggleHelper}> Show Helper</Checkbox>
+                            <Checkbox checked={state.helpers[0]} onClick={this.toggleHelperX}> Show Helper</Checkbox>
                         </Col>
                     </Row>
                 </Grid>
-                <SliceSlider title="Y : " f={this.updateSlicer} index={1}/>
+                <SliceSlider title="Y : " f={this.updateSlicer} index={1} vals={state.y}/>
+                <br />
                 <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox checked={state.helpers[1]} value={1} onClick={this.toggleHelper}> Show Helper</Checkbox>
+                            <Checkbox checked={state.helpers[1]} onClick={this.toggleHelperY}> Show Helper</Checkbox>
                         </Col>
                     </Row>
                 </Grid>
-                <SliceSlider title="Z : " f={this.updateSlicer} index={2}/>
+                <SliceSlider title="Z : " f={this.updateSlicer} index={2} vals={state.z}/>
+                <br />
                 <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox checked={state.helpers[2]} value={2} onClick={this.toggleHelper}> Show Helper</Checkbox>
+                            <Checkbox checked={state.helpers[2]} onClick={this.toggleHelperZ}> Show Helper</Checkbox>
                         </Col>
                     </Row>
                 </Grid>
@@ -437,6 +475,14 @@ export class AdditionalLightOptions extends React.Component {
             this.updateColour(0, 'i');
         }
         this.setState({ reset: ++this.reset });
+
+        if (this.state.active.localeCompare('point') == 0) {
+            View.PointLightState.colour.i = intensity;
+        } else {
+            View.DirectionalLightState.colour.i = intensity;
+        }
+
+
     }
     updateColour(value, type) {
         let colour = this.state.colour;
