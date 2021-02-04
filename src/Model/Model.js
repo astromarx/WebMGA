@@ -31,6 +31,7 @@ export class Model {
 
     gridEnabled = false;
     axesEnabled = false;
+    boundingShapeEnabled = false;
     sidebarExpanded = false;
 
     cameraType = 'perspective';
@@ -78,12 +79,18 @@ export class Model {
         this.scene.add(this.camera);
     }
 
-    setsToJSON(){
-        let setsJSON = [];
-        for (let s of this.sets){
-            setsJSON.push(JSON.stringify(s));
+    toJSON(){
+        let model = new Object();
+        let temp = new Object();
+        model.sets = [];
+        for (let set of this.sets){
+            temp.name = set.name;
+            temp.orientationType = set.orientationType;
+            temp.positions = set.positions;
+            temp.orientations = set.orientations;
+            model.sets.push(temp);
         }
-        return setsJSON;
+        return JSON.stringify(model);
     }
 
     update() {
@@ -203,9 +210,10 @@ export class Model {
         this.lighting[type].updatePosition(pos.x, pos.y, pos.z);
     }
 
-    updateGridColour(rgb) {
+    updateReferenceColour(rgb) {
         let passGrid = false;
         let passAxes = false;
+        let passShape = false;
         if (this.gridEnabled) {
             this.toggleGrid();
             passGrid = true;
@@ -214,13 +222,20 @@ export class Model {
             this.toggleAxes();
             passAxes = true;
         }
-        var colour = Model.rgbToHex(rgb.r, rgb.g, rgb.b);
-        this.tools.updateColour(colour);
+        if(this.boundingShapeEnabled){
+            this.updateBoundingShape('',false);
+            passShape = true;
+        }
+        this.tools.updateColour(Model.rgbToHex(rgb.r, rgb.g, rgb.b));
         if (passGrid) {
             this.toggleGrid();
         }
         if (passAxes) {
             this.toggleAxes();
+        }
+        if(passShape){
+            this.updateBoundingShape(this.tools.boundingShapeType, true);
+            passShape = true;
         }
     }
 
@@ -286,8 +301,8 @@ export class Model {
     }
 
     updateBoundingShape(type, enabled) {
+        this.boundingShapeEnabled = enabled;
         this.scene.remove(this.tools.boundingShape);
-
         if (enabled) {
             this.scene.add(this.tools.genBoundingShape(type, this.sets));
         }

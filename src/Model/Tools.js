@@ -41,6 +41,8 @@ export class Tools {
     }
 
     genBoundingShape(type, sets) {
+        this.boundingShapeType = type;
+        
         this.boundingShape = null;
 
         if (this.setsGeometry == null) {
@@ -60,22 +62,21 @@ export class Tools {
                 let box = new Box3();
                 this.setsGeometry.computeBoundingBox()
                 box.copy(this.setsGeometry.boundingBox);
-                this.boundingShape = new Box3Helper(box, 0xffff00);
+                this.boundingShape = new Box3Helper(box, this.colour);
                 break;
             case 'sphere':
-                
                 this.setsGeometry.computeBoundingSphere();
                 let sphere = this.setsGeometry.boundingSphere;
                 console.log(sphere);
                 let geom = new SphereBufferGeometry(sphere.radius, 10, 10);
                 geom.translate(sphere.center.x, sphere.center.y, sphere.center.z);
-                let material = new MeshBasicMaterial({ color: 0xffff00 });
+                let material = new MeshBasicMaterial({ color: this.colour });
                 material.wireframe = true;
                 this.boundingShape = new Mesh(geom, material);
                 break;
             case 'cylinder':
-            // this.boundingShape.copy(this.setsGeometry.computeBoundingBox());
-            // break;
+                // this.boundingShape.copy(this.setsGeometry.computeBoundingBox());
+                // break;
         }
 
 

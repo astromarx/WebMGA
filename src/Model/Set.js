@@ -13,7 +13,7 @@ import Parameters from './Parameters';
 
 export class Set {
     name;
-    type;
+    shapeType;
     parameters;
     shape;
     orientationType;
@@ -25,6 +25,8 @@ export class Set {
     clippingPlanes;
     clipIntersection;
 
+    positions = [];
+    orientations = [];
     elements = []
     meshes = [];
 
@@ -124,6 +126,9 @@ export class Set {
             position = attributes.slice(0, 3);
             orientation = attributes.slice(3);
 
+            this.positions.push(position);
+            this.orientations.push(orientation);
+
             euler = this.getRotations(this.orientationType, orientation);
             colour = this.colourFromOrientation(euler);
 
@@ -138,13 +143,13 @@ export class Set {
         this.wireframe = true;
         this.shininess = 30;
         this.lod = 4;
-        this.type = 'Ellipsoid';
+        this.shapeType = 'Ellipsoid';
         this.parameters = Parameters.Ellipsoid.vals;
         this.genGeometries();
     }
 
     genGeometries() {
-        switch (this.type) {
+        switch (this.shapeType) {
             case 'Ellipsoid':
                 this.shape = new SHAPE.Ellipsoid(...this.parameters);
                 break;

@@ -8,7 +8,7 @@ export class View {
     model;
     expanded;
 
-    static VisualElementsState;
+    static ReferenceState;
     static AmbientLightState;
     static PointLightState;
     static DirectionalLightState;
@@ -23,20 +23,26 @@ export class View {
         this.setDefaultStates();
     }
 
-    statesToJSON(){
-        let states = [];
-        states.push(JSON.stringify(View.VisualElementsState));
-        states.push(JSON.stringify(View.SlicingState));
-        states.push(JSON.stringify(View.PointLightState));
-        states.push(JSON.stringify(View.DirectionalLightState));
-        states.push(JSON.stringify(View.AmbientLightState));
+    toJSON(){
+        let states = new Object();
+
+        //states;
+
+        for (let i in View.ModelState.sets) {
+            View.ModelState.configurations.push('howdy');
+        }
+
         states.push(JSON.stringify(View.ViewOptionsState));
-        states.push(JSON.stringify(View.ModelState));
+        states.push(JSON.stringify(View.AmbientLightState));
+        states.push(JSON.stringify(View.DirectionalLightState));
+        states.push(JSON.stringify(View.PointLightState));
+        states.push(JSON.stringify(View.ReferenceState));
+        states.push(JSON.stringify(View.SlicingState));
         return states;
     }
 
     setDefaultStates() {
-        View.VisualElementsState = this.VisualElementsDefaultState;
+        View.ReferenceState = this.ReferenceDefaultState;
         View.AmbientLightState = this.AmbientLightDefaultState;
         View.PointLightState = this.PointLightDefaultState;
         View.DirectionalLightState = this.DirectionalLightDefaultState;
@@ -78,10 +84,7 @@ export class View {
             g: 255,
             b: 255
         },
-        envMap: 'None',
         shininess: 30,
-        reflectivity: 0.5,
-        refractivity: 0.5,
         colourFromDirector: true,
         displayAsWireframe: true
     }
@@ -132,15 +135,15 @@ export class View {
 
     }
 
-    VisualElementsDefaultState = {
+    ReferenceDefaultState = {
         boundingShapeEnabled: false,
         activeShape: 'box',
         showAxes: false,
         showGrid: false,
         gridColour: {
-            r: 50,
-            g: 90,
-            b: 90,
+            r: 255,
+            g: 255,
+            b: 255,
         },
         size: 50,
 

@@ -1,6 +1,6 @@
 
 import { Dropdown, Sidebar, Sidenav, Nav, Icon, Navbar, ButtonGroup, Tooltip, Whisper, Divider, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, IconButton } from 'rsuite';
-import React, { Component, useState } from "react";
+import React from "react";
 import { SliceSlider, ParameterInput, ParameterSet, CustomSlider } from './Tools'
 import View from './View'
 
@@ -76,10 +76,12 @@ export class ModelsOptions extends React.Component {
     }
 
     updateParameter(val, index) {
-        this.state.configurations[this.state.active].parameters.vals[index] = parseFloat(val);
+        let parameter = parseFloat(val);
+        let globalState = View.ModelState.configurations[this.state.active];
+        this.state.configurations[this.state.active].parameters.vals[index] = parameter;
+        globalState.parameters.vals[index] = parameter;
+        this.model.updateShape(globalState.shape, this.state.active, globalState.parameters);
         this.reset();
-        View.ModelState.configurations[this.state.active].parameters.vals[index] = parseFloat(val);
-        this.model.updateShape(this.state.shape, this.state.active, this.state.configurations[this.state.active].parameters);
     }
 
     reset() {
@@ -117,12 +119,9 @@ export class ModelsOptions extends React.Component {
                 parameters: parameters
             }
         );
-
         this.reset();
         View.ModelState.configurations[this.state.active].shape = val;
         View.ModelState.configurations[this.state.active].parameters = parameters;
-
-
         this.model.updateShape(val, this.state.active, parameters);
     }
 
@@ -324,7 +323,7 @@ export class SlicingOptions extends React.Component {
         this.model.toggleClipIntersection(toggle);
     }
 
-    updateHelpers(helpers){
+    updateHelpers(helpers) {
         this.setState(
             {
                 helpers: helpers
@@ -333,7 +332,7 @@ export class SlicingOptions extends React.Component {
         View.SlicingState.helpers = helpers;
     }
 
-    toggleHelperX(){
+    toggleHelperX() {
         let helpers = this.state.helpers;
         let toggle = !helpers[0];
         helpers[0] = toggle;
@@ -341,7 +340,7 @@ export class SlicingOptions extends React.Component {
         this.model.toggleHelper(0, toggle);
     }
 
-    toggleHelperY(){
+    toggleHelperY() {
         let helpers = this.state.helpers;
         let toggle = !helpers[1];
         helpers[1] = toggle;
@@ -349,7 +348,7 @@ export class SlicingOptions extends React.Component {
         this.model.toggleHelper(1, toggle);
     }
 
-    toggleHelperZ(){
+    toggleHelperZ() {
         let helpers = this.state.helpers;
         let toggle = !helpers[2];
         helpers[2] = toggle;
@@ -385,7 +384,7 @@ export class SlicingOptions extends React.Component {
                         </Col>
                     </Row>
                 </Grid>
-                <SliceSlider title="X : " f={this.updateSlicer} index={0} vals={state.x}/>
+                <SliceSlider title="X : " f={this.updateSlicer} index={0} vals={state.x} />
                 <br />
                 <Grid fluid>
                     <Row className="show-grid">
@@ -395,7 +394,7 @@ export class SlicingOptions extends React.Component {
                         </Col>
                     </Row>
                 </Grid>
-                <SliceSlider title="Y : " f={this.updateSlicer} index={1} vals={state.y}/>
+                <SliceSlider title="Y : " f={this.updateSlicer} index={1} vals={state.y} />
                 <br />
                 <Grid fluid>
                     <Row className="show-grid">
@@ -405,7 +404,7 @@ export class SlicingOptions extends React.Component {
                         </Col>
                     </Row>
                 </Grid>
-                <SliceSlider title="Z : " f={this.updateSlicer} index={2} vals={state.z}/>
+                <SliceSlider title="Z : " f={this.updateSlicer} index={2} vals={state.z} />
                 <br />
                 <Grid fluid>
                     <Row className="show-grid">
@@ -639,21 +638,21 @@ export class AmbientLightOptions extends React.Component {
     }
 }
 
-export class VisualElementsOptions extends React.Component {
+export class ReferenceOptions extends React.Component {
     constructor(props) {
         super();
-        this.state = View.VisualElementsState;
+        this.state = View.ReferenceState;
 
         this.model = props.model;
         this.toggleBoundingShapeEnabled = this.toggleBoundingShapeEnabled.bind(this);
         this.selectShape = this.selectShape.bind(this);
         this.toggleAxes = this.toggleAxes.bind(this);
         this.toggleGrid = this.toggleGrid.bind(this);
-        this.updateGridColour = this.updateGridColour.bind(this);
+        this.updateColour = this.updateColour.bind(this);
         this.updateGridSize = this.updateGridSize.bind(this);
 
     }
-    updateGridColour(value, type) {
+    updateColour(value, type) {
         let rgb = this.state.gridColour;
 
         switch (type) {
@@ -667,26 +666,26 @@ export class VisualElementsOptions extends React.Component {
                 rgb.b = value;
                 break;
         }
-        this.model.updateGridColour(rgb);
-        View.VisualElementsState.gridColour = rgb;
+        this.model.updateReferenceColour(rgb);
+        View.ReferenceState.gridColour = rgb;
     }
     updateGridSize(value) {
         this.model.updateGridSize(value);
-        View.VisualElementsState.size = value;
+        View.ReferenceState.size = value;
     }
     toggleBoundingShapeEnabled() {
-        let toggle = !View.VisualElementsState.boundingShapeEnabled;
+        let toggle = !View.ReferenceState.boundingShapeEnabled;
         this.setState({
             boundingShapeEnabled: toggle
         });
-        View.VisualElementsState.boundingShapeEnabled = toggle;
+        View.ReferenceState.boundingShapeEnabled = toggle;
         this.model.updateBoundingShape(this.state.activeShape, toggle);
     }
     selectShape(value) {
         this.setState({
             activeShape: value
         });
-        View.VisualElementsState.activeShape = value;
+        View.ReferenceState.activeShape = value;
         this.model.updateBoundingShape(value, this.state.boundingShapeEnabled);
     }
     toggleAxes() {
@@ -694,14 +693,14 @@ export class VisualElementsOptions extends React.Component {
             showAxes: !this.state.showAxes
         });
         this.model.toggleAxes();
-        View.VisualElementsState.showAxes = !View.VisualElementsState.showAxes;
+        View.ReferenceState.showAxes = !View.ReferenceState.showAxes;
     }
     toggleGrid() {
         this.setState({
             showGrid: !this.state.showGrid
         });
         this.model.toggleGrid();
-        View.VisualElementsState.showGrid = !View.VisualElementsState.showGrid;
+        View.ReferenceState.showGrid = !View.ReferenceState.showGrid;
     }
 
     render() {
@@ -713,24 +712,21 @@ export class VisualElementsOptions extends React.Component {
         const size = this.state.size;
         return (
             <div>
-                <Divider><strong style={dividerStyle}> Bounding Shape </strong></Divider>
+                <Divider><strong style={dividerStyle}> Elements </strong></Divider>
 
                 <Grid fluid>
 
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox checked={enabled} onClick={this.toggleBoundingShapeEnabled}> Enabled </Checkbox>
-                            <br />
-
+                            <Checkbox checked={enabled} onClick={this.toggleBoundingShapeEnabled}> Bounding Shape </Checkbox>
                         </Col>
                     </Row>
                     <Row className="show-grid">
-                        <Col xs={2} />
+                        <Col xs={3} />
                         <Col xs={12}>
                             <FormGroup controlId="radioList">
                                 <RadioGroup name="radioList" value={activeShape} onChange={this.selectShape}>
-                                    <p>Shapes</p>
                                     <Radio disabled={!enabled} value="box"  >Box </Radio>
                                     <Radio disabled={!enabled} value="sphere" >Sphere </Radio>
                                     {/* TO DO CYLINDER */}
@@ -738,14 +734,10 @@ export class VisualElementsOptions extends React.Component {
 
                                 </RadioGroup>
                             </FormGroup>
-                            <br />
                         </Col>
                     </Row>
-                </Grid>
-                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> PRINT SHAPE INFO HERE</p>
+                    <br/>
 
-                <Divider><strong style={dividerStyle}> Grid </strong></Divider>
-                <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
@@ -753,15 +745,18 @@ export class VisualElementsOptions extends React.Component {
                             <Checkbox checked={showGrid} onClick={this.toggleGrid}> Show Grid</Checkbox>
                         </Col>
                     </Row>
+
+                    <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Size </p>
+                    <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateGridSize} />
+
                 </Grid>
 
-                <br />
+                <Divider><strong style={dividerStyle}> Colour </strong></Divider>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.r} f={this.updateGridColour} type={'r'} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.g} f={this.updateGridColour} type={'g'} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.b} f={this.updateGridColour} type={'b'} />
-                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Size </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateGridSize} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.r} f={this.updateColour} type={'r'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.g} f={this.updateColour} type={'g'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.b} f={this.updateColour} type={'b'} />
+
 
                 <br />
             </div>

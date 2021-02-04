@@ -1,7 +1,7 @@
 
 import { Sidebar, Whisper, Tooltip, Nav, Icon, Row, Col, Navbar, Container, Content, IconButton } from 'rsuite';
 import React, { Component } from "react";
-import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, VisualElementsOptions, SlicingOptions, ModelsOptions } from './SubMenus'
+import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, ReferenceOptions, SlicingOptions, ModelsOptions } from './SubMenus'
 import { CatmullRomCurve3 } from 'three';
 
 
@@ -95,7 +95,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
                 menuContent.push(<SlicingOptions model={model} />);
                 break;
             case "Reference":
-                menuContent.push(<VisualElementsOptions model={model}/>);
+                menuContent.push(<ReferenceOptions model={model}/>);
                 break;
         }
     }
