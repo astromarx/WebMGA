@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "/WebMGA/static/js/main.5099ae71.chunk.js",
-    "main.js.map": "/WebMGA/static/js/main.5099ae71.chunk.js.map",
+    "main.js": "/WebMGA/static/js/main.a7a78f91.chunk.js",
+    "main.js.map": "/WebMGA/static/js/main.a7a78f91.chunk.js.map",
     "runtime-main.js": "/WebMGA/static/js/runtime-main.1ba9f4a7.js",
     "runtime-main.js.map": "/WebMGA/static/js/runtime-main.1ba9f4a7.js.map",
     "static/css/2.66d6108a.chunk.css": "/WebMGA/static/css/2.66d6108a.chunk.css",
@@ -15,6 +15,6 @@
     "static/js/runtime-main.1ba9f4a7.js",
     "static/css/2.66d6108a.chunk.css",
     "static/js/2.ffe2d447.chunk.js",
-    "static/js/main.5099ae71.chunk.js"
+    "static/js/main.a7a78f91.chunk.js"
   ]
 }
