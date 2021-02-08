@@ -4,7 +4,6 @@ import {
     PerspectiveCamera,
     OrthographicCamera,
     Vector3,
-    BufferGeometry,
     PlaneHelper,
     Plane
 } from 'three';
@@ -12,7 +11,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Set from './Set.js'
 import Light from './Light.js'
 import Tools from './Tools.js'
-import Parameters from './Parameters.js'
 
 export class Model {
     sets = [];
@@ -50,10 +48,9 @@ export class Model {
 
     setDefault() {
         this.selectedSet = 0;
-
         this.initClippers();
 
-        this.renderer = new WebGLRenderer({ antialias: true });
+        this.renderer = new WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.localClippingEnabled = true;
 
@@ -68,29 +65,28 @@ export class Model {
             new Light('point')];
 
         this.tools = new Tools(50, 0xffffff);
-
         this.bgColour = "#000000";
         this.renderer.setClearColor(this.bgColour);
-
 
         for (let l of this.lighting) {
             this.scene.add(l.light);
         }
         this.scene.add(this.camera);
+        this.lod = 1;
     }
 
-    toJSON(){
-        let model = new Object();
-        let temp = new Object();
+    getData() {
+        let model = {};
+        let temp = {};
         model.sets = [];
-        for (let set of this.sets){
+        for (let set of this.sets) {
             temp.name = set.name;
             temp.orientationType = set.orientationType;
             temp.positions = set.positions;
             temp.orientations = set.orientations;
             model.sets.push(temp);
         }
-        return JSON.stringify(model);
+        return model;
     }
 
     update() {
@@ -119,25 +115,25 @@ export class Model {
             new PlaneHelper(this.clippingPlanes[5], 100, 0x0000ff)
         ];
 
-        for(let helper of this.clippingHelpers){
+        for (let helper of this.clippingHelpers) {
             helper.visible = false;
             this.scene.add(helper);
         }
     }
 
-    toggleClipIntersection(toggle){
-        for(let set of this.sets){
+    toggleClipIntersection(toggle) {
+        for (let set of this.sets) {
             set.toggleClipIntersection(toggle);
         }
     }
 
-    toggleHelper(i, toggle){
-        this.clippingHelpers[2*i].visible = toggle;
-        this.clippingHelpers[2*i+1].visible = toggle;
+    toggleHelper(i, toggle) {
+        this.clippingHelpers[2 * i].visible = toggle;
+        this.clippingHelpers[2 * i + 1].visible = toggle;
     }
 
-    updateSlicer(i, vals){
-        for(let set of this.sets){
+    updateSlicer(i, vals) {
+        for (let set of this.sets) {
             set.updateSlicers(i, vals);
         }
     }
@@ -155,22 +151,23 @@ export class Model {
     }
 
     setCamera(type) {
-        if (type == 'perspective') {
+        this.cameraType = type;
+
+        if (type === 'perspective') {
             this.camera = new PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
         } else {
-            this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, 0.01, 10000);
-            this.camera.zoom = 10;
-            console.log(this.camera.zoom);
+            this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, -100, 5000);
+            this.camera.zoom = 30;
+            this.camera.updateProjectionMatrix();
         }
 
         this.camera.position.z = -30;
-
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.target = this.lookAt;
     }
 
     updateCamera() {
-        if (this.cameraType == 'perspective') {
+        if (this.cameraType === 'perspective') {
             this.camera.aspect = this.width / this.height;
         } else {
             this.camera.left = this.width / - 2;
@@ -222,8 +219,8 @@ export class Model {
             this.toggleAxes();
             passAxes = true;
         }
-        if(this.boundingShapeEnabled){
-            this.updateBoundingShape('',false);
+        if (this.boundingShapeEnabled) {
+            this.updateBoundingShape('', false);
             passShape = true;
         }
         this.tools.updateColour(Model.rgbToHex(rgb.r, rgb.g, rgb.b));
@@ -233,7 +230,7 @@ export class Model {
         if (passAxes) {
             this.toggleAxes();
         }
-        if(passShape){
+        if (passShape) {
             this.updateBoundingShape(this.tools.boundingShapeType, true);
             passShape = true;
         }
@@ -295,7 +292,7 @@ export class Model {
     static rgbToHex(r, g, b) {
         function componentToHex(c) {
             var hex = c.toString(16);
-            return hex.length == 1 ? "0" + hex : hex;
+            return hex.length === 1 ? "0" + hex : hex;
         }
         return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
     }
@@ -310,37 +307,7 @@ export class Model {
 
 
     getParameters(val) {
-        let parameters;
-
-        switch (val) {
-            case 'Ellipsoid':
-                parameters = Parameters.Ellipsoid;
-                break;
-            case 'Spherocylinder':
-                parameters = Parameters.Spherocylinder;
-                break;
-            case 'Spheroplatelet':
-                parameters = Parameters.Spheroplatelet;
-                break;
-            case 'Cut Sphere':
-                parameters = Parameters.CutSphere;
-                break;
-            case 'Sphere':
-                parameters = Parameters.Sphere;
-                break;
-            case 'Cone':
-                parameters = Parameters.Cone;
-                break;
-            case 'Cylinder':
-                parameters = Parameters.Cylinder;
-                break;
-            case 'Torus':
-                parameters = Parameters.Torus;
-                break;
-
-        }
-
-        return parameters;
+        return Set.getParameters(val);
     }
 
     updateModel(id, params, f) {
@@ -353,7 +320,12 @@ export class Model {
         }
     }
 
+    getLOD() {
+        return this.lod;
+    }
+
     updateLOD(val) {
+        this.lod = val;
         for (let i = 0; i < this.sets.length; i++) {
             this.updateModel(i, [i, val], (i, val) => {
                 this.sets[i].lod = val;
@@ -373,10 +345,10 @@ export class Model {
         });
     }
 
-    updateShape(shape, id, parameters) {
+    updateShape(id, shape, parameters) {
         this.updateModel(id, [id, shape, parameters], (id, shape, parameters) => {
             this.sets[id].meshes = [];
-            this.sets[id].type = shape;
+            this.sets[id].shapeType = shape;
             this.sets[id].parameters = parameters.vals;
             this.sets[id].genGeometries();
             this.sets[id].setElements();
@@ -408,25 +380,40 @@ export class Model {
         });
     }
 
+    genSets(sets) {
+        for (let set of this.sets) {
+            for (const m of set.meshes) {
+                this.scene.remove(m);
+            }
+        }
+        this.sets = [];
+        for (let setData of sets) {
+            this.sets.push(new Set(setData, this.clippingPlanes, this.clippingIntersections));
+        }
+        for (let set of this.sets) {
+            for (const m of set.meshes) {
+                this.scene.add(m);
+            }
+        }
+    }
+
+
+    //used for qmga conversion
     load(data) {
-        let sets = data.split("$");
+        let particleSets = data.split("$");
         let setData, ps;
-        for (let set of sets) {
-            if (set == "") {
+        for (let particleSet of particleSets) {
+            if (particleSet == "") {
                 return;
             }
             else {
-                setData = set.split("\n");
+                setData = particleSet.split("\n");
                 ps = new Set(setData[0], setData[1], setData.slice(2), this.clippingPlanes, this.clippingIntersections);
                 this.sets.push(ps);
             }
         }
+        
 
-        this.setConfiguration();
-    }
-
-
-    setConfiguration() {
         for (let set of this.sets) {
             for (const m of set.meshes) {
                 this.scene.add(m);

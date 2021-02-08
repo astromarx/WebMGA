@@ -1,8 +1,7 @@
 
-import { Sidebar, Whisper, Tooltip, Nav, Icon, Row, Col, Navbar, Container, Content, IconButton } from 'rsuite';
+import { Sidebar, Nav, Icon, Navbar, Container, Content, IconButton, Alert } from 'rsuite';
 import React, { Component } from "react";
-import { ViewOptions, AdditionalLightOptions, AmbientLightOptions, ReferenceOptions, SlicingOptions, ModelsOptions } from './SubMenus'
-import { CatmullRomCurve3 } from 'three';
+import { CameraOptions, AdditionalLightOptions, AmbientLightOptions, ReferenceOptions, SlicingOptions, ModelsOptions } from './SubMenus'
 
 
 const NavToggle = ({ expand, onChange }) => {
@@ -83,7 +82,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
                 menuContent.push(<ModelsOptions model={model}/>);
                 break;
             case "View":
-                menuContent.push(<ViewOptions model={model}/>);
+                menuContent.push(<CameraOptions model={model}/>);
                 break;
             case "Ambient Light":
                 menuContent.push(<AmbientLightOptions model={model}/>);
@@ -97,6 +96,8 @@ const MenuContent = ({ active, expand, onChange, model }) => {
             case "Reference":
                 menuContent.push(<ReferenceOptions model={model}/>);
                 break;
+            default:
+                Alert.error('Error: Unknown Submenu Identifier');
         }
     }
 
@@ -104,7 +105,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
 
 }
 
-class SideMenu extends Component {
+class Side extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -161,4 +162,4 @@ class SideMenu extends Component {
 }
 
 
-export default SideMenu;
+export default Side;

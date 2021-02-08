@@ -1,5 +1,5 @@
 
-import { Dropdown, Sidebar, Sidenav, Nav, Icon, Navbar, ButtonGroup, Tooltip, Whisper, Divider, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, IconButton } from 'rsuite';
+import { Nav, Divider, Checkbox, FormGroup, RadioGroup, Radio, Grid, Row, Col, Alert } from 'rsuite';
 import React from "react";
 import { SliceSlider, ParameterInput, ParameterSet, CustomSlider } from './Tools'
 import View from './View'
@@ -8,18 +8,15 @@ const TITLE_LEFT_MARGIN = 30;
 const dividerStyle = {
     color: '#A4A9A3'
 }
-
-const LODToolTip = (
-    <Tooltip>
-        Decreasing LOD will increase rendering speed.
-    </Tooltip>
-);
-
+const submenuParameterSetStyling = [
+    { width: 130, marginLeft: 10 },
+    { marginTop: 10, marginLeft: 30 }
+];
 export class ModelsOptions extends React.Component {
 
     constructor(props) {
         super();
-        this.state = View.ModelState;
+        this.state = View.state.model;
         this.model = props.model;
 
         this.selectShape = this.selectShape.bind(this);
@@ -35,7 +32,7 @@ export class ModelsOptions extends React.Component {
         this.setState({
             shininess: val
         });
-        View.ModelState.configurations[this.state.active].shininess = val;
+        View.state.model.configurations[this.state.active].shininess = val;
         this.model.updateShininess(this.state.active, val)
     }
 
@@ -52,9 +49,11 @@ export class ModelsOptions extends React.Component {
             case 'b':
                 colour.b = value;
                 break;
+            default:
+                Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateUserColour(this.state.active, colour);
-        View.ModelState.configurations[this.state.active].colour = colour;
+        View.state.model.configurations[this.state.active].colour = colour;
     }
 
     toggleColour() {
@@ -62,7 +61,7 @@ export class ModelsOptions extends React.Component {
         this.setState({
             colourFromDirector: toggle
         });
-        View.ModelState.configurations[this.state.active].colourFromDirector = toggle;
+        View.state.model.configurations[this.state.active].colourFromDirector = toggle;
         this.model.toggleUserColour(this.state.active, toggle);
     }
 
@@ -71,16 +70,24 @@ export class ModelsOptions extends React.Component {
         this.setState({
             displayAsWireframe: toggle
         });
-        View.ModelState.configurations[this.state.active].displayAsWireframe = toggle;
+        View.state.model.configurations[this.state.active].displayAsWireframe = toggle;
         this.model.toggleWireframe(this.state.active, toggle);
     }
 
     updateParameter(val, index) {
         let parameter = parseFloat(val);
-        let globalState = View.ModelState.configurations[this.state.active];
-        this.state.configurations[this.state.active].parameters.vals[index] = parameter;
+
+        let globalState = View.state.model.configurations[this.state.active];
         globalState.parameters.vals[index] = parameter;
-        this.model.updateShape(globalState.shape, this.state.active, globalState.parameters);
+
+        let configs = this.state.configurations;
+        configs[this.state.active].parameters.vals[index] = parameter;
+
+        this.setState({
+            configurations: configs
+        });
+
+        this.model.updateShape(this.state.active, globalState.shape, globalState.parameters);
         this.reset();
     }
 
@@ -89,22 +96,22 @@ export class ModelsOptions extends React.Component {
         if (this.state.reset > 50) {
             i = 0;
         } else {
-            i = ++this.state.reset;
+            i = this.state.reset;
         }
         this.setState(
             {
-                reset: i
+                reset: ++i
             }
         );
     }
 
     selectSet(val) {
         for (let i = 0; i < this.state.sets.length; i++) {
-            if (this.state.sets[i].localeCompare(val) == 0) {
+            if (this.state.sets[i].localeCompare(val) === 0) {
                 this.setState({
                     active: i
                 })
-                View.ModelState.active = i;
+                View.state.model.active = i;
                 break;
             }
         }
@@ -120,9 +127,9 @@ export class ModelsOptions extends React.Component {
             }
         );
         this.reset();
-        View.ModelState.configurations[this.state.active].shape = val;
-        View.ModelState.configurations[this.state.active].parameters = parameters;
-        this.model.updateShape(val, this.state.active, parameters);
+        View.state.model.configurations[this.state.active].shape = val;
+        View.state.model.configurations[this.state.active].parameters = parameters;
+        this.model.updateShape(this.state.active, val, parameters);
     }
 
     render() {
@@ -137,9 +144,9 @@ export class ModelsOptions extends React.Component {
 
 
                 <Divider><strong style={dividerStyle}> Configuration</strong></Divider>
-                <ParameterInput f={this.selectSet} selectingSet title="Set" values={sets} active={title} />
-                <ParameterInput f={this.selectShape} title="Shape" values={shapes} active={configState.shape} />
-                <ParameterSet f={this.updateParameter} titles={configState.parameters.names} values={configState.parameters.vals} />
+                <ParameterInput f={this.selectSet} selectingSet title="Set" values={sets} active={title} styling={submenuParameterSetStyling} />
+                <ParameterInput f={this.selectShape} title="Shape" values={shapes} active={configState.shape} styling={submenuParameterSetStyling} />
+                <ParameterSet f={this.updateParameter} titles={configState.parameters.names} values={configState.parameters.vals} step={0.1} positive styling={submenuParameterSetStyling}/>
                 <br />
                 <Divider><strong style={dividerStyle}>  Material </strong></Divider>
 
@@ -164,16 +171,14 @@ export class ModelsOptions extends React.Component {
     }
 }
 
-export class ViewOptions extends React.Component {
+export class CameraOptions extends React.Component {
 
     constructor(props) {
         super();
-        this.state = View.ViewOptionsState;
-
+        this.state = View.state.camera;
         this.model = props.model;
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
         this.selectCameraType = this.selectCameraType.bind(this);
-        this.updateLOD = this.updateLOD.bind(this);
         this.updateLookat = this.updateLookat.bind(this);
 
     }
@@ -181,22 +186,15 @@ export class ViewOptions extends React.Component {
         this.setState({
             rotating: !this.state.rotating
         });
-        View.ViewOptionsState.rotating = !View.ViewOptionsState.rotating;
+        View.state.camera.rotating = !View.state.camera.rotating;
         this.model.toggleCameraRotation();
     }
     selectCameraType(value) {
         this.setState({
             type: value
         });
-        View.ViewOptionsState.cameraType = value;
+        View.state.camera.type = value;
         this.model.setCamera(value);
-    }
-    updateLOD(value) {
-        this.setState({
-            LOD: value
-        });
-        View.ViewOptionsState.LOD = value;
-        this.model.updateLOD(value - 1);
     }
 
     updateLookat(value, type) {
@@ -212,22 +210,39 @@ export class ViewOptions extends React.Component {
             case 2:
                 lookAt.z = parseFloat(value);
                 break;
+            default:
+                Alert.error('Error: Unexpected LookAt Identifier');
         }
 
-        console.log(lookAt)
         this.model.updateLookAt(lookAt);
-        View.ViewOptionsState.lookAt = lookAt;
+        View.state.camera.lookAt = lookAt;
     }
 
 
     render() {
         const cameraType = this.state.type;
         const rotating = this.state.rotating;
+        const lookAt = [this.state.lookAt.x, this.state.lookAt.y, this.state.lookAt.z];
 
         return (
             <div >
 
                 <Divider><strong style={dividerStyle}> Camera </strong></Divider>
+                <Row className="show-grid">
+                    <Col xs={2} />
+                    <Col xs={12}>
+
+                        <FormGroup controlId="radioList">
+                            <RadioGroup name="radioList" value={cameraType} onChange={this.selectCameraType}>
+                                <p>Type</p>
+                                <Radio defaultChecked value="perspective">Perspective </Radio>
+                                <Radio value="orthographic">Orthographic </Radio>
+                            </RadioGroup>
+                        </FormGroup>
+
+                    </Col>
+                </Row>
+                <br />
                 <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
@@ -236,22 +251,10 @@ export class ViewOptions extends React.Component {
                             <Checkbox checked={rotating} onClick={this.toggleAutorotate}> AutoRotate</Checkbox>
                         </Col>
                     </Row>
-                    <Row className="show-grid">
-                        <Col xs={2} />
-                        <Col xs={12}>
+                    <br />
+                    <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Rotation Speed </p>
 
-
-                            <FormGroup controlId="radioList">
-                                <RadioGroup name="radioList" value={cameraType} onChange={this.selectCameraType}>
-                                    <br />
-                                    <p>Type</p>
-                                    <Radio defaultChecked value="perspective">Perspective </Radio>
-                                    <Radio value="orthographic">Orthographic </Radio>
-                                </RadioGroup>
-                            </FormGroup>
-
-                        </Col>
-                    </Row>
+                    <CustomSlider disabled={true} boundaries={[0, 100]} />
 
                     <Row className="show-grid">
                         <Col xs={2} />
@@ -262,36 +265,10 @@ export class ViewOptions extends React.Component {
                     </Row>
                 </Grid>
 
-                <ParameterSet titles={["X position", "Y position", "Z position"]} values={[0.0, 0.0, 0.0]} f={this.updateLookat} />
+                <ParameterSet titles={["X position", "Y position", "Z position"]} values={lookAt} f={this.updateLookat} step={0.5} styling={submenuParameterSetStyling}/>
                 <br />
 
 
-
-                <Divider><strong style={dividerStyle}> Perfomance Tuning </strong></Divider>
-
-                <Form style={{ marginLeft: TITLE_LEFT_MARGIN }} layout="inline">
-                    <FormGroup>
-                        <ControlLabel>Level of Detail</ControlLabel>
-                        <Whisper placement="top" trigger="hover" speaker={LODToolTip}>
-                            <Icon icon="question-circle" size="lg" style={{ marginTop: 12 }} />
-                        </Whisper>
-                    </FormGroup>
-                </Form>
-
-                <Slider
-
-                    min={1}
-                    step={1}
-                    max={5}
-                    defaultValue={4}
-                    graduated
-                    progress
-                    style={{ width: 220, marginLeft: 40 }}
-                    onChange={this.updateLOD}
-                    renderMark={mark => {
-                        return mark;
-                    }}
-                />
 
             </div>);
     }
@@ -301,7 +278,7 @@ export class SlicingOptions extends React.Component {
 
     constructor(props) {
         super();
-        this.state = View.SlicingState;
+        this.state = View.state.slicing;
         this.model = props.model;
 
         this.toggleIntersection = this.toggleIntersection.bind(this);
@@ -319,7 +296,7 @@ export class SlicingOptions extends React.Component {
                 clipIntersection: toggle
             }
         );
-        View.SlicingState.clipIntersection = toggle;
+        View.state.slicing.clipIntersection = toggle;
         this.model.toggleClipIntersection(toggle);
     }
 
@@ -329,7 +306,7 @@ export class SlicingOptions extends React.Component {
                 helpers: helpers
             }
         );
-        View.SlicingState.helpers = helpers;
+        View.state.slicing.helpers = helpers;
     }
 
     toggleHelperX() {
@@ -359,14 +336,16 @@ export class SlicingOptions extends React.Component {
     updateSlicer(i, vals) {
         switch (i) {
             case 0:
-                View.SlicingState.x = vals;
+                View.state.slicing.x = vals;
                 break;
             case 1:
-                View.SlicingState.y = vals;
+                View.state.slicing.y = vals;
                 break;
             case 2:
-                View.SlicingState.z = vals;
+                View.state.slicing.z = vals;
                 break;
+            default:
+                Alert.error('Error: Unexpected Slicing Identifier');
         }
 
         this.model.updateSlicer(i, vals);
@@ -380,10 +359,11 @@ export class SlicingOptions extends React.Component {
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={20}>
-                            <Checkbox checked={state.clipIntersection} onClick={this.toggleIntersection}> Slice Intersection</Checkbox>
+                            <Checkbox disabled={true} checked={state.clipIntersection} onClick={this.toggleIntersection}> Slice Intersection</Checkbox>
                         </Col>
                     </Row>
                 </Grid>
+                {/* TO DO */}
                 <SliceSlider title="X : " f={this.updateSlicer} index={0} vals={state.x} />
                 <br />
                 <Grid fluid>
@@ -433,7 +413,7 @@ export class AdditionalLightOptions extends React.Component {
 
     constructor(props) {
         super();
-        this.state = View.PointLightState;
+        this.state = View.state.pointLight;
         this.model = props.model;
         this.reset = 0;
         this.handleSelect = this.handleSelect.bind(this);
@@ -443,10 +423,10 @@ export class AdditionalLightOptions extends React.Component {
 
     }
     handleSelect() {
-        if (this.state.active.localeCompare('point') == 0) {
-            this.setState(View.DirectionalLightState);
+        if (this.state.active.localeCompare('point') === 0) {
+            this.setState(View.state.directionalLight);
         } else {
-            this.setState(View.PointLightState);
+            this.setState(View.state.pointLight);
         }
         if (this.reset > 5) {
             this.reset = 0;
@@ -460,12 +440,12 @@ export class AdditionalLightOptions extends React.Component {
             enabled: enabled
         });
         let intensity;
-        if (this.state.active.localeCompare('point') == 0) {
-            View.PointLightState.enabled = enabled;
-            intensity = View.PointLightState.colour.i;
+        if (this.state.active.localeCompare('point') === 0) {
+            View.state.pointLight.enabled = enabled;
+            intensity = View.state.pointLight.colour.i;
         } else {
-            View.DirectionalLightState.enabled = enabled;
-            intensity = View.DirectionalLightState.colour.i;
+            View.state.directionalLight.enabled = enabled;
+            intensity = View.state.directionalLight.colour.i;
         }
 
         if (enabled) {
@@ -475,10 +455,10 @@ export class AdditionalLightOptions extends React.Component {
         }
         this.setState({ reset: ++this.reset });
 
-        if (this.state.active.localeCompare('point') == 0) {
-            View.PointLightState.colour.i = intensity;
+        if (this.state.active.localeCompare('point') === 0) {
+            View.state.pointLight.colour.i = intensity;
         } else {
-            View.DirectionalLightState.colour.i = intensity;
+            View.state.directionalLight.colour.i = intensity;
         }
 
 
@@ -500,15 +480,15 @@ export class AdditionalLightOptions extends React.Component {
                 colour.i = value;
                 break;
             default:
-                break;
+                Alert.error('Error: Unexpected RGB Identifier');
         }
 
-        if (this.state.active.localeCompare('point') == 0) {
+        if (this.state.active.localeCompare('point') === 0) {
             this.model.updateLight(2, colour);
-            View.PointLightState.colour = colour;
+            View.state.pointLight.colour = colour;
         } else {
             this.model.updateLight(1, colour);
-            View.DirectionalLightState.colour = colour;
+            View.state.directionalLight.colour = colour;
         }
     }
     updatePosition(value, type) {
@@ -524,14 +504,16 @@ export class AdditionalLightOptions extends React.Component {
             case 'z':
                 position.z = value;
                 break;
+            default:
+                Alert.error('Error: Unexpected Position Identifier');
         }
 
-        if (this.state.active.localeCompare('point') == 0) {
+        if (this.state.active.localeCompare('point') === 0) {
             this.model.updateLightPosition(2, position);
-            View.PointLightState.position = position;
+            View.state.pointLight.position = position;
         } else {
             this.model.updateLightPosition(1, position);
-            View.DirectionalLightState.position = position;
+            View.state.directionalLight.position = position;
         }
     }
 
@@ -549,6 +531,7 @@ export class AdditionalLightOptions extends React.Component {
                         <Col xs={1} />
                         <Col xs={12}>
                             <Checkbox checked={lightState.enabled} onClick={this.toggleLightEnabled}> <strong>Enabled </strong> </Checkbox>
+                            <Checkbox disabled={true}> <strong>Show Helper </strong> </Checkbox>
                             <br />
                         </Col>
                     </Row>
@@ -572,7 +555,7 @@ export class AmbientLightOptions extends React.Component {
     constructor(props) {
         super();
 
-        this.state = View.AmbientLightState;
+        this.state = View.state.ambientLight;
 
         this.model = props.model;
 
@@ -595,9 +578,11 @@ export class AmbientLightOptions extends React.Component {
             case 'i':
                 colour.i = value;
                 break;
+            default:
+                Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateLight(0, colour);
-        View.AmbientLightState.ambientLightColour = colour;
+        View.state.ambientLight.ambientLightColour = colour;
     }
     updateBackgroundColour(value, type) {
         let colour = this.state.backgroundColour;
@@ -612,9 +597,11 @@ export class AmbientLightOptions extends React.Component {
             case 'b':
                 colour.b = value;
                 break;
+            default:
+                Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateBg(colour);
-        View.AmbientLightState.backgroundColour = colour;
+        View.state.ambientLight.backgroundColour = colour;
     }
     render() {
         const ambientLightColour = this.state.ambientLightColour;
@@ -641,7 +628,7 @@ export class AmbientLightOptions extends React.Component {
 export class ReferenceOptions extends React.Component {
     constructor(props) {
         super();
-        this.state = View.ReferenceState;
+        this.state = View.state.reference;
 
         this.model = props.model;
         this.toggleBoundingShapeEnabled = this.toggleBoundingShapeEnabled.bind(this);
@@ -665,27 +652,29 @@ export class ReferenceOptions extends React.Component {
             case 'b':
                 rgb.b = value;
                 break;
+            default:
+                Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateReferenceColour(rgb);
-        View.ReferenceState.gridColour = rgb;
+        View.state.reference.gridColour = rgb;
     }
     updateGridSize(value) {
         this.model.updateGridSize(value);
-        View.ReferenceState.size = value;
+        View.state.reference.size = value;
     }
     toggleBoundingShapeEnabled() {
-        let toggle = !View.ReferenceState.boundingShapeEnabled;
+        let toggle = !View.state.reference.boundingShapeEnabled;
         this.setState({
             boundingShapeEnabled: toggle
         });
-        View.ReferenceState.boundingShapeEnabled = toggle;
+        View.state.reference.boundingShapeEnabled = toggle;
         this.model.updateBoundingShape(this.state.activeShape, toggle);
     }
     selectShape(value) {
         this.setState({
             activeShape: value
         });
-        View.ReferenceState.activeShape = value;
+        View.state.reference.activeShape = value;
         this.model.updateBoundingShape(value, this.state.boundingShapeEnabled);
     }
     toggleAxes() {
@@ -693,14 +682,14 @@ export class ReferenceOptions extends React.Component {
             showAxes: !this.state.showAxes
         });
         this.model.toggleAxes();
-        View.ReferenceState.showAxes = !View.ReferenceState.showAxes;
+        View.state.reference.showAxes = !View.state.reference.showAxes;
     }
     toggleGrid() {
         this.setState({
             showGrid: !this.state.showGrid
         });
         this.model.toggleGrid();
-        View.ReferenceState.showGrid = !View.ReferenceState.showGrid;
+        View.state.reference.showGrid = !View.state.reference.showGrid;
     }
 
     render() {
@@ -736,7 +725,7 @@ export class ReferenceOptions extends React.Component {
                             </FormGroup>
                         </Col>
                     </Row>
-                    <br/>
+                    <br />
 
                     <Row className="show-grid">
                         <Col xs={1} />
@@ -752,6 +741,13 @@ export class ReferenceOptions extends React.Component {
                 </Grid>
 
                 <Divider><strong style={dividerStyle}> Colour </strong></Divider>
+                <Row className="show-grid">
+                    <Col xs={1} />
+                    <Col xs={20}>
+                        <Checkbox disabled={true}> Multi-Colour Axes </Checkbox>
+                    </Col>
+                </Row>
+                <br/>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
                 <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.r} f={this.updateColour} type={'r'} />
                 <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.g} f={this.updateColour} type={'g'} />

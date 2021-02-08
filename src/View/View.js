@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import Top from './Top';
 import Side from './Side';
 
@@ -8,68 +8,124 @@ export class View {
     model;
     expanded;
 
-    static ReferenceState;
-    static AmbientLightState;
-    static PointLightState;
-    static DirectionalLightState;
-    static ViewOptionsState;
-    static ModelState;
-    static SlicingState; 
+    static state;
 
     constructor(m, io) {
+        View.state = {}
+        this.expanded = false;
         this.model = m;
-        this.header = <Top fps={60} functions={io} />;
-        this.sidebar = <Side model={this.model} />;
-        this.setDefaultStates();
+        this.header = <Top fps={60} functions={io} model={this.model} />;
+        this.sidebar = <Side model={this.model} sidebarExpanded={this.expanded} />;
     }
 
-    toJSON(){
-        let states = new Object();
-
-        //states;
-
-        for (let i in View.ModelState.sets) {
-            View.ModelState.configurations.push('howdy');
-        }
-
-        states.push(JSON.stringify(View.ViewOptionsState));
-        states.push(JSON.stringify(View.AmbientLightState));
-        states.push(JSON.stringify(View.DirectionalLightState));
-        states.push(JSON.stringify(View.PointLightState));
-        states.push(JSON.stringify(View.ReferenceState));
-        states.push(JSON.stringify(View.SlicingState));
-        return states;
+    getData() {
+        return View.state;
     }
 
-    setDefaultStates() {
-        View.ReferenceState = this.ReferenceDefaultState;
-        View.AmbientLightState = this.AmbientLightDefaultState;
-        View.PointLightState = this.PointLightDefaultState;
-        View.DirectionalLightState = this.DirectionalLightDefaultState;
-        View.ViewOptionsState = this.ViewOptionsDefaultState;
-        View.ModelState = this.ModelDefaultState;
-        View.SlicingState = this.SlicingDefaultState;
+    setState(state) {
+        View.state = state;
+        this.loadLightingAndCamera(state);
+        this.loadReferenceAndSlicing(state);
+        this.loadModel(state);
+    }
 
-        for (let i in View.ModelState.sets) {
-            let c = JSON.parse(JSON.stringify(this.ConfigurationDefaultState));
-            c.title = View.ModelState.sets[i];
-            View.ModelState.configurations.push(c);
+    loadModel(state) {
+        let substate;
+        for (let i in state.model.configurations) {
+            substate = state.model.configurations[i];
+            this.model.updateShininess(i, substate.shininess);
+            this.model.updateUserColour(i, substate.colour);
+            this.model.toggleUserColour(i, substate.colourFromDirector);
+            this.model.toggleWireframe(i, substate.displayAsWireframe);
+            this.model.updateShape(i, substate.shape, substate.parameters);
         }
     }
 
-    SlicingDefaultState = {
-        clipIntersection : false,
-        helpers : [false, false, false],
-        x : [-50, 50],
-        y : [-50, 50],
-        z : [-50, 50]
+    xor(a, b) {
+        return (a && !b) || (!a && b);
     }
+
+
+    loadReferenceAndSlicing(state) {
+
+        if (this.xor(this.model.gridEnabled, state.reference.showGrid)) {
+            this.model.toggleGrid();
+        }
+
+        if (this.xor(this.model.axesEnabled, state.reference.showAxes)) {
+            this.model.toggleAxes();
+        }
+        this.model.updateReferenceColour(state.reference.gridColour);
+        this.model.updateGridSize(state.reference.size);
+        this.model.updateBoundingShape(state.reference.activeShape, state.reference.boundingShapeEnabled);
+        this.model.toggleClipIntersection(state.slicing.clipIntersection);
+        this.model.toggleHelper(0, state.slicing.helpers[0]);
+        this.model.toggleHelper(1, state.slicing.helpers[1]);
+        this.model.toggleHelper(2, state.slicing.helpers[2]);
+        this.model.updateSlicer(0, state.slicing.x);
+        this.model.updateSlicer(1, state.slicing.y);
+        this.model.updateSlicer(2, state.slicing.z);
+    }
+
+    loadLightingAndCamera(state) {
+        let directionalLightColour = JSON.parse(JSON.stringify(state.directionalLight.colour));
+        let pointLightColour = JSON.parse(JSON.stringify(state.pointLight.colour));
+
+        if (!state.directionalLight.enabled) {
+            directionalLightColour.i = 0;
+        }
+        if (!state.pointLight.enabled) {
+            pointLightColour.i = 0;
+        }
+
+        this.model.updateBg(state.ambientLight.backgroundColour);
+        this.model.updateLight(0, state.ambientLight.ambientLightColour);
+        this.model.updateLight(1, directionalLightColour);
+        this.model.updateLight(2, pointLightColour);
+        this.model.updateLightPosition(1, state.directionalLight.position);
+        this.model.updateLightPosition(2, state.pointLight.position);
+        this.model.controls.autoRotate = state.camera.rotating;
+        this.model.setCamera(state.camera.type);
+        this.model.updateLookAt(state.camera.lookAt);
+    }
+
+    setDefaultStates(starting) {
+        View.state.reference = this.ReferenceDefaultState;
+        View.state.ambientLight = this.AmbientLightDefaultState;
+        View.state.pointLight = this.PointLightDefaultState;
+        View.state.directionalLight = this.DirectionalLightDefaultState;
+        View.state.camera = this.CameraDefaultState;
+        View.state.slicing = this.SlicingDefaultState;
+        View.state.model = this.ModelDefaultState;
+
+        for (let i in this.model.sets) {
+            let set = JSON.parse(JSON.stringify(this.ConfigurationDefaultState));
+            set.title = this.model.sets[i].name;
+            View.state.model.sets.push(set.title);
+            View.state.model.configurations.push(set);
+        }
+
+        if (!starting) {
+            this.loadLightingAndCamera(View.state);
+            this.loadReferenceAndSlicing(View.state);
+            this.loadModel(View.state);
+        }
+    }
+
 
     ModelDefaultState = {
         active: 0,
         reset: 0,
-        sets: ['Set A'],
+        sets: [],
         configurations: []
+    }
+
+    SlicingDefaultState = {
+        clipIntersection: false,
+        helpers: [false, false, false],
+        x: [-50, 50],
+        y: [-50, 50],
+        z: [-50, 50]
     }
 
     ConfigurationDefaultState = {
@@ -89,15 +145,14 @@ export class View {
         displayAsWireframe: true
     }
 
-    ViewOptionsDefaultState = {
+    CameraDefaultState = {
         rotating: false,
         type: 'perspective',
         lookAt: {
             x: 0,
             y: 0,
             z: 0
-        },
-        LOD: 4
+        }
     }
 
     PointLightDefaultState = {
@@ -151,8 +206,8 @@ export class View {
 
     AmbientLightDefaultState = {
         ambientLightColour: {
-            r: 15,
-            g: 240,
+            r: 255,
+            g: 255,
             b: 255,
             i: 40
         },

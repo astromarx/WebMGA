@@ -9,6 +9,7 @@ import {
     TorusBufferGeometry
 } from 'three';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import {Alert} from 'rsuite';
 
 export class Shape {
 
@@ -32,7 +33,7 @@ export class Shape {
         this.args = arguments[0];
         this.isPreset = false;
         this.LOD = 1;
-        this.complexity = [6,12,18,24,32];
+        this.complexity = [6,10,14,20,26];
     }
 
     clear(){
@@ -43,7 +44,7 @@ export class Shape {
 
     static normalize(vec, scale) {
 
-        if (scale != undefined) {
+        if (scale !== undefined) {
             vec[0] /= Math.pow(scale[0], 2.0);
             vec[1] /= Math.pow(scale[1], 2.0);
             vec[2] /= Math.pow(scale[2], 2.0);
@@ -63,7 +64,7 @@ export class Shape {
         g.setAttribute('normal', new BufferAttribute(Float32Array.from(normals), 3));
 
 
-        if (type.localeCompare('strip') == 0) {
+        if (type.localeCompare('strip') === 0) {
             g = BufferGeometryUtils.toTrianglesDrawMode(g, TriangleStripDrawMode);
             this.stripGeometries.push(g);
         } else {
@@ -104,6 +105,8 @@ export class Preset extends Shape {
             case 'Torus':
                 this.presetGeometry = new TorusBufferGeometry(...this.parameters, this.complexity[this.LOD]);
                 break;
+            default:
+                Alert.error('Error: Unknown shape identifier');
         }
     }
 }
@@ -139,7 +142,7 @@ export class Ellipsoid extends Shape {
 
             for (var i = 0; i < actComplexity[1] * 2; ++i) {
                 for (var j = 0; j < actComplexity[0] + 1; ++j) {
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp.push(-scale[0] * Math.sin((i + 1) * piece[1]));
                         temp.push(0.0);
                     }
@@ -154,7 +157,7 @@ export class Ellipsoid extends Shape {
                     normals.push(...Shape.normalize(temp, scale))
                     temp = []
 
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp.push(-scale[0] * Math.sin((i + 2) * piece[1]));
                         temp.push(0.0);
                     }
@@ -185,11 +188,11 @@ export class Ellipsoid extends Shape {
         temp.push(scale[2]);
 
         vertices.push(...temp);
-        normals.push(...Shape.normalize(temp, scale))
-        temp = []
+        normals.push(...Shape.normalize(temp, scale));
+        temp = [];
 
-        for (var j = 0; j < actComplexity[0] + 1; ++j) {
-            if (j == 0 || j == actComplexity[0]) {
+        for (j = 0; j < actComplexity[0] + 1; ++j) {
+            if (j === 0 || j === actComplexity[0]) {
                 temp.push(-scale[0] * Math.sin(piece[1]));
                 temp.push(0.0);
             }
@@ -217,8 +220,8 @@ export class Ellipsoid extends Shape {
         normals.push(...Shape.normalize(temp, scale))
         temp = []
 
-        for (var j = actComplexity[0]; j >= 0; --j) {
-            if (j == 0 || j == actComplexity[0]) {
+        for (j = actComplexity[0]; j >= 0; --j) {
+            if (j === 0 || j === actComplexity[0]) {
                 temp.push(-scale[0] * Math.sin(piece[1]));
                 temp.push(0.0);
             }
@@ -274,7 +277,7 @@ export class Spherocylinder extends Shape {
                 normals = [];
 
                 for (let x = 0; x <= actComplexity[0]; ++x) {
-                    if (x == 0 || x == actComplexity[0]) {
+                    if (x === 0 || x === actComplexity[0]) {
                         temp.push(-Math.sin((y + 1) * piece[1]) * radius);
                         temp.push(0);
                     }
@@ -289,7 +292,7 @@ export class Spherocylinder extends Shape {
                     vertices.push(...temp);
                     temp = [];
 
-                    if (x == 0 || x == actComplexity[0]) {
+                    if (x === 0 || x === actComplexity[0]) {
                         temp.push(-Math.sin((y + 2) * piece[1]) * radius);
                         temp.push(0);
                     }
@@ -314,7 +317,7 @@ export class Spherocylinder extends Shape {
                 normals = [];
 
                 for (let x = 0; x <= actComplexity[0]; ++x) {
-                    if (x == 0 || x == actComplexity[0]) {
+                    if (x === 0 || x === actComplexity[0]) {
                         temp.push(-Math.sin((y + 1) * piece[1]) * radius);
                         temp.push(0);
                     }
@@ -329,7 +332,7 @@ export class Spherocylinder extends Shape {
                     vertices.push(...temp);
                     temp = [];
 
-                    if (x == 0 || x == actComplexity[0]) {
+                    if (x === 0 || x === actComplexity[0]) {
                         temp.push(-1 * Math.sin((y + 2) * piece[1]) * radius);
                         temp.push(0);
                     }
@@ -353,7 +356,7 @@ export class Spherocylinder extends Shape {
 
             for (let x = 0; x <= actComplexity[0]; ++x) {
 
-                if (x == 0 || x == actComplexity[0]) {
+                if (x === 0 || x === actComplexity[0]) {
                     temp.push(-radius);
                     temp.push(0);
                 }
@@ -388,7 +391,7 @@ export class Spherocylinder extends Shape {
             temp = [];
 
             for (let j = 0; j <= actComplexity[0]; ++j) {
-                if (j == 0 || j == actComplexity[0]) {
+                if (j === 0 || j === actComplexity[0]) {
                     temp.push(-Math.sin(piece[1]) * radius);
                     temp.push(0);
                 }
@@ -418,7 +421,7 @@ export class Spherocylinder extends Shape {
             temp = [];
 
             for (let j = actComplexity[0]; j >= 0; --j) {
-                if (j == 0 || j == actComplexity[0]) {
+                if (j === 0 || j === actComplexity[0]) {
                     temp.push(-Math.sin(piece[1]) * radius);
                     temp.push(0);
                 }
@@ -480,7 +483,7 @@ export class Spheroplatelet extends Shape {
 
                 for (let j = 0; j < actComplexity[0] + 1; ++j) {
                     // Upper part of triangle strip
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp.push(-projectionUp);
                         temp.push(0);
                     }
@@ -492,7 +495,7 @@ export class Spheroplatelet extends Shape {
 
                     normals.push(...Shape.normalize(temp));
 
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp[0] -= radCircle;
                     }
                     else {
@@ -504,7 +507,7 @@ export class Spheroplatelet extends Shape {
                     temp = [];
 
                     // Lower part of triangle strip
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp.push(-projectionDown);
                         temp.push(0);
                     }
@@ -516,7 +519,7 @@ export class Spheroplatelet extends Shape {
 
                     normals.push(...Shape.normalize(temp));
 
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp[0] -= radCircle;
                     }
                     else {
@@ -546,7 +549,7 @@ export class Spheroplatelet extends Shape {
             temp = [];
 
             for (let j = 0; j < actComplexity[0] + 1; ++j) {
-                if (j == 0 || j == actComplexity[0]) {
+                if (j === 0 || j === actComplexity[0]) {
                     temp.push(-radCircle);
                     temp.push(0);
                 }
@@ -575,7 +578,7 @@ export class Spheroplatelet extends Shape {
             temp = [];
 
             for (let j = actComplexity[0]; j >= 0; --j) {
-                if (j == 0 || j == actComplexity[0]) {
+                if (j === 0 || j === actComplexity[0]) {
                     temp.push(-radCircle);
                     temp.push(0);
                 }
@@ -634,7 +637,7 @@ export class CutSphere extends Shape {
             for (let i = 0; i < actComplexity[1] * 2; ++i) {
                 for (let j = 0; j < actComplexity[0] + 1; ++j) {
                     // Upper part of triangle strip
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp.push(-radius * Math.sin(angle + i * piece[1]));
                         temp.push(0);
                     }
@@ -649,7 +652,7 @@ export class CutSphere extends Shape {
                     temp = [];
 
                     // Lower part of triangle strip
-                    if (j == 0 || j == actComplexity[0]) {
+                    if (j === 0 || j === actComplexity[0]) {
                         temp.push(-radius * Math.sin(angle + (i + 1) * piece[1]));
                         temp.push(0);
                     }
@@ -681,7 +684,7 @@ export class CutSphere extends Shape {
             temp = [];
 
             for (let j = 0; j < actComplexity[0] + 1; ++j) {
-                if (j == 0 || j == actComplexity[0]) {
+                if (j === 0 || j === actComplexity[0]) {
                     temp.push(-radiusFan);
                     temp.push(0);
                 }
@@ -712,7 +715,7 @@ export class CutSphere extends Shape {
             temp = [];
 
             for (let j = actComplexity[0]; j >= 0; --j) {
-                if (j == 0 || j == actComplexity[0]) {
+                if (j === 0 || j === actComplexity[0]) {
                     temp.push(-radiusFan);
                     temp.push(0);
                 }

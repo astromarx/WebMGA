@@ -1,5 +1,4 @@
 
-
 export var Parameters = {
     Ellipsoid: {
         names: ['X', 'Y', 'Z'],
@@ -7,11 +6,11 @@ export var Parameters = {
     },
     Spherocylinder:{
         names: ['Radius', 'Length'],
-        vals: [0.5, 0.75]
+        vals: [0.5, 0.7]
     },
     Spheroplatelet:{
         names: ['RadSphere','RadCircle'],
-        vals:[1.0,0.2]
+        vals:[0.3,0.2]
     },
     CutSphere: {
         names: ['Radius','zCut'],

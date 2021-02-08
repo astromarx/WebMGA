@@ -1,3 +1,4 @@
+import { Alert } from 'rsuite';
 import {
     AmbientLight,
     DirectionalLight,
@@ -27,7 +28,7 @@ export class Light {
     setDefaultLights(lightType) {
         switch (lightType) {
             case 'ambient':
-                this.light = new AmbientLight("#0ff0ff", 0.4);
+                this.light = new AmbientLight("#ffffff", 0.4);
                 break;
             case 'directional':
                 this.light = new DirectionalLight("#ffffff", 0.5);
@@ -36,6 +37,9 @@ export class Light {
             case 'point':
                 this.light = new PointLight("#ffffff", 0.6);
                 this.light.position.set(5, 0, 5);
+                break;
+            default:
+                Alert.error("Error: null light type selected");
                 break;
         }
     }

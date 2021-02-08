@@ -4,8 +4,6 @@ import {
     Vector3,
     BufferGeometry,
     Line,
-    WireframeGeometry,
-    LineSegments,
     Box3Helper,
     Box3,
     SphereBufferGeometry,
@@ -13,6 +11,7 @@ import {
     Mesh
 } from 'three';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import {Alert} from 'rsuite';
 
 export class Tools {
     subGrid;
@@ -42,7 +41,7 @@ export class Tools {
 
     genBoundingShape(type, sets) {
         this.boundingShapeType = type;
-        
+
         this.boundingShape = null;
 
         if (this.setsGeometry == null) {
@@ -67,7 +66,6 @@ export class Tools {
             case 'sphere':
                 this.setsGeometry.computeBoundingSphere();
                 let sphere = this.setsGeometry.boundingSphere;
-                console.log(sphere);
                 let geom = new SphereBufferGeometry(sphere.radius, 10, 10);
                 geom.translate(sphere.center.x, sphere.center.y, sphere.center.z);
                 let material = new MeshBasicMaterial({ color: this.colour });
@@ -76,7 +74,9 @@ export class Tools {
                 break;
             case 'cylinder':
                 // this.boundingShape.copy(this.setsGeometry.computeBoundingBox());
-                // break;
+                 break;
+            default:
+            Alert.error('Error: Unknown bounding shape identifier');
         }
 
 

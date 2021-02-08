@@ -10,6 +10,7 @@ import {
 import * as SHAPE from './Shapes.js';
 import Model from './Model';
 import Parameters from './Parameters';
+import { Alert } from 'rsuite';
 
 export class Set {
     name;
@@ -30,25 +31,85 @@ export class Set {
     elements = []
     meshes = [];
 
-    constructor(n, ot, d, cp, ci) {
-        this.name = n;
-        this.orientationType = ot;
+    constructor(data, cp, ci) {
+        this.name = data.name;
+        this.orientationType = data.orientationType;
+        this.positions = data.positions;
+        this.orientations = data.orientations;
         this.clippingPlanes = cp;
         this.clipIntersection = ci;
+
         this.setDefaults();
-        this.genElements(d);
+
+        if (data.shapeType != null){
+            this.shapeType = data.shapeType;
+        }
+        if (data.parameters != null){
+            this.shapeType = data.parameters;
+        }
+        if (this.name == null){
+            this.name = this.shapeType;
+        }
+
+        this.validateData();
+        this.genGeometries();
+        this.genElements();
         this.setElements();
         this.genMeshes();
     }
 
-    updateSlicers(i, vals){
-        this.clippingPlanes[2*i+1].constant = vals[1];
-        this.clippingPlanes[2*i].constant = -vals[0];
+
+    //deprecated
+    // constructor(name, orientationType, data, cp, ci) {
+    //     this.name = name;
+    //     this.orientationType = orientationType;
+
+    //     this.clippingPlanes = cp;
+    //     this.clipIntersection = ci;
+
+    //     this.setDefaults();
+    //     this.genGeometries();
+    //     this.genElementsDeprecated(data);
+    //     this.setElements();
+    //     this.genMeshes();
+
+    // }
+
+    validateData() {
+        if (this.positions.length !== this.orientations.length) {
+            throw 'Error: Position data does not correspond to orientation data. \n Total positions: ' + this.positions.length + '\n Total rotations: ' + this.orientations.length;
+        }
+
+        for (let p in this.parameters) {
+            if (p < 0) {
+                throw 'Error: Invalid parameter ' + p.toString() + ' for ' + this.name + '\n Must be positive.';
+            }
+        }
+
+        let defaultParameters = Set.getParameters(this.shapeType);
+        if (this.parameters.length != defaultParameters.vals.length) {
+            throw 'Error: Wrong number of parameters specified for ' + this.name + '. \n Required: ' + defaultParameters.names;
+        }
     }
 
-    toggleClipIntersection(toggle){
+    setDefaults() {
+        this.userColour = new Color("#FFFFFF");
+        this.colourByDirector = true;
+        this.wireframe = true;
+        this.shininess = 30;
+        this.lod = 1;
+        this.shapeType = 'Ellipsoid';
+        this.parameters = Parameters.Ellipsoid.vals;
+    }
+
+    updateSlicers(i, vals) {
+        this.clippingPlanes[2 * i + 1].constant = vals[1];
+        this.clippingPlanes[2 * i].constant = -vals[0];
+    }
+
+    toggleClipIntersection(toggle) {
         this.clipIntersection = toggle;
-        for(let mesh of this.meshes){
+        for (let mesh of this.meshes) {
             mesh.material.clipIntersection = toggle;
         }
     }
@@ -65,12 +126,12 @@ export class Set {
                 c = this.userColour;
             }
 
-            mat = new MeshPhongMaterial({ 
+            mat = new MeshPhongMaterial({
                 color: c,
                 side: DoubleSide,
                 clippingPlanes: this.clippingPlanes,
                 clipIntersection: this.clipIntersection
-             });
+            });
             mat.wireframe = this.wireframe;
             mat.shininess = this.shininess;
 
@@ -79,10 +140,6 @@ export class Set {
                 this.meshes.push(m);
             }
         }
-    }
-
-    setUserColour(hex){
-        this.userColour = new Color(hex);
     }
 
     setElements() {
@@ -106,11 +163,27 @@ export class Set {
         }
     }
 
-    genElements(elements) {
+    genElements() {
+        let colour, euler;
+        for (let i = 0; i < this.positions.length; i++) {
+            euler = this.getRotations(this.orientationType, this.orientations[i]);
+            colour = this.colourFromOrientation(euler);
+            this.elements.push(new this.Element(colour, this.positions[i], euler));
+        }
+    }
+
+    genElementsDeprecated(elements) {
         let position, orientation, attributes, euler, nP;
         let temp = [], colour = [];
 
+        console.log(elements);
+
         for (let elem of elements) {
+
+            if(elem === ""){
+                return;
+            }
+
             attributes = elem.split(" ");
 
             for (let a of attributes) {
@@ -119,12 +192,17 @@ export class Set {
 
             attributes = temp;
             temp = [];
-            console.log(attributes.length);
 
-            if (attributes.length != 7) { break; }
+            console.log(attributes);
+            if (attributes.length !== 6) { break; }
+
+
 
             position = attributes.slice(0, 3);
             orientation = attributes.slice(3);
+
+            console.log(position);
+            console.log(orientation);
 
             this.positions.push(position);
             this.orientations.push(orientation);
@@ -135,17 +213,6 @@ export class Set {
             nP = new this.Element(colour, position, euler);
             this.elements.push(nP);
         }
-    }
-
-    setDefaults() {
-        this.userColour = new Color("#FFFFFF");
-        this.colourByDirector = true;
-        this.wireframe = true;
-        this.shininess = 30;
-        this.lod = 4;
-        this.shapeType = 'Ellipsoid';
-        this.parameters = Parameters.Ellipsoid.vals;
-        this.genGeometries();
     }
 
     genGeometries() {
@@ -174,6 +241,8 @@ export class Set {
             case 'Torus':
                 this.shape = new SHAPE.Preset('Torus', this.parameters);
                 break;
+            default:
+                throw 'Error: unexpected shape identifier. \n Found: ' + this.shapeType;
         }
 
         this.shape.LOD = this.lod;
@@ -192,15 +261,6 @@ export class Set {
             g.rotateY(e.y);
             g.rotateZ(e.z);
         }
-    }
-
-    colourFromOrientation(euler) {
-        let colour = [];
-
-        colour.push(Math.round((euler._x + Math.PI) / (2 * Math.PI) * (255)));
-        colour.push(Math.round((euler._y + Math.PI) / (2 * Math.PI) * (255)));
-        colour.push(Math.round((euler._z + Math.PI) / (2 * Math.PI) * (255)));
-        return colour;
     }
 
     getRotations(type, rot) {
@@ -224,10 +284,60 @@ export class Set {
             case 'e':
                 e.fromArray(rot);
                 break;
+            default:
+                throw 'Error: Unexpected rotation type value. \n Found: ' + type + '\n Expected: v | q | a | e';
         }
 
         return e;
 
+    }
+
+    colourFromOrientation(euler) {
+        let colour = [];
+
+        colour.push(Math.round((euler._x + Math.PI) / (2 * Math.PI) * (255)));
+        colour.push(Math.round((euler._y + Math.PI) / (2 * Math.PI) * (255)));
+        colour.push(Math.round((euler._z + Math.PI) / (2 * Math.PI) * (255)));
+        return colour;
+    }
+
+    setUserColour(hex) {
+        this.userColour = new Color(hex);
+    }
+
+    static getParameters(val) {
+        let parameters;
+
+        switch (val) {
+            case 'Ellipsoid':
+                parameters = Parameters.Ellipsoid;
+                break;
+            case 'Spherocylinder':
+                parameters = Parameters.Spherocylinder;
+                break;
+            case 'Spheroplatelet':
+                parameters = Parameters.Spheroplatelet;
+                break;
+            case 'Cut Sphere':
+                parameters = Parameters.CutSphere;
+                break;
+            case 'Sphere':
+                parameters = Parameters.Sphere;
+                break;
+            case 'Cone':
+                parameters = Parameters.Cone;
+                break;
+            case 'Cylinder':
+                parameters = Parameters.Cylinder;
+                break;
+            case 'Torus':
+                parameters = Parameters.Torus;
+                break;
+            default:
+                Alert.error('Error: Unexpected shape identifier');
+        }
+
+        return parameters;
     }
 
     Element = class Element {

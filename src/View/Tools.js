@@ -1,10 +1,8 @@
 
 
-import { Dropdown, RangeSlider, InputGroup, Sidebar, Sidenav, Nav, Icon, Navbar, Container, Checkbox, InputNumber, Content, Panel, HelpBlock, FormGroup, RadioGroup, Radio, Grid, Row, Col, Header, Footer, Button, FlexboxGrid, Form, ControlLabel, FormControl, Slider, ButtonToolbar, Input } from 'rsuite';
-import React, { Component, useState } from "react";
-import View from './View';
+import { Dropdown, RangeSlider, InputGroup, InputNumber, Row, Col, Slider, ButtonToolbar} from 'rsuite';
+import React, { useState } from "react";
 
-const TITLE_LEFT_MARGIN = 30;
 
 export const ParameterSet = (props) => {
     var set = [];
@@ -12,7 +10,7 @@ export const ParameterSet = (props) => {
     for (let i = 0; i < props.titles.length; i++) {
 
         set.push(
-            <ParameterInput title={props.titles[i]} values={props.values[i]} numerical f={props.f} index={i} />
+            <ParameterInput title={props.titles[i]} values={props.values[i]} numerical f={props.f} index={i} step={props.step} positive={props.positive} styling={props.styling}/>
         );
     }
 
@@ -24,14 +22,20 @@ export class ParameterInput extends React.Component {
 
     constructor(props) {
         super();
+        this.styling = props.styling;
         this.active = props.active;
         this.f = props.f;
+        this.step = props.step;
         this.title = props.title;
         this.values = props.values;
         this.numerical = props.numerical;
         this.index = props.index;
         this.selectingSet = props.selectingSet;
         this.changeValue = this.changeValue.bind(this);
+
+        if (props.positive){
+            this.min = 0;
+        }
     }
 
     changeValue(value) {
@@ -45,8 +49,8 @@ export class ParameterInput extends React.Component {
         if (this.numerical) {
             const defaultVal = this.values;
             InputBox =
-                (<div style={{ width: 130, marginLeft: 10 }}>
-                    <InputNumber defaultValue={defaultVal} step={0.1} onChange={this.changeValue} />
+                (<div style={this.styling[0]}>
+                    <InputNumber defaultValue={defaultVal} step={this.step} onChange={this.changeValue} min={this.min} />
                 </div>);
         } else {
 
@@ -75,11 +79,9 @@ export class ParameterInput extends React.Component {
         return (
             <div >
                 <Row style={{ marginTop: 15 }}>
-
-                    <Col md={10}><p style={{ marginTop: 10, marginLeft: 30 }}>{this.title}</p></Col>
+                    <Col md={10}><p style={this.styling[1]}>{this.title}</p></Col>
                     <Col md={14} />
                     <Col md={10}>{InputBox}</Col>
-
                 </Row>
             </div>
         );
@@ -107,7 +109,7 @@ export const SliceSlider = (props) => {
                             value={value[0]}
                             step={0.1}
                             onChange={nextValue => {
-                                const [start, end] = value;
+                                const end = value[1];
                                 if (parseFloat(nextValue) > end) {
                                     return;
                                 }
@@ -122,7 +124,7 @@ export const SliceSlider = (props) => {
                             value={value[1]}
                             step={0.1}
                             onChange={(nextValue) => {
-                                const [start, end] = value;
+                                const start = value[0];
                                 if (start > parseFloat(nextValue)) {
                                     return;
                                 }
@@ -158,18 +160,18 @@ export const CustomSlider = (props) => {
 
     var f = props.f;
     var [value, setValue] = useState(props.val);
-    var [disabled, disable] = useState(false);
+    var type;
 
-    var type, graduated, progress;
+
+    let disabled = props.disabled;
+    const [min, max] = props.boundaries;
+
 
     if (props.type == null) {
         type = null;
     } else {
         type = props.type;
     }
-
-    disabled = props.disabled;
-    const [min, max] = props.boundaries;
 
 
     return (
