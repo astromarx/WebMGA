@@ -3,6 +3,9 @@ import View from "./View/View"
 import 'rsuite/dist/styles/rsuite-dark.css';
 import sample1 from './Samples/1.json';
 import sample2 from './Samples/2.json';
+import sample3 from './Samples/fig1.json';
+import sample4 from './Samples/hbc.json';
+
 import { Alert, Notification } from 'rsuite'
 
 class Controller {
@@ -12,8 +15,11 @@ class Controller {
 
     constructor() {
         this.io = [this.save, this.load, this.export, this.loadSample];
+        this.chronometer = new this.Chronometer();
+        this.externalToggle = new this.ExternalToggle();
         this.model = new Model();
-        this.view = new View(this.model, this.io);
+        this.view = new View(this.model, this.io, this.chronometer, this.externalToggle);
+
         Alert.config(
             ({
                 top: 70,
@@ -22,11 +28,48 @@ class Controller {
         );
     }
 
+    ExternalToggle = class ExternalToggle {
+        force = () => { }
+    }
+
+    Chronometer = class Chronometer {
+
+        constructor() {
+            this.fps = 0;
+            this.frames = 0;
+            this.prevTime = Date.now();
+        }
+
+        f = (n) => {
+            //is initialised in Header React Component
+        }
+
+        fps = () => {
+            return this.fps;
+        }
+
+        begin = () => {
+            this.prevTime = Date.now();
+        }
+
+        click = () => {
+            this.frames++;
+            var time = Date.now();
+
+            if (time > this.prevTime + 1000) {
+                this.fps = (this.frames * 1000) / (time - this.prevTime);
+                this.prevTime = time;
+                this.frames = 0;
+                this.f(this.fps);
+            }
+        }
+    };
+
     start = () => {
         this.addListeners();
         this.generate(sample2, true);
+        this.chronometer.begin();
         this.render();
-
 
         this.notify('info', 'Welcome!',
             (<p style={{ width: 320 }} >
@@ -71,16 +114,14 @@ class Controller {
     }
 
     generate = (data, starting) => {
-        this.view.expanded = false;
-
         this.model.genSets(data.model.sets);
-
         if (data.state == null) {
-            Alert.info("Set default viewing state.");
+            Alert.info("Setting default viewing state.");
             this.view.setDefaultStates(starting);
         } else {
             this.view.setState(data.state);
         }
+        this.externalToggle.force();
     }
 
     load = (file) => {
@@ -92,6 +133,7 @@ class Controller {
                 Alert.info('File loaded successfully.');
             } catch (err) {
                 Alert.error(err);
+                return;
             }
         }
         fileReader.onloadend = read;
@@ -107,6 +149,14 @@ class Controller {
                 break;
             case 2:
                 this.generate(sample2, false);
+                Alert.info('File loaded successfully.');
+                break;
+            case 3:
+                this.generate(sample3, false);
+                Alert.info('File loaded successfully.');
+                break;
+            case 4:
+                this.generate(sample4, false);
                 Alert.info('File loaded successfully.');
                 break;
             default:
@@ -138,7 +188,7 @@ class Controller {
         this.model.updateDimensions();
         this.model.updateCamera();
 
-        
+
         var link = document.createElement('a');
         link.download = "WebMGA Visualisation.png";
         link.href = dataURL;
@@ -150,9 +200,6 @@ class Controller {
 
         this.notify('success', 'Thank you!', (
             <div>
-                <p style={{ width: 320 }} >
-                    Please cite us!
-                </p>
                 <a href="https://www.ucl.ac.uk/prospective-students/undergraduate/degrees/computer-science-bsc" target="_blank" rel="noopener noreferrer">Here</a>
             </div>
         ));
@@ -162,7 +209,7 @@ class Controller {
         return this.view.header;
     }
 
-    getSiderbar = () => {
+    getSidebar = () => {
         return this.view.sidebar;
     }
 
@@ -171,10 +218,8 @@ class Controller {
     }
 
     render = () => {
-        //this.stats.begin();
         this.model.update();
-        //this.stats.end();
-        //this.updateFPS();
+        this.chronometer.click();
         requestAnimationFrame(this.render);
     }
 
@@ -222,34 +267,4 @@ class Controller {
 
 
 export default Controller;
-
-
-var Stats = function () {
-
-    var fps = 10;
-    var frames = 0;
-    var prevTime;
-
-    return {
-        getFPS: function () {
-            return fps;
-        },
-        begin: function () {
-            prevTime = Date.now();
-        },
-        end: function () {
-            frames++;
-            var time = Date.now();
-
-            if (time > prevTime + 1000) {
-                fps = (frames * 1000) / (time - prevTime);
-                prevTime = time;
-                frames = 0;
-                console.log(fps);
-            }
-        },
-
-    };
-
-};
 

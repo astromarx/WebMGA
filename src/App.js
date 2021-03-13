@@ -12,7 +12,7 @@ class App extends Component {
 
     this.state = {
       header: this.controller.getHeader(),
-      sidebar: this.controller.getSiderbar()
+      sidebar: this.controller.getSidebar()
     };
   }
 

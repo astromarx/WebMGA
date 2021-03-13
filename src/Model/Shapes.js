@@ -4,7 +4,6 @@ import {
     TriangleFanDrawMode,
     TriangleStripDrawMode,
     SphereBufferGeometry,
-    ConeBufferGeometry,
     CylinderBufferGeometry,
     TorusBufferGeometry
 } from 'three';
@@ -95,9 +94,6 @@ export class Preset extends Shape {
         switch (this.type) {
             case 'Sphere':
                 this.presetGeometry = new SphereBufferGeometry(this.parameters, this.complexity[this.LOD], this.complexity[this.LOD]);
-                break;
-            case 'Cone':
-                this.presetGeometry = new ConeBufferGeometry(...this.parameters, this.complexity[this.LOD]);
                 break;
             case 'Cylinder':
                 this.presetGeometry = new CylinderBufferGeometry(...this.parameters, this.complexity[this.LOD]);

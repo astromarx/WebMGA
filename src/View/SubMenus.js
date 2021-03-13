@@ -136,7 +136,7 @@ export class ModelsOptions extends React.Component {
         const configState = this.state.configurations[this.state.active];
         const reset = this.state.reset;
         const title = configState.title;
-        const shapes = ["Ellipsoid", "Sphere", "Spherocylinder", "Spheroplatelet", "Cut Sphere", "Cone", "Cylinder", "Torus"];
+        const shapes = ["Ellipsoid", "Sphere", "Spherocylinder", "Spheroplatelet", "Cut Sphere", "Cylinder", "Torus"];
         const sets = this.state.sets;
 
         return (
@@ -146,7 +146,7 @@ export class ModelsOptions extends React.Component {
                 <Divider><strong style={dividerStyle}> Configuration</strong></Divider>
                 <ParameterInput f={this.selectSet} selectingSet title="Set" values={sets} active={title} styling={submenuParameterSetStyling} />
                 <ParameterInput f={this.selectShape} title="Shape" values={shapes} active={configState.shape} styling={submenuParameterSetStyling} />
-                <ParameterSet f={this.updateParameter} titles={configState.parameters.names} values={configState.parameters.vals} step={0.1} positive styling={submenuParameterSetStyling}/>
+                <ParameterSet f={this.updateParameter} titles={configState.parameters.names} values={configState.parameters.vals} step={0.1} positive styling={submenuParameterSetStyling} />
                 <br />
                 <Divider><strong style={dividerStyle}>  Material </strong></Divider>
 
@@ -180,8 +180,10 @@ export class CameraOptions extends React.Component {
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
         this.selectCameraType = this.selectCameraType.bind(this);
         this.updateLookat = this.updateLookat.bind(this);
+        this.updateCameraPosition = this.updateCameraPosition.bind(this);
 
     }
+
     toggleAutorotate() {
         this.setState({
             rotating: !this.state.rotating
@@ -197,21 +199,48 @@ export class CameraOptions extends React.Component {
         this.model.setCamera(value);
     }
 
+    updateCameraPosition(value, type) {
+        let position = this.state.position;
+
+        if (value != NaN && value != null) {
+        switch (type) {
+            case 0:
+                position.r = parseFloat(value);
+                break;
+            case 1:
+                position.theta = parseFloat(value);
+                break;
+            case 2:
+                position.psi = parseFloat(value);
+                break;
+            default:
+                Alert.error('Error: Unexpected Camera Position Input');
+                return;
+        }
+        }
+
+        this.model.updateCameraPosition(position);
+        View.state.camera.position = position;
+    }
+
     updateLookat(value, type) {
         let lookAt = this.state.lookAt;
 
-        switch (type) {
-            case 0:
-                lookAt.x = parseFloat(value);
-                break;
-            case 1:
-                lookAt.y = parseFloat(value);
-                break;
-            case 2:
-                lookAt.z = parseFloat(value);
-                break;
-            default:
-                Alert.error('Error: Unexpected LookAt Identifier');
+        if (value != NaN && value != null) {
+            switch (type) {
+                case 0:
+                    lookAt.x = parseFloat(value);
+                    break;
+                case 1:
+                    lookAt.y = parseFloat(value);
+                    break;
+                case 2:
+                    lookAt.z = parseFloat(value);
+                    break;
+                default:
+                    Alert.error('Error: Unexpected Look At Input');
+                    return;
+            }
         }
 
         this.model.updateLookAt(lookAt);
@@ -223,6 +252,7 @@ export class CameraOptions extends React.Component {
         const cameraType = this.state.type;
         const rotating = this.state.rotating;
         const lookAt = [this.state.lookAt.x, this.state.lookAt.y, this.state.lookAt.z];
+        const cameraPosition = [this.state.position.r, this.state.position.theta, this.state.position.psi]
 
         return (
             <div >
@@ -251,21 +281,26 @@ export class CameraOptions extends React.Component {
                             <Checkbox checked={rotating} onClick={this.toggleAutorotate}> AutoRotate</Checkbox>
                         </Col>
                     </Row>
-                    <br />
-                    <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Rotation Speed </p>
-
-                    <CustomSlider disabled={true} boundaries={[0, 100]} />
 
                     <Row className="show-grid">
                         <Col xs={2} />
                         <Col xs={12}>
                             <br />
-                            <p> Look at</p>
+                            <p><b> Camera Position</b></p>
                         </Col>
                     </Row>
-                </Grid>
+                    <ParameterSet titles={["r", "theta", "psi"]} values={cameraPosition} f={this.updateCameraPosition} step={0.5} styling={submenuParameterSetStyling} />
 
-                <ParameterSet titles={["X position", "Y position", "Z position"]} values={lookAt} f={this.updateLookat} step={0.5} styling={submenuParameterSetStyling}/>
+                    <Row className="show-grid">
+                        <Col xs={2} />
+                        <Col xs={12}>
+                            <br />
+                            <p><b> Look at</b></p>
+                        </Col>
+                    </Row>
+                    <ParameterSet titles={["x", "y", "z"]} values={lookAt} f={this.updateLookat} step={0.5} styling={submenuParameterSetStyling} />
+
+                </Grid>
                 <br />
 
 
@@ -747,7 +782,7 @@ export class ReferenceOptions extends React.Component {
                         <Checkbox disabled={true}> Multi-Colour Axes </Checkbox>
                     </Col>
                 </Row>
-                <br/>
+                <br />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
                 <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.r} f={this.updateColour} type={'r'} />
                 <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.g} f={this.updateColour} type={'g'} />

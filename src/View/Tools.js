@@ -80,8 +80,8 @@ export class ParameterInput extends React.Component {
             <div >
                 <Row style={{ marginTop: 15 }}>
                     <Col md={10}><p style={this.styling[1]}>{this.title}</p></Col>
-                    <Col md={14} />
-                    <Col md={10}>{InputBox}</Col>
+                    <Col md={10} />
+                    <Col md={14}>{InputBox}</Col>
                 </Row>
             </div>
         );

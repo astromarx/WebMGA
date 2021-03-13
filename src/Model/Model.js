@@ -146,7 +146,6 @@ export class Model {
         } else {
             this.width = window.innerWidth - 56;
         }
-
         this.renderer.setSize(this.width, this.height);
     }
 
@@ -173,9 +172,18 @@ export class Model {
             this.camera.left = this.width / - 2;
             this.camera.right = this.width / 2;
             this.camera.top = this.height / 2;
-            this.camera.bottom = this.height / 2;
+            this.camera.bottom = this.height / - 2;
         }
         this.camera.updateProjectionMatrix();
+    }
+    
+    updateCameraPosition(p){
+        let x = p.r * Math.sin(p.psi) * Math.cos(p.theta);
+        let y = p.r * Math.sin(p.psi) * Math.sin(p.theta);
+        let z = p.r * Math.cos(p.psi);
+
+        this.camera.position.set(x, y, z);
+        this.controls.update();
     }
 
     updateLookAt(l) {
@@ -188,6 +196,7 @@ export class Model {
     toggleSidebar() {
         this.sidebarExpanded = !this.sidebarExpanded;
         this.updateDimensions();
+        this.updateCamera();
     }
 
     updateBg(colour) {
@@ -311,6 +320,9 @@ export class Model {
     }
 
     updateModel(id, params, f) {
+        console.log(this.sets);
+        console.log(id);
+
         for (const m of this.sets[id].meshes) {
             this.scene.remove(m);
         }

@@ -2,7 +2,7 @@
 export var Parameters = {
     Ellipsoid: {
         names: ['X', 'Y', 'Z'],
-        vals: [0.5, 0.2, 0.2]
+        vals: [0.2, 0.4, 0.8]
     },
     Spherocylinder:{
         names: ['Radius', 'Length'],
@@ -20,12 +20,8 @@ export var Parameters = {
         names: ['Radius'],
         vals: [0.6]
     },
-    Cone: {
-        names: ['Radius','Height'],
-        vals: [0.8, 1.2]
-    },
     Cylinder: {
-        names: ['RadiusTop', 'RadiusBottom', 'Height'],
+        names: ['Top', 'Bottom', 'Height'],
         vals: [0.5,0.5,2.0]
     },
     Torus:{

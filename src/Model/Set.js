@@ -5,12 +5,15 @@ import {
     Quaternion,
     Euler,
     Color,
-    DoubleSide
+    DoubleSide,
+
 } from 'three';
+import {eigs} from 'mathjs';
 import * as SHAPE from './Shapes.js';
 import Model from './Model';
 import Parameters from './Parameters';
 import { Alert } from 'rsuite';
+import colourMap from './ColourMap.json';
 
 export class Set {
     name;
@@ -25,6 +28,7 @@ export class Set {
     lod;
     clippingPlanes;
     clipIntersection;
+    colourMap;
 
     positions = [];
     orientations = [];
@@ -41,13 +45,13 @@ export class Set {
 
         this.setDefaults();
 
-        if (data.shapeType != null){
+        if (data.shapeType != null) {
             this.shapeType = data.shapeType;
         }
-        if (data.parameters != null){
+        if (data.parameters != null) {
             this.shapeType = data.parameters;
         }
-        if (this.name == null){
+        if (this.name == null) {
             this.name = this.shapeType;
         }
 
@@ -57,7 +61,6 @@ export class Set {
         this.setElements();
         this.genMeshes();
     }
-
 
     //deprecated
     // constructor(name, orientationType, data, cp, ci) {
@@ -121,7 +124,9 @@ export class Set {
 
         for (let elem of this.elements) {
             if (this.colourByDirector) {
-                c = new Color(elem.getColour());
+                console.log(elem.colourIndex);
+                let rgb = colourMap.values[elem.colourIndex];
+                c = new Color(Model.rgbToHex(...rgb));
             } else {
                 c = this.userColour;
             }
@@ -164,12 +169,16 @@ export class Set {
     }
 
     genElements() {
-        let colour, euler;
         for (let i = 0; i < this.positions.length; i++) {
-            euler = this.getRotations(this.orientationType, this.orientations[i]);
-            colour = this.colourFromOrientation(euler);
-            this.elements.push(new this.Element(colour, this.positions[i], euler));
+            this.elements.push(new this.Element(this.positions[i], this.getRotations(this.orientationType, this.orientations[i])));
         }
+        console.log(this.elements);
+        this.calculateDirector();
+        console.log(this.director);
+        for(let elem of this.elements){
+            elem.setColourIndex(this.calculateColourIndex(elem));
+        }
+        console.log(this.elements);
     }
 
     genElementsDeprecated(elements) {
@@ -180,7 +189,7 @@ export class Set {
 
         for (let elem of elements) {
 
-            if(elem === ""){
+            if (elem === "") {
                 return;
             }
 
@@ -195,8 +204,6 @@ export class Set {
 
             console.log(attributes);
             if (attributes.length !== 6) { break; }
-
-
 
             position = attributes.slice(0, 3);
             orientation = attributes.slice(3);
@@ -232,9 +239,6 @@ export class Set {
             case 'Sphere':
                 this.shape = new SHAPE.Preset('Sphere', this.parameters);
                 break;
-            case 'Cone':
-                this.shape = new SHAPE.Preset('Cone', this.parameters);
-                break;
             case 'Cylinder':
                 this.shape = new SHAPE.Preset('Cylinder', this.parameters);
                 break;
@@ -265,30 +269,27 @@ export class Set {
 
     getRotations(type, rot) {
         let q = new Quaternion();
-        let e = new Euler();
-
         switch (type) {
             case 'v':
                 let defaultVector = new Vector3(0, 0, 1);
                 q.setFromUnitVectors(defaultVector, new Vector3(rot[0], rot[1], rot[2]));
-                e.setFromQuaternion(q);
                 break;
             case 'q':
-                q.fromArray(rot);
-                e.setFromQuaternion(q);
+                q.set(rot[1], rot[2], rot[3], rot[0]);
                 break;
             case 'a':
                 q.setFromAxisAngle(new Vector3(rot[0], rot[1], rot[2]), rot[3]);
-                e.setFromQuaternion(q);
                 break;
             case 'e':
+                let e = new Euler();
                 e.fromArray(rot);
+                q.setFromEuler(e)
                 break;
             default:
                 throw 'Error: Unexpected rotation type value. \n Found: ' + type + '\n Expected: v | q | a | e';
         }
 
-        return e;
+        return q;
 
     }
 
@@ -298,7 +299,89 @@ export class Set {
         colour.push(Math.round((euler._x + Math.PI) / (2 * Math.PI) * (255)));
         colour.push(Math.round((euler._y + Math.PI) / (2 * Math.PI) * (255)));
         colour.push(Math.round((euler._z + Math.PI) / (2 * Math.PI) * (255)));
+
         return colour;
+    }
+
+    calculateDirector() {
+        let n = this.elements.length;
+
+        console.log('elements length');
+        console.log(n);
+
+        if (this.elements.length == 0) {
+            Alert.error('Error: No elements in set, director calculation failed.');
+            return;
+        }
+
+        let orderTensor = [[0,0,0],[0,0,0],[0,0,0]];
+        //let eigenvectorsInColumns = new Matrix3();
+
+        let factor = 3 / (2 * n);
+        let constant = 0.5;
+
+        let orientation;
+
+        // loop over all molecules and calculate order tensor
+        for (let i = 0; i < n; ++i) {
+            orientation = this.elements[i].orientation;
+            orderTensor[0][0] += orientation[0]**2;
+            orderTensor[0][1] += orientation[0]*orientation[1];
+            orderTensor[0][2] += orientation[0]*orientation[2];
+            orderTensor[1][1] += orientation[1]**2;
+            orderTensor[1][2] += orientation[1]*orientation[2];
+            orderTensor[2][2] += orientation[2]**2;
+        }
+
+        // multiply each tensor value with "factor" and afterwards subtract "subtract" from diagonal elements
+        orderTensor[0][0] *= factor; orderTensor[0][0] -= constant;
+        orderTensor[0][1] *= factor;
+        orderTensor[0][2] *= factor;
+        orderTensor[1][1] *= factor; orderTensor[1][1] -= constant;
+        orderTensor[1][2] *= factor;
+        orderTensor[2][2] *= factor; orderTensor[2][2] -= constant;
+
+        // mirror matrix to make it symmetric
+        orderTensor[1][0] = orderTensor[0][1];
+        orderTensor[2][0] = orderTensor[0][2];
+        orderTensor[2][1] = orderTensor[1][2];
+
+        console.log(orderTensor)
+
+        let eigen = eigs(orderTensor);
+
+        console.log(eigen);
+        
+        //returns index of max eigenvalue
+        let index = eigen.values.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+
+        console.log(index);
+
+        this.director = eigen.vectors[index];
+
+        let norm = Math.sqrt(this.director[0]**2 + this.director[1]**2 + this.director[2]**2);
+
+        if (norm == 0 || norm == NaN || norm == undefined){
+            this.director = [0,0,1];
+        }else{
+            this.director[0] /= norm;
+            this.director[1] /= norm;
+            this.director[2] /= norm;
+        }
+
+        // TEST!
+    }
+
+    calculateColourIndex(element){
+        let n = colourMap.values.length - 1;
+
+        let scalarProduct = Math.abs(element.orientation[0] * this.director[0]
+            + element.orientation[1] * this.director[1]
+            + element.orientation[2] * this.director[2]);
+
+        if (scalarProduct > 1){scalarProduct = 1;}
+
+        return Math.round(Math.acos( scalarProduct )/Math.PI*2*( n ));;
     }
 
     setUserColour(hex) {
@@ -324,9 +407,6 @@ export class Set {
             case 'Sphere':
                 parameters = Parameters.Sphere;
                 break;
-            case 'Cone':
-                parameters = Parameters.Cone;
-                break;
             case 'Cylinder':
                 parameters = Parameters.Cylinder;
                 break;
@@ -342,14 +422,29 @@ export class Set {
 
     Element = class Element {
         geometries;
-        colour;
+        orientation;
         position;
+        colourIndex;
         euler;
 
-        constructor(c, p, e) {
-            this.colour = c;
+        constructor(p, q) {
             this.position = p;
-            this.euler = e;
+            this.orientation = this.quaternionToUnitVector(q);
+
+            this.euler = new Euler();
+            this.euler.setFromQuaternion(q);
+            this.colourIndex = 0;
+        }
+
+        quaternionToUnitVector(q){
+            let a = Math.round(1000* (2 * (   q.w*q.y + q.x*q.z )))/1000;
+            let b = Math.round(1000* (2 * ( - q.w*q.x + q.y*q.z )))/1000;
+            let c = Math.round(1000* (1 - 2 * ( q.x**2 + q.y**2 )))/1000;
+            return [a,b,c];
+        }
+
+        setColourIndex(i){
+            this.colourIndex = i;
         }
 
         getColour() {

@@ -23,31 +23,31 @@ const NavToggle = ({ expand, onChange }) => {
 
 const navItemStyle = { margin: 6.5 };
 
-var sidebarHeight = window.innerHeight - 56; 
+var sidebarHeight = window.innerHeight - 56;
 
 const CustomNav = ({ active, onSelect, ...props }) => {
     return (
         <div>
-        <Nav {...props} activeKey={active} onSelect={onSelect} style={{  backgroundColor: '#101010', height: sidebarHeight }}>
-            <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
-            </Nav.Item>
-            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
-            <Nav.Item eventKey="View" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
-            {/* </Whisper> */}
-            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
-            <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
-            {/* </Whisper> */}
-            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
-            <Nav.Item eventKey="Other Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
-            {/* </Whisper> */}
-            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
-            <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
-            {/* </Whisper> */}
-            {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Reference Frame Frame</Tooltip>)}> */}
-            <Nav.Item eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
-            {/* </Whisper> */}
-            
-        </Nav>
+            <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010', height: sidebarHeight }}>
+                <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
+                </Nav.Item>
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
+                <Nav.Item eventKey="View" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
+                <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
+                <Nav.Item eventKey="Other Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
+                <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
+                {/* </Whisper> */}
+                {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Reference Frame Frame</Tooltip>)}> */}
+                <Nav.Item eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
+                {/* </Whisper> */}
+
+            </Nav>
         </div>
     );
 };
@@ -60,18 +60,18 @@ const MenuContent = ({ active, expand, onChange, model }) => {
         menuContent.push(<NavToggle expand={expand} onChange={onChange} />);
     } else {
         menuContent.push(
-            <div  style={{backgroundColor: '#0F131B'}}>
-            <Nav>
-                <Navbar appearance="subtle">
-                    <Nav pullLeft>
-                        <h3 style={{ marginTop: 15, marginLeft: 30 }}>{active}</h3>
-                    </Nav>
-                    <Nav pullRight>
-                        <NavToggle expand={expand} onChange={onChange} />
-                    </Nav>
-                </Navbar>
+            <div style={{ backgroundColor: '#0F131B' }}>
+                <Nav>
+                    <Navbar appearance="subtle">
+                        <Nav pullLeft>
+                            <h3 style={{ marginTop: 15, marginLeft: 30 }}>{active}</h3>
+                        </Nav>
+                        <Nav pullRight>
+                            <NavToggle expand={expand} onChange={onChange} />
+                        </Nav>
+                    </Navbar>
 
-            </Nav>
+                </Nav>
             </div>
         );
     }
@@ -79,22 +79,22 @@ const MenuContent = ({ active, expand, onChange, model }) => {
     if (expand) {
         switch (active) {
             case "Models":
-                menuContent.push(<ModelsOptions model={model}/>);
+                menuContent.push(<ModelsOptions model={model} />);
                 break;
             case "View":
-                menuContent.push(<CameraOptions model={model}/>);
+                menuContent.push(<CameraOptions model={model} />);
                 break;
             case "Ambient Light":
-                menuContent.push(<AmbientLightOptions model={model}/>);
+                menuContent.push(<AmbientLightOptions model={model} />);
                 break;
             case "Other Lighting":
-                menuContent.push(<AdditionalLightOptions model={model}/>);
+                menuContent.push(<AdditionalLightOptions model={model} />);
                 break;
             case "Slicing":
                 menuContent.push(<SlicingOptions model={model} />);
                 break;
             case "Reference":
-                menuContent.push(<ReferenceOptions model={model}/>);
+                menuContent.push(<ReferenceOptions model={model} />);
                 break;
             default:
                 Alert.error('Error: Unknown Submenu Identifier');
@@ -115,13 +115,19 @@ class Side extends Component {
         this.model = props.model;
         this.handleToggle = this.handleToggle.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
+        this.toggler = props.toggler;
+        
+        this.toggler.force = () => {
+            if (this.state.expand){
+                this.handleToggle();
+            }
+        }
     }
     handleToggle() {
         this.setState({
             expand: !this.state.expand
         });
         this.model.toggleSidebar();
-
     }
     handleSelect(activeKey) {
         this.setState({
@@ -142,14 +148,14 @@ class Side extends Component {
                     style={{ display: 'flex', flexDirection: 'column' }}
                     width={expand ? 356 : 56}
                     collapsible
-                    appearance="default" 
+                    appearance="default"
                 >
                     <Container>
                         <Sidebar width={56} >
                             <CustomNav vertical appearance="subtle" active={active} onSelect={this.handleSelect} />
                         </Sidebar>
                         <Content >
-                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} model={this.model}/>
+                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} model={this.model} />
                         </Content>
 
                     </Container>

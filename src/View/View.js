@@ -10,12 +10,16 @@ export class View {
 
     static state;
 
-    constructor(m, io) {
+    constructor(m, io, chrono, toggler) {
         View.state = {}
         this.expanded = false;
         this.model = m;
-        this.header = <Top fps={60} functions={io} model={this.model} />;
-        this.sidebar = <Side model={this.model} sidebarExpanded={this.expanded} />;
+        this.header = <Top chronometer={chrono} functions={io} model={this.model} />;
+        this.sidebar = <Side model={this.model} sidebarExpanded={this.expanded} toggler={toggler}/>;
+    }
+
+    updateFPS(fps){
+        this.fps = fps;
     }
 
     getData() {
@@ -90,6 +94,7 @@ export class View {
     }
 
     setDefaultStates(starting) {
+        View.state = {};
         View.state.reference = this.ReferenceDefaultState;
         View.state.ambientLight = this.AmbientLightDefaultState;
         View.state.pointLight = this.PointLightDefaultState;
@@ -97,6 +102,9 @@ export class View {
         View.state.camera = this.CameraDefaultState;
         View.state.slicing = this.SlicingDefaultState;
         View.state.model = this.ModelDefaultState;
+        View.state.model.configurations = [];
+        View.state.model.sets = [];
+
 
         for (let i in this.model.sets) {
             let set = JSON.parse(JSON.stringify(this.ConfigurationDefaultState));
@@ -109,6 +117,7 @@ export class View {
             this.loadLightingAndCamera(View.state);
             this.loadReferenceAndSlicing(View.state);
             this.loadModel(View.state);
+            
         }
     }
 
@@ -133,7 +142,7 @@ export class View {
         shape: 'Ellipsoid',
         parameters: {
             names: ['X', 'Y', 'Z'],
-            vals: [0.5, 0.2, 0.2]
+            vals: [0.2, 0.4, 0.8]
         },
         colour: {
             r: 255,
@@ -152,6 +161,11 @@ export class View {
             x: 0,
             y: 0,
             z: 0
+        },
+        position: {
+            r: 10,
+            theta: 3.1,
+            psi: 0
         }
     }
 
