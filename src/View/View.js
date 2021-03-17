@@ -37,7 +37,6 @@ export class View {
         let substate;
         for (let i in state.model.configurations) {
             substate = state.model.configurations[i];
-            this.model.updateShininess(i, substate.shininess);
             this.model.updateUserColour(i, substate.colour);
             this.model.toggleUserColour(i, substate.colourFromDirector);
             this.model.toggleWireframe(i, substate.displayAsWireframe);
@@ -88,9 +87,14 @@ export class View {
         this.model.updateLight(2, pointLightColour);
         this.model.updateLightPosition(1, state.directionalLight.position);
         this.model.updateLightPosition(2, state.pointLight.position);
-        this.model.controls.autoRotate = state.camera.rotating;
+        this.model.toggleLightHelper(1, state.directionalLight.helper);
+        this.model.toggleLightHelper(2, state.pointLight.helper);
         this.model.setCamera(state.camera.type);
+
+        this.model.updateCameraPosition(state.camera.position);
         this.model.updateLookAt(state.camera.lookAt);
+        
+        this.model.updateCameraZoom(state.camera.zoom);
     }
 
     setDefaultStates(starting) {
@@ -113,11 +117,11 @@ export class View {
             View.state.model.configurations.push(set);
         }
 
+        this.loadLightingAndCamera(View.state);
+
         if (!starting) {
-            this.loadLightingAndCamera(View.state);
             this.loadReferenceAndSlicing(View.state);
             this.loadModel(View.state);
-            
         }
     }
 
@@ -149,14 +153,12 @@ export class View {
             g: 255,
             b: 255
         },
-        shininess: 30,
         colourFromDirector: true,
         displayAsWireframe: true
     }
 
     CameraDefaultState = {
-        rotating: false,
-        type: 'perspective',
+        type: 'orthographic',
         lookAt: {
             x: 0,
             y: 0,
@@ -166,13 +168,15 @@ export class View {
             r: 10,
             theta: 3.1,
             psi: 0
-        }
+        },
+        zoom: 50
     }
 
     PointLightDefaultState = {
         reset: 0,
         active: 'point',
         enabled: true,
+        helper: false,
         colour: {
             r: 255,
             g: 255,
@@ -190,6 +194,7 @@ export class View {
         reset: 0,
         active: 'directional',
         enabled: true,
+        helper: false,
         colour: {
             r: 255,
             g: 255,

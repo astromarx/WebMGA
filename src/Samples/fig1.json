@@ -1,10 +1,10 @@
 {
-   "model":{
-      "sets":[
+   "model": {
+      "sets": [
          {
-            "name":"figure 1",
-            "orientationType":"v",
-            "positions":[
+            "name": "figure 1",
+            "orientationType": "v",
+            "positions": [
                [
                   -4.633162,
                   5.958911,
@@ -5126,7 +5126,7 @@
                   -7.993699
                ]
             ],
-            "orientations":[
+            "orientations": [
                [
                   -0.529719,
                   0.794496,
@@ -10250,131 +10250,5 @@
             ]
          }
       ]
-   },
-   "state":{
-      "reference":{
-         "boundingShapeEnabled":false,
-         "activeShape":"box",
-         "showAxes":true,
-         "showGrid":false,
-         "gridColour":{
-            "r":255,
-            "g":0,
-            "b":0
-         },
-         "size":50
-      },
-      "ambientLight":{
-         "ambientLightColour":{
-            "r":255,
-            "g":255,
-            "b":255,
-            "i":76
-         },
-         "backgroundColour":{
-            "r":255,
-            "g":255,
-            "b":255
-         }
-      },
-      "pointLight":{
-         "reset":0,
-         "active":"point",
-         "enabled":true,
-         "colour":{
-            "r":255,
-            "g":255,
-            "b":255,
-            "i":60
-         },
-         "position":{
-            "x":5,
-            "y":0,
-            "z":5
-         }
-      },
-      "directionalLight":{
-         "reset":0,
-         "active":"directional",
-         "enabled":true,
-         "colour":{
-            "r":255,
-            "g":255,
-            "b":255,
-            "i":50
-         },
-         "position":{
-            "x":-5,
-            "y":0,
-            "z":-5
-         }
-      },
-      "camera":{
-         "rotating":false,
-         "type":"orthographic",
-         "lookAt":{
-            "x":0,
-            "y":0,
-            "z":0
-         },
-         "position":{
-            "r":20,
-            "theta":3.1,
-            "psi":0
-         }
-      },
-      "slicing":{
-         "clipIntersection":false,
-         "helpers":[
-            true,
-            true,
-            false
-         ],
-         "x":[
-            -8,
-            8
-         ],
-         "y":[
-            -8,
-            8
-         ],
-         "z":[
-            -50,
-            50
-         ]
-      },
-      "model":{
-         "active":0,
-         "reset":0,
-         "sets":[
-            "figure 1"
-         ],
-         "configurations":[
-            {
-               "title":"figure 1",
-               "shape":"Ellipsoid",
-               "parameters":{
-                  "names":[
-                     "X",
-                     "Y",
-                     "Z"
-                  ],
-                  "vals":[
-                     0.5,
-                     1,
-                     1
-                  ]
-               },
-               "colour":{
-                  "r":255,
-                  "g":255,
-                  "b":255
-               },
-               "shininess":75,
-               "colourFromDirector":true,
-               "displayAsWireframe":true
-            }
-         ]
-      }
    }
 }

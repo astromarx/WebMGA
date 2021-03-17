@@ -2,11 +2,14 @@ import { Alert } from 'rsuite';
 import {
     AmbientLight,
     DirectionalLight,
-    PointLight
+    PointLight,
+    DirectionalLightHelper,
+    PointLightHelper
 } from 'three';
 
 export class Light {
     light;
+    helper;
 
     static AMBIENT = 0;
     static DIRECTIONAL = 1;
@@ -33,10 +36,12 @@ export class Light {
             case 'directional':
                 this.light = new DirectionalLight("#ffffff", 0.5);
                 this.light.position.set(-5, 0, -5);
+                this.helper = new DirectionalLightHelper(this.light, 10);
                 break;
             case 'point':
                 this.light = new PointLight("#ffffff", 0.6);
                 this.light.position.set(5, 0, 5);
+                this.helper = new PointLightHelper(this.light, 10);
                 break;
             default:
                 Alert.error("Error: null light type selected");

@@ -1,6 +1,6 @@
 import {
     Mesh,
-    MeshPhongMaterial,
+    MeshLambertMaterial,
     Vector3,
     Quaternion,
     Euler,
@@ -22,7 +22,6 @@ export class Set {
     shape;
     orientationType;
     wireframe;
-    shininess;
     userColour;
     colourByDirector;
     lod;
@@ -99,7 +98,6 @@ export class Set {
         this.userColour = new Color("#FFFFFF");
         this.colourByDirector = true;
         this.wireframe = true;
-        this.shininess = 30;
         this.lod = 1;
         this.shapeType = 'Ellipsoid';
         this.parameters = Parameters.Ellipsoid.vals;
@@ -124,21 +122,18 @@ export class Set {
 
         for (let elem of this.elements) {
             if (this.colourByDirector) {
-                console.log(elem.colourIndex);
                 let rgb = colourMap.values[elem.colourIndex];
                 c = new Color(Model.rgbToHex(...rgb));
             } else {
                 c = this.userColour;
             }
 
-            mat = new MeshPhongMaterial({
+            mat = new MeshLambertMaterial({
                 color: c,
-                side: DoubleSide,
                 clippingPlanes: this.clippingPlanes,
                 clipIntersection: this.clipIntersection
             });
             mat.wireframe = this.wireframe;
-            mat.shininess = this.shininess;
 
             for (let g of elem.geometries) {
                 m = new Mesh(g, mat);
@@ -160,8 +155,9 @@ export class Set {
                 geoms.push(this.shape.fanGeometries[1].clone());
             }
 
-            this.translate(elem.position, geoms);
             this.rotate(elem.euler, geoms);
+            this.translate(elem.position, geoms);
+            
             elem.setGeometries(geoms);
 
             geoms = [];
@@ -172,20 +168,15 @@ export class Set {
         for (let i = 0; i < this.positions.length; i++) {
             this.elements.push(new this.Element(this.positions[i], this.getRotations(this.orientationType, this.orientations[i])));
         }
-        console.log(this.elements);
         this.calculateDirector();
-        console.log(this.director);
         for(let elem of this.elements){
             elem.setColourIndex(this.calculateColourIndex(elem));
         }
-        console.log(this.elements);
     }
 
     genElementsDeprecated(elements) {
         let position, orientation, attributes, euler, nP;
         let temp = [], colour = [];
-
-        console.log(elements);
 
         for (let elem of elements) {
 
@@ -202,7 +193,6 @@ export class Set {
             attributes = temp;
             temp = [];
 
-            console.log(attributes);
             if (attributes.length !== 6) { break; }
 
             position = attributes.slice(0, 3);
@@ -254,6 +244,7 @@ export class Set {
     }
 
     translate(pos, geoms) {
+        console.log(pos);
         for (let g of geoms) {
             g.translate(pos[0], pos[1], pos[2]);
         }
@@ -306,9 +297,6 @@ export class Set {
     calculateDirector() {
         let n = this.elements.length;
 
-        console.log('elements length');
-        console.log(n);
-
         if (this.elements.length == 0) {
             Alert.error('Error: No elements in set, director calculation failed.');
             return;
@@ -346,16 +334,10 @@ export class Set {
         orderTensor[2][0] = orderTensor[0][2];
         orderTensor[2][1] = orderTensor[1][2];
 
-        console.log(orderTensor)
-
         let eigen = eigs(orderTensor);
-
-        console.log(eigen);
         
         //returns index of max eigenvalue
         let index = eigen.values.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-
-        console.log(index);
 
         this.director = eigen.vectors[index];
 
@@ -437,9 +419,9 @@ export class Set {
         }
 
         quaternionToUnitVector(q){
-            let a = Math.round(1000* (2 * (   q.w*q.y + q.x*q.z )))/1000;
-            let b = Math.round(1000* (2 * ( - q.w*q.x + q.y*q.z )))/1000;
-            let c = Math.round(1000* (1 - 2 * ( q.x**2 + q.y**2 )))/1000;
+            let a = (2 * (   q.w*q.y + q.x*q.z ));
+            let b = (2 * ( - q.w*q.x + q.y*q.z ));
+            let c = (1 - 2 * ( q.x**2 + q.y**2 ));
             return [a,b,c];
         }
 

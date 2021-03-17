@@ -1,10 +1,12 @@
 import Model from "./Model/Model";
 import View from "./View/View"
 import 'rsuite/dist/styles/rsuite-dark.css';
-import sample1 from './Samples/1.json';
-import sample2 from './Samples/2.json';
+import sample1 from './Samples/dummy-vector.json';
+import sample2 from './Samples/dummy-quaternion.json';
 import sample3 from './Samples/fig1.json';
 import sample4 from './Samples/hbc.json';
+import sample5 from './Samples/e5-nematic.json';
+import sample6 from './Samples/bx-crystal.json';
 
 import { Alert, Notification } from 'rsuite'
 
@@ -17,13 +19,13 @@ class Controller {
         this.io = [this.save, this.load, this.export, this.loadSample];
         this.chronometer = new this.Chronometer();
         this.externalToggle = new this.ExternalToggle();
-        this.model = new Model();
+        this.model = new Model(this.chronometer);
         this.view = new View(this.model, this.io, this.chronometer, this.externalToggle);
 
         Alert.config(
             ({
                 top: 70,
-                duration: 6000
+                duration: 10000
             })
         );
     }
@@ -66,14 +68,13 @@ class Controller {
     };
 
     start = () => {
-        this.addListeners();
         this.generate(sample2, true);
+        this.addListeners();
         this.chronometer.begin();
         this.render();
-
         this.notify('info', 'Welcome!',
             (<p style={{ width: 320 }} >
-                Use your mouse to control the camera. See 'Performance' tab if it's running slowly. Please check out both samples!
+                This application works best on machines with dedicated graphics cards on the Chrome browser. Check out the new 'Notes' feature on the Header.
             </p>)
         );
     }
@@ -122,6 +123,7 @@ class Controller {
             this.view.setState(data.state);
         }
         this.externalToggle.force();
+        console.log(this.model.sets);
     }
 
     load = (file) => {
@@ -130,9 +132,9 @@ class Controller {
             var data = JSON.parse(fileReader.result);
             try {
                 this.generate(data, false);
-                Alert.info('File loaded successfully.');
-            } catch (err) {
-                Alert.error(err);
+                Alert.success('File loaded successfully.');
+            } catch {
+                Alert.error('Error: Please review uploaded file. See manual for help.');
                 return;
             }
         }
@@ -142,26 +144,33 @@ class Controller {
     }
 
     loadSample = (id) => {
+        let sample;
         switch (id) {
             case 1:
-                this.generate(sample1, false);
-                Alert.info('File loaded successfully.');
+                sample = sample1;
                 break;
             case 2:
-                this.generate(sample2, false);
-                Alert.info('File loaded successfully.');
+                sample = sample2;
                 break;
             case 3:
-                this.generate(sample3, false);
-                Alert.info('File loaded successfully.');
+                sample = sample3;
                 break;
             case 4:
-                this.generate(sample4, false);
-                Alert.info('File loaded successfully.');
+                sample = sample4;
+                break;
+            case 5:
+                sample = sample5;
+                break;
+            case 6:
+                sample = sample6;
                 break;
             default:
                 Alert.error('Error: File does not exist');
+                return;
         }
+
+        this.generate(sample, false);
+        Alert.success('File loaded successfully.');
     }
 
     convertQMGA = () => {
@@ -219,11 +228,11 @@ class Controller {
 
     render = () => {
         this.model.update();
-        this.chronometer.click();
-        requestAnimationFrame(this.render);
     }
 
     addListeners = () => {
+
+        this.model.controls.addEventListener( 'change', this.render );
 
         document.body.style.overflow = "hidden";
 
@@ -243,9 +252,7 @@ class Controller {
             //TODO
             //spacebar
             if (key == 32) {
-                this.view.expanded = false;
-                View.state.camera.rotating = !View.state.camera.rotating;
-                this.model.toggleCameraRotation();
+                this.model.toggleAutorotate();
             }
             // //a
             // if (key == 65) {

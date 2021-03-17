@@ -44,8 +44,10 @@ const SamplesDropdown = ({ ...props }) => (
 
         <Dropdown.Item eventKey={1}>Sample (Unit Vector Orientations)</Dropdown.Item>
         <Dropdown.Item eventKey={2}>Sample (Quaternion Orientations)</Dropdown.Item>
-        <Dropdown.Item eventKey={3}>Fig1: Large Conf (Position Error)</Dropdown.Item>
-        <Dropdown.Item eventKey={4}>HBC (Position Error)</Dropdown.Item>
+        <Dropdown.Item eventKey={3}>Fig1: Large Conf</Dropdown.Item>
+        <Dropdown.Item eventKey={4}>HBC</Dropdown.Item>
+        <Dropdown.Item eventKey={5}>E5 Nematic</Dropdown.Item>
+        <Dropdown.Item eventKey={6}>Box Crystal</Dropdown.Item>
         <Dropdown.Item panel style={{ padding: 5, width: 120 }}></Dropdown.Item>
 
 
@@ -145,7 +147,7 @@ class Top extends React.Component {
                                     <Nav.Item active>fps: {fps}</Nav.Item>
                                     <Nav.Item appearance="subtle" disabled={true} icon={<Icon icon="info-circle" />}>Manual</Nav.Item>
                                     <PerformanceDropdown model={this.model} />
-                                    <SamplesDropdown title="Library" trigger='click' f={this.functions[3]} placement="bottomEnd" icon={<Icon icon="folder-o" />} />
+                                    <SamplesDropdown title="Library" trigger='click' f={this.functions[3]} placement="bottomEnd" icon={<Icon icon="database" />} />
                                     <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="book" />}>Notes</Nav.Item>
                                     <ExportDropdown f={this.functions[2]} />
                                     <Nav.Item appearance="subtle" icon={<Icon icon="file-download" />} onSelect={this.functions[0]}>Save</Nav.Item>

@@ -11,6 +11,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Set from './Set.js'
 import Light from './Light.js'
 import Tools from './Tools.js'
+import { Alert } from 'rsuite';
 
 export class Model {
     sets = [];
@@ -27,12 +28,15 @@ export class Model {
     height;
     width;
 
+   
+
     gridEnabled = false;
     axesEnabled = false;
     boundingShapeEnabled = false;
     sidebarExpanded = false;
 
     cameraType = 'perspective';
+    cameraPosition;
 
     selectedSet;
 
@@ -41,16 +45,18 @@ export class Model {
     clippingHelpers;
     clipIntersections;
 
-    constructor() {
+    constructor(chronometer) {
         this.scene = new Scene();
+        this.chronometer = chronometer;
         this.setDefault();
     }
 
     setDefault() {
+        this.cameraPostion = null;
+        this.lightHelperWarningGiven = false;
         this.selectedSet = 0;
         this.initClippers();
-
-        this.renderer = new WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        this.renderer = new WebGLRenderer({ antialias: false, preserveDrawingBuffer: false, powerPreference: "high-performance" });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.localClippingEnabled = true;
 
@@ -85,13 +91,14 @@ export class Model {
             temp.positions = set.positions;
             temp.orientations = set.orientations;
             model.sets.push(temp);
+            temp = {};
         }
         return model;
     }
 
     update() {
-        this.controls.update();
         this.renderer.render(this.scene, this.camera);
+        this.chronometer.click();
     }
 
     initClippers() {
@@ -156,11 +163,13 @@ export class Model {
             this.camera = new PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
         } else {
             this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, -100, 5000);
-            this.camera.zoom = 30;
-            this.camera.updateProjectionMatrix();
         }
 
-        this.camera.position.z = -30;
+
+        if(this.cameraPosition != null){
+            this.camera.position.set(...this.cameraPosition);
+        }
+
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.target = this.lookAt;
     }
@@ -176,12 +185,17 @@ export class Model {
         }
         this.camera.updateProjectionMatrix();
     }
-    
-    updateCameraPosition(p){
+
+    updateCameraZoom(val){
+        this.camera.zoom = val;
+        this.camera.updateProjectionMatrix();
+    }
+
+    updateCameraPosition(p) {
         let x = p.r * Math.sin(p.psi) * Math.cos(p.theta);
         let y = p.r * Math.sin(p.psi) * Math.sin(p.theta);
         let z = p.r * Math.cos(p.psi);
-
+        this.cameraPosition = [x, y, z];
         this.camera.position.set(x, y, z);
         this.controls.update();
     }
@@ -210,10 +224,27 @@ export class Model {
 
     updateLight(type, colour) {
         this.lighting[type].updateColour(Model.rgbToHex(colour.r, colour.g, colour.b), colour.i);
+        if (type != 0) {
+            this.lighting[type].helper.update();
+        }
+    }
+
+    toggleLightHelper(type, toggle) {
+        if (toggle) {            
+            if(this.bgColour == '#ffffff' && !this.lightHelperWarningGiven){
+               Alert.warning('If the background colour and light colour are the same, the light helper may not be visible.');
+               this.lightHelperWarningGiven = true;
+            }
+            this.lighting[type].helper.update();
+            this.scene.add(this.lighting[type].helper);
+        } else {
+            this.scene.remove(this.lighting[type].helper);
+        }
     }
 
     updateLightPosition(type, pos) {
         this.lighting[type].updatePosition(pos.x, pos.y, pos.z);
+        this.lighting[type].helper.update();
     }
 
     updateReferenceColour(rgb) {
@@ -294,7 +325,7 @@ export class Model {
 
     }
 
-    toggleCameraRotation() {
+    toggleAutorotate() {
         this.controls.autoRotate = !this.controls.autoRotate;
     }
 
@@ -320,9 +351,6 @@ export class Model {
     }
 
     updateModel(id, params, f) {
-        console.log(this.sets);
-        console.log(id);
-
         for (const m of this.sets[id].meshes) {
             this.scene.remove(m);
         }
@@ -368,13 +396,6 @@ export class Model {
         });
     }
 
-    updateShininess(id, val) {
-        this.updateModel(id, [id, val], (id, val) => {
-            this.sets[id].meshes = [];
-            this.sets[id].shininess = val;
-            this.sets[id].genMeshes();
-        });
-    }
 
     toggleWireframe(id, toggle) {
         this.updateModel(id, [id, toggle], (id, toggle) => {
@@ -424,7 +445,7 @@ export class Model {
                 this.sets.push(ps);
             }
         }
-        
+
 
         for (let set of this.sets) {
             for (const m of set.meshes) {

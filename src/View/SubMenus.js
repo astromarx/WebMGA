@@ -24,17 +24,9 @@ export class ModelsOptions extends React.Component {
         this.updateParameter = this.updateParameter.bind(this);
         this.toggleWireframe = this.toggleWireframe.bind(this);
         this.toggleColour = this.toggleColour.bind(this);
-        this.updateShininess = this.updateShininess.bind(this);
         this.updateUserColour = this.updateUserColour.bind(this);
     }
 
-    updateShininess(val) {
-        this.setState({
-            shininess: val
-        });
-        View.state.model.configurations[this.state.active].shininess = val;
-        this.model.updateShininess(this.state.active, val)
-    }
 
     updateUserColour(value, type) {
         let colour = this.state.configurations[this.state.active].colour;
@@ -53,6 +45,7 @@ export class ModelsOptions extends React.Component {
                 Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateUserColour(this.state.active, colour);
+        this.model.update();
         View.state.model.configurations[this.state.active].colour = colour;
     }
 
@@ -63,6 +56,7 @@ export class ModelsOptions extends React.Component {
         });
         View.state.model.configurations[this.state.active].colourFromDirector = toggle;
         this.model.toggleUserColour(this.state.active, toggle);
+        this.model.update();
     }
 
     toggleWireframe() {
@@ -72,6 +66,7 @@ export class ModelsOptions extends React.Component {
         });
         View.state.model.configurations[this.state.active].displayAsWireframe = toggle;
         this.model.toggleWireframe(this.state.active, toggle);
+        this.model.update();
     }
 
     updateParameter(val, index) {
@@ -88,6 +83,7 @@ export class ModelsOptions extends React.Component {
         });
 
         this.model.updateShape(this.state.active, globalState.shape, globalState.parameters);
+        this.model.update();
         this.reset();
     }
 
@@ -130,6 +126,7 @@ export class ModelsOptions extends React.Component {
         View.state.model.configurations[this.state.active].shape = val;
         View.state.model.configurations[this.state.active].parameters = parameters;
         this.model.updateShape(this.state.active, val, parameters);
+        this.model.update();
     }
 
     render() {
@@ -163,9 +160,6 @@ export class ModelsOptions extends React.Component {
                 <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.r} type={'r'} />
                 <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.g} type={'g'} />
                 <CustomSlider f={this.updateUserColour} disabled={configState.colourFromDirector} boundaries={[0, 255]} val={configState.colour.b} type={'b'} />
-                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Shininess </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={configState.shininess} f={this.updateShininess} />
-
             </div>
         );
     }
@@ -177,29 +171,35 @@ export class CameraOptions extends React.Component {
         super();
         this.state = View.state.camera;
         this.model = props.model;
-        this.toggleAutorotate = this.toggleAutorotate.bind(this);
-        this.selectCameraType = this.selectCameraType.bind(this);
+        this.selectType = this.selectType.bind(this);
         this.updateLookat = this.updateLookat.bind(this);
-        this.updateCameraPosition = this.updateCameraPosition.bind(this);
-
+        this.updatePosition = this.updatePosition.bind(this);
+        this.updateZoom = this.updateZoom.bind(this);
     }
 
-    toggleAutorotate() {
+    updateZoom(value){
         this.setState({
-            rotating: !this.state.rotating
+            zoom: value
         });
-        View.state.camera.rotating = !View.state.camera.rotating;
-        this.model.toggleCameraRotation();
-    }
-    selectCameraType(value) {
+        this.model.updateCameraZoom(value);
+        this.model.update();
+        View.state.camera.zoom = value;
+    }   
+    selectType(value) {
         this.setState({
             type: value
         });
         View.state.camera.type = value;
         this.model.setCamera(value);
+        if(value == "orthographic"){
+            this.updateZoom(50);
+            
+        }else{
+            this.updateZoom(1);
+        }   
     }
 
-    updateCameraPosition(value, type) {
+    updatePosition(value, type) {
         let position = this.state.position;
 
         if (value != NaN && value != null) {
@@ -220,6 +220,7 @@ export class CameraOptions extends React.Component {
         }
 
         this.model.updateCameraPosition(position);
+        this.model.update();
         View.state.camera.position = position;
     }
 
@@ -244,28 +245,30 @@ export class CameraOptions extends React.Component {
         }
 
         this.model.updateLookAt(lookAt);
+        this.model.update();
         View.state.camera.lookAt = lookAt;
     }
 
 
     render() {
         const cameraType = this.state.type;
+        const zoom = this.state.zoom;
         const rotating = this.state.rotating;
         const lookAt = [this.state.lookAt.x, this.state.lookAt.y, this.state.lookAt.z];
-        const cameraPosition = [this.state.position.r, this.state.position.theta, this.state.position.psi]
+        const cameraPosition = [this.state.position.r, this.state.position.theta, this.state.position.psi];
+
 
         return (
-            <div >
-
+            <div>
                 <Divider><strong style={dividerStyle}> Camera </strong></Divider>
                 <Row className="show-grid">
                     <Col xs={2} />
                     <Col xs={12}>
 
                         <FormGroup controlId="radioList">
-                            <RadioGroup name="radioList" value={cameraType} onChange={this.selectCameraType}>
+                            <RadioGroup name="radioList" value={cameraType} onChange={this.selectType}>
                                 <p>Type</p>
-                                <Radio defaultChecked value="perspective">Perspective </Radio>
+                                <Radio value="perspective">Perspective </Radio>
                                 <Radio value="orthographic">Orthographic </Radio>
                             </RadioGroup>
                         </FormGroup>
@@ -274,23 +277,23 @@ export class CameraOptions extends React.Component {
                 </Row>
                 <br />
                 <Grid fluid>
-                    <Row className="show-grid">
-                        <Col xs={1} />
-                        <Col xs={12}>
-
-                            <Checkbox checked={rotating} onClick={this.toggleAutorotate}> AutoRotate</Checkbox>
-                        </Col>
-                    </Row>
-
+           
                     <Row className="show-grid">
                         <Col xs={2} />
                         <Col xs={12}>
                             <br />
-                            <p><b> Camera Position</b></p>
+                            <p><b> Position</b></p>
                         </Col>
                     </Row>
-                    <ParameterSet titles={["r", "theta", "psi"]} values={cameraPosition} f={this.updateCameraPosition} step={0.5} styling={submenuParameterSetStyling} />
-
+                    <ParameterSet titles={["r", "theta", "psi"]} values={cameraPosition} f={this.updatePosition} step={0.5} styling={submenuParameterSetStyling} />
+                    <Row className="show-grid">
+                        <Col xs={2} />
+                        <Col xs={12}>
+                            <br />
+                            <p><b> Zoom </b></p>
+                        </Col>
+                    </Row>
+                    <CustomSlider key={cameraType} boundaries={[1, 100]} val={zoom} f={this.updateZoom} />
                     <Row className="show-grid">
                         <Col xs={2} />
                         <Col xs={12}>
@@ -333,6 +336,7 @@ export class SlicingOptions extends React.Component {
         );
         View.state.slicing.clipIntersection = toggle;
         this.model.toggleClipIntersection(toggle);
+        this.model.update();
     }
 
     updateHelpers(helpers) {
@@ -350,6 +354,7 @@ export class SlicingOptions extends React.Component {
         helpers[0] = toggle;
         this.updateHelpers(helpers);
         this.model.toggleHelper(0, toggle);
+        this.model.update();
     }
 
     toggleHelperY() {
@@ -358,6 +363,7 @@ export class SlicingOptions extends React.Component {
         helpers[1] = toggle;
         this.updateHelpers(helpers);
         this.model.toggleHelper(1, toggle);
+        this.model.update();
     }
 
     toggleHelperZ() {
@@ -366,6 +372,7 @@ export class SlicingOptions extends React.Component {
         helpers[2] = toggle;
         this.updateHelpers(helpers);
         this.model.toggleHelper(2, toggle);
+        this.model.update();
     }
 
     updateSlicer(i, vals) {
@@ -384,6 +391,7 @@ export class SlicingOptions extends React.Component {
         }
 
         this.model.updateSlicer(i, vals);
+        this.model.update();
     }
     render() {
         const state = this.state;
@@ -455,6 +463,7 @@ export class AdditionalLightOptions extends React.Component {
         this.updateColour = this.updateColour.bind(this);
         this.updatePosition = this.updatePosition.bind(this);
         this.toggleLightEnabled = this.toggleLightEnabled.bind(this);
+        this.toggleHelper = this.toggleHelper.bind(this);
 
     }
     handleSelect() {
@@ -469,6 +478,24 @@ export class AdditionalLightOptions extends React.Component {
 
         this.setState({ reset: ++this.reset });
     }
+
+    toggleHelper(){
+        let helper = !this.state.helper;
+        this.setState({
+            helper: helper
+        });
+
+        if (this.state.active.localeCompare('point') === 0) {
+            View.state.pointLight.helper = helper;
+            this.model.toggleLightHelper(2, helper);
+            this.model.update();
+        } else {
+            View.state.directionalLight.helper = helper;
+            this.model.toggleLightHelper(1, helper);
+            this.model.update();
+        }
+    }
+
     toggleLightEnabled() {
         let enabled = !this.state.enabled;
         this.setState({
@@ -495,9 +522,8 @@ export class AdditionalLightOptions extends React.Component {
         } else {
             View.state.directionalLight.colour.i = intensity;
         }
-
-
     }
+
     updateColour(value, type) {
         let colour = this.state.colour;
 
@@ -525,6 +551,7 @@ export class AdditionalLightOptions extends React.Component {
             this.model.updateLight(1, colour);
             View.state.directionalLight.colour = colour;
         }
+        this.model.update();
     }
     updatePosition(value, type) {
         let position = this.state.position;
@@ -550,12 +577,12 @@ export class AdditionalLightOptions extends React.Component {
             this.model.updateLightPosition(1, position);
             View.state.directionalLight.position = position;
         }
+        this.model.update();
     }
 
     render() {
         const active = this.state.active;
         const lightState = this.state;
-
         return (
             <div key={lightState.reset}>
                 <br />
@@ -566,7 +593,7 @@ export class AdditionalLightOptions extends React.Component {
                         <Col xs={1} />
                         <Col xs={12}>
                             <Checkbox checked={lightState.enabled} onClick={this.toggleLightEnabled}> <strong>Enabled </strong> </Checkbox>
-                            <Checkbox disabled={true}> <strong>Show Helper </strong> </Checkbox>
+                            <Checkbox checked={lightState.helper} onClick={this.toggleHelper}> <strong>Show Helper </strong> </Checkbox>
                             <br />
                         </Col>
                     </Row>
@@ -617,6 +644,7 @@ export class AmbientLightOptions extends React.Component {
                 Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateLight(0, colour);
+        this.model.update();
         View.state.ambientLight.ambientLightColour = colour;
     }
     updateBackgroundColour(value, type) {
@@ -636,6 +664,7 @@ export class AmbientLightOptions extends React.Component {
                 Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateBg(colour);
+        this.model.update();
         View.state.ambientLight.backgroundColour = colour;
     }
     render() {
@@ -691,10 +720,12 @@ export class ReferenceOptions extends React.Component {
                 Alert.error('Error: Unexpected RGB Identifier');
         }
         this.model.updateReferenceColour(rgb);
+        this.model.update();
         View.state.reference.gridColour = rgb;
     }
     updateGridSize(value) {
         this.model.updateGridSize(value);
+        this.model.update();
         View.state.reference.size = value;
     }
     toggleBoundingShapeEnabled() {
@@ -704,6 +735,7 @@ export class ReferenceOptions extends React.Component {
         });
         View.state.reference.boundingShapeEnabled = toggle;
         this.model.updateBoundingShape(this.state.activeShape, toggle);
+        this.model.update();
     }
     selectShape(value) {
         this.setState({
@@ -711,12 +743,14 @@ export class ReferenceOptions extends React.Component {
         });
         View.state.reference.activeShape = value;
         this.model.updateBoundingShape(value, this.state.boundingShapeEnabled);
+        this.model.update();
     }
     toggleAxes() {
         this.setState({
             showAxes: !this.state.showAxes
         });
         this.model.toggleAxes();
+        this.model.update();
         View.state.reference.showAxes = !View.state.reference.showAxes;
     }
     toggleGrid() {
@@ -724,6 +758,7 @@ export class ReferenceOptions extends React.Component {
             showGrid: !this.state.showGrid
         });
         this.model.toggleGrid();
+        this.model.update();
         View.state.reference.showGrid = !View.state.reference.showGrid;
     }
 
