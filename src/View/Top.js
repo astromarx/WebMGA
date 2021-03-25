@@ -1,8 +1,9 @@
 
-import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip } from 'rsuite';
+import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip, Divider } from 'rsuite';
 import { ParameterSet } from './Tools';
 import React from "react";
 import View from './View';
+import { render } from '@testing-library/react';
 
 class ExportDropdown extends React.Component {
 
@@ -28,7 +29,7 @@ class ExportDropdown extends React.Component {
 
                 <ParameterSet f={this.updateDimensions} titles={['Height', 'Width']} values={this.dimensions} step={5} positive
                     styling={[
-                        { marginLeft: 15 },
+                        { marginRight: 25 },
                         { marginTop: 18, marginLeft: 35 }
                     ]} />
 
@@ -38,21 +39,68 @@ class ExportDropdown extends React.Component {
 
 };
 
-const SamplesDropdown = ({ ...props }) => (
+class SamplesDropdown extends React.Component {
 
-    <Dropdown {...props} onSelect={props.f}>
+    constructor(props) {
+        super(props);
+        this.model = props.model;
+        this.state = { active: 2 };
+        this.f = props.f;
 
-        <Dropdown.Item eventKey={1}>Sample (Unit Vector Orientations)</Dropdown.Item>
-        <Dropdown.Item eventKey={2}>Sample (Quaternion Orientations)</Dropdown.Item>
-        <Dropdown.Item eventKey={3}>Fig1: Large Conf</Dropdown.Item>
-        <Dropdown.Item eventKey={4}>HBC</Dropdown.Item>
-        <Dropdown.Item eventKey={5}>E5 Nematic</Dropdown.Item>
-        <Dropdown.Item eventKey={6}>Box Crystal</Dropdown.Item>
-        <Dropdown.Item panel style={{ padding: 5, width: 120 }}></Dropdown.Item>
+        this.updateKey = this.updateKey.bind(this);
+    }
+
+    updateKey(val) {
+        this.setState({
+            active: val
+        });
+    }
+
+    render() {
+        const state = this.state;
+        return (
+            <Dropdown 
+            title="Library"
+            trigger='click'
+            placement="bottomEnd"
+            icon={<Icon icon="database" />}
+            appearance='subtle'
+            onSelect={(eventKey) => {
+                this.f(eventKey);
+
+            }}>
+                <Dropdown.Menu title="Samples">
+                    <Dropdown.Item eventKey={1}>Unit Vector Orientations</Dropdown.Item>
+                    <Dropdown.Item eventKey={2}>Quaternion Orientations</Dropdown.Item>
+                </Dropdown.Menu>
+                <Dropdown.Menu title="Spherocylinders">
+                    <Dropdown.Item eventKey={3}>SC4 Isotropic</Dropdown.Item>
+                    <Dropdown.Item eventKey={4}>SC4 Nematic</Dropdown.Item>
+                    <Dropdown.Item eventKey={5}>SC4 Smectic</Dropdown.Item>
+                </Dropdown.Menu>
+                <Dropdown.Menu title="Prolate and Oblate Ellipsoids">
+                    <Dropdown.Item eventKey={6}>E5 Isotropic</Dropdown.Item>
+                    <Dropdown.Item eventKey={7}>E5 Nematic</Dropdown.Item>
+                    <Dropdown.Item eventKey={8}>O5 Isotropic</Dropdown.Item>
+                    <Dropdown.Item eventKey={9}>O5 Nematic</Dropdown.Item>
+                </Dropdown.Menu>
+                <Dropdown.Menu title="Dense Crystal Packings">
+                    <Dropdown.Item eventKey={10}>Box Crystal (Small)</Dropdown.Item>
+                    <Dropdown.Item eventKey={11}>Box Crystal (Large)</Dropdown.Item>
+                </Dropdown.Menu>
+                <Dropdown.Menu title="Other">
+                    <Dropdown.Item eventKey={12}>Fig1</Dropdown.Item>
+                    <Dropdown.Item eventKey={13}>HBC</Dropdown.Item>
+                </Dropdown.Menu>
+                
+                <Dropdown.Item panel style={{ padding: 5, width: 120 }}></Dropdown.Item>
 
 
-    </Dropdown>
-);
+            </Dropdown>
+        );
+
+    }
+}
 
 class PerformanceDropdown extends React.Component {
 
@@ -80,7 +128,7 @@ class PerformanceDropdown extends React.Component {
                         <Whisper placement="bottom" trigger="hover" speaker={
                             <Tooltip>
                                 Decreasing LOD will increase rendering speed.
-                    </Tooltip>
+                            </Tooltip>
                         }>
                             <Icon icon="question-circle" size="lg" />
                         </Whisper>
@@ -98,6 +146,7 @@ class PerformanceDropdown extends React.Component {
                     onChange={(value) => {
                         this.model.updateLOD(value - 1);
                         this.updateVal(value);
+                        this.model.update();
                     }}
 
                 />
@@ -114,19 +163,45 @@ class Top extends React.Component {
         super(props);
         this.model = props.model;
         this.functions = props.functions;
-
-        this.state = { fps: 50.00, showDrawer: false };
+        this.toggler = props.toggler;
+        this.state = { fps: 0, showDrawer: false, rotating: false };
         this.updateFPS = this.updateFPS.bind(this);
         this.toggleDrawer = this.toggleDrawer.bind(this);
+        this.toggleAutorotate = this.toggleAutorotate.bind(this);
 
         this.chronometer = props.chronometer;
         this.chronometer.f = this.updateFPS;
+
+        this.toggler.autorotate = () => {
+            this.toggleAutorotate();
+        }
     }
+
+    toggleAutorotate() {
+        this.setState({
+            rotating: !this.state.rotating
+        });
+        this.model.toggleAutorotate();
+        if (this.model.rotating) {
+            this.toggler.closeSidemenu();
+        }
+        this.continuousRender();
+    }
+
+    continuousRender = () => {
+        this.model.update();
+        this.chronometer.click();
+        this.model.controls.update();
+        if (this.model.rotating) {
+            requestAnimationFrame(this.continuousRender);
+        }
+    }
+
     toggleDrawer() {
         this.setState({
-          showDrawer: !this.state.showDrawer
+            showDrawer: !this.state.showDrawer
         });
-      }
+    }
 
     updateFPS(fps) {
         this.setState({
@@ -137,6 +212,7 @@ class Top extends React.Component {
     render() {
         const fps = this.state.fps;
         const showDrawer = this.state.showDrawer;
+        const rotating = this.state.rotating;
         return (
             <div>
                 <Header style={{ height: 56 }}>
@@ -145,10 +221,12 @@ class Top extends React.Component {
                             <Nav pullRight >
                                 <ButtonToolbar>
                                     <Nav.Item active>fps: {fps}</Nav.Item>
+                                    <Nav.Item active={rotating} onClick={this.toggleAutorotate} appearance="subtle" icon={<Icon icon="refresh" />}>Autorotate</Nav.Item>
                                     <Nav.Item appearance="subtle" disabled={true} icon={<Icon icon="info-circle" />}>Manual</Nav.Item>
-                                    <PerformanceDropdown model={this.model} />
-                                    <SamplesDropdown title="Library" trigger='click' f={this.functions[3]} placement="bottomEnd" icon={<Icon icon="database" />} />
                                     <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="book" />}>Notes</Nav.Item>
+                                    <PerformanceDropdown model={this.model} />
+                                    <SamplesDropdown f={this.functions[3]} />
+
                                     <ExportDropdown f={this.functions[2]} />
                                     <Nav.Item appearance="subtle" icon={<Icon icon="file-download" />} onSelect={this.functions[0]}>Save</Nav.Item>
                                     <input type="file"
@@ -181,13 +259,13 @@ class Top extends React.Component {
                         <Drawer.Title>Information About System</Drawer.Title>
                     </Drawer.Header>
                     <Drawer.Body>
-                    Coarse-grained modeling of molecular fluids is often based on non-spherical convex rigid bodies like ellipsoids or spherocylinders representing rodlike or platelike molecules or groups of atoms, with site-site interaction potentials depending both on the distance among the particles and the relative orientation. In this category of potentials, the Gay-Berne family has been studied most extensively.<br/><br/>
-                     However, conventional molecular graphics programs are not designed to visualize such objects. Usually the basic units are atoms displayed as spheres, or as vertices in a graph. Atomic aggregates can be highlighted through an increasing amount of stylized representations, e.g., Richardson ribbon diagrams for the secondary structure of a protein, Connolly molecular surfaces, density maps, etc., but ellipsoids 
-                     and spherocylinders are generally missing, especially as elementary simulation units. <br/><br/> We fill this gap providing and discussing a customized OpenGL-based program for the interactive, rendered representation of large ensembles of convex bodies, useful especially in liquid crystal research. We pay particular attention to the performance issues for typical system sizes in this feld. The code is distributed as open source. 
-                    <br/><br/>
-                    <a href="http://qmga.sourceforge.net/" target="_blank" rel="noopener noreferrer">QMGA Homepage</a>
-                    <br/><br/>
-                    <a href="https://pubs.acs.org/doi/10.1021/ct700192z" target="_blank" rel="noopener noreferrer">DOI 10.1021/ct700192z</a>
+                        Coarse-grained modeling of molecular fluids is often based on non-spherical convex rigid bodies like ellipsoids or spherocylinders representing rodlike or platelike molecules or groups of atoms, with site-site interaction potentials depending both on the distance among the particles and the relative orientation. In this category of potentials, the Gay-Berne family has been studied most extensively.<br /><br />
+                     However, conventional molecular graphics programs are not designed to visualize such objects. Usually the basic units are atoms displayed as spheres, or as vertices in a graph. Atomic aggregates can be highlighted through an increasing amount of stylized representations, e.g., Richardson ribbon diagrams for the secondary structure of a protein, Connolly molecular surfaces, density maps, etc., but ellipsoids
+                     and spherocylinders are generally missing, especially as elementary simulation units. <br /><br /> We fill this gap providing and discussing a customized OpenGL-based program for the interactive, rendered representation of large ensembles of convex bodies, useful especially in liquid crystal research. We pay particular attention to the performance issues for typical system sizes in this feld. The code is distributed as open source.
+                    <br /><br />
+                        <a href="http://qmga.sourceforge.net/" target="_blank" rel="noopener noreferrer">QMGA Homepage</a>
+                        <br /><br />
+                        <a href="https://pubs.acs.org/doi/10.1021/ct700192z" target="_blank" rel="noopener noreferrer">DOI 10.1021/ct700192z</a>
                     </Drawer.Body>
                 </Drawer>
             </div>

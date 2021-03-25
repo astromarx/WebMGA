@@ -290,5 +290,181 @@
                 ]
             }
         ]
+    },
+    "state": {
+        "reference": {
+            "boundingShapeEnabled": false,
+            "activeShape": "box",
+            "showAxes": false,
+            "showGrid": false,
+            "multicolour": true,
+            "gridColour": {
+                "r": 255,
+                "g": 255,
+                "b": 255
+            },
+            "size": 50
+        },
+        "ambientLight": {
+            "ambientLightColour": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "i": 40
+            },
+            "backgroundColour": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+            }
+        },
+        "pointLight": {
+            "reset": 0,
+            "active": "point",
+            "enabled": true,
+            "helper": false,
+            "colour": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "i": 15
+            },
+            "position": {
+                "x": -20,
+                "y": 1,
+                "z": -8
+            }
+        },
+        "directionalLight": {
+            "reset": 0,
+            "active": "directional",
+            "enabled": true,
+            "helper": false,
+            "colour": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "i": 50
+            },
+            "position": {
+                "x": 9,
+                "y": 0,
+                "z": -5
+            }
+        },
+        "camera": {
+            "type": "orthographic",
+            "lookAt": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "position": {
+                "r": 10,
+                "theta": 9.0,
+                "psi": 2.6
+            },
+            "zoom": 30
+        },
+        "slicing": {
+            "clipIntersection": false,
+            "helpers": [
+                false,
+                false,
+                false
+            ],
+            "x": [
+                -50,
+                50
+            ],
+            "y": [
+                -50,
+                50
+            ],
+            "z": [
+                -50,
+                50
+            ]
+        },
+        "model": {
+            "active": 2,
+            "reset": 0,
+            "sets": [
+                "Set A",
+                "Set B",
+                "Set C"
+            ],
+            "configurations": [
+                {
+                    "title": "Set A",
+                    "shape": "Ellipsoid",
+                    "parameters": {
+                        "names": [
+                            "X",
+                            "Y",
+                            "Z"
+                        ],
+                        "vals": [
+                            1.205,
+                            1,
+                            0.83
+                        ]
+                    },
+                    "colour": {
+                        "r": 255,
+                        "g": 0,
+                        "b": 0
+                    },
+                    "colourFromDirector": false,
+                    "displayAsWireframe": false
+                },
+                {
+                    "title": "Set B",
+                    "shape": "Ellipsoid",
+                    "parameters": {
+                        "names": [
+                            "X",
+                            "Y",
+                            "Z"
+                        ],
+                        "vals": [
+                            1.205,
+                            1,
+                            0.83
+                        ]
+                    },
+                    "colour": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 255
+                    },
+                    "colourFromDirector": false,
+                    "displayAsWireframe": false
+                },
+                {
+                    "title": "Set C",
+                    "shape": "Ellipsoid",
+                    "parameters": {
+                        "names": [
+                            "X",
+                            "Y",
+                            "Z"
+                        ],
+                        "vals": [
+                            1.205,
+                            1,
+                            0.83
+                        ]
+                    },
+                    "colour": {
+                        "r": 0,
+                        "g": 255,
+                        "b": 0
+                    },
+                    "colourFromDirector": false,
+                    "displayAsWireframe": false
+                }
+            ]
+        }
     }
 }

@@ -28,7 +28,7 @@ export class Model {
     height;
     width;
 
-   
+
 
     gridEnabled = false;
     axesEnabled = false;
@@ -52,6 +52,7 @@ export class Model {
     }
 
     setDefault() {
+        this.rotating = false;
         this.cameraPostion = null;
         this.lightHelperWarningGiven = false;
         this.selectedSet = 0;
@@ -98,7 +99,9 @@ export class Model {
 
     update() {
         this.renderer.render(this.scene, this.camera);
-        this.chronometer.click();
+        if (!this.rotating) {
+            this.chronometer.click();
+        }
     }
 
     initClippers() {
@@ -165,13 +168,13 @@ export class Model {
             this.camera = new OrthographicCamera(this.width / -2, this.width / 2, this.height / 2, this.height / -2, -100, 5000);
         }
 
-
-        if(this.cameraPosition != null){
+        if (this.cameraPosition != null) {
             this.camera.position.set(...this.cameraPosition);
         }
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.target = this.lookAt;
+        this.update();
     }
 
     updateCamera() {
@@ -184,9 +187,10 @@ export class Model {
             this.camera.bottom = this.height / - 2;
         }
         this.camera.updateProjectionMatrix();
+        this.update();
     }
 
-    updateCameraZoom(val){
+    updateCameraZoom(val) {
         this.camera.zoom = val;
         this.camera.updateProjectionMatrix();
     }
@@ -230,10 +234,10 @@ export class Model {
     }
 
     toggleLightHelper(type, toggle) {
-        if (toggle) {            
-            if(this.bgColour == '#ffffff' && !this.lightHelperWarningGiven){
-               Alert.warning('If the background colour and light colour are the same, the light helper may not be visible.');
-               this.lightHelperWarningGiven = true;
+        if (toggle) {
+            if (this.bgColour == '#ffffff' && !this.lightHelperWarningGiven) {
+                Alert.warning('If the background colour and light colour are the same, the light helper may not be visible.');
+                this.lightHelperWarningGiven = true;
             }
             this.lighting[type].helper.update();
             this.scene.add(this.lighting[type].helper);
@@ -255,7 +259,7 @@ export class Model {
             this.toggleGrid();
             passGrid = true;
         }
-        if (this.axesEnabled) {
+        if (this.axesEnabled && !this.tools.multicolour) {
             this.toggleAxes();
             passAxes = true;
         }
@@ -273,6 +277,18 @@ export class Model {
         if (passShape) {
             this.updateBoundingShape(this.tools.boundingShapeType, true);
             passShape = true;
+        }
+    }
+
+    toggleAxesMulticolour(){
+        let passAxes = false;
+        if (this.axesEnabled) {
+            this.toggleAxes();
+            passAxes = true;
+        }
+        this.tools.toggleMulticolour();
+        if (passAxes) {
+            this.toggleAxes();
         }
     }
 
@@ -327,6 +343,7 @@ export class Model {
 
     toggleAutorotate() {
         this.controls.autoRotate = !this.controls.autoRotate;
+        this.rotating = !this.rotating;
     }
 
     static rgbToHex(r, g, b) {

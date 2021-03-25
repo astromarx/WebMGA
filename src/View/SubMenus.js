@@ -1,5 +1,5 @@
 
-import { Nav, Divider, Checkbox, FormGroup, RadioGroup, Radio, Grid, Row, Col, Alert } from 'rsuite';
+import { Nav, Divider, Checkbox, FormGroup, RadioGroup, Radio, Grid, Row, Col, Alert, Whisper, Tooltip, Icon } from 'rsuite';
 import React from "react";
 import { SliceSlider, ParameterInput, ParameterSet, CustomSlider } from './Tools'
 import View from './View'
@@ -177,46 +177,47 @@ export class CameraOptions extends React.Component {
         this.updateZoom = this.updateZoom.bind(this);
     }
 
-    updateZoom(value){
+    updateZoom(value) {
         this.setState({
             zoom: value
         });
         this.model.updateCameraZoom(value);
         this.model.update();
         View.state.camera.zoom = value;
-    }   
+    }
     selectType(value) {
         this.setState({
             type: value
         });
         View.state.camera.type = value;
         this.model.setCamera(value);
-        if(value == "orthographic"){
+        if (value == "orthographic") {
             this.updateZoom(50);
-            
-        }else{
+
+        } else {
             this.updateZoom(1);
-        }   
+        }
+        
     }
 
     updatePosition(value, type) {
         let position = this.state.position;
 
         if (value != NaN && value != null) {
-        switch (type) {
-            case 0:
-                position.r = parseFloat(value);
-                break;
-            case 1:
-                position.theta = parseFloat(value);
-                break;
-            case 2:
-                position.psi = parseFloat(value);
-                break;
-            default:
-                Alert.error('Error: Unexpected Camera Position Input');
-                return;
-        }
+            switch (type) {
+                case 0:
+                    position.r = parseFloat(value);
+                    break;
+                case 1:
+                    position.theta = parseFloat(value);
+                    break;
+                case 2:
+                    position.psi = parseFloat(value);
+                    break;
+                default:
+                    Alert.error('Error: Unexpected Camera Position Input');
+                    return;
+            }
         }
 
         this.model.updateCameraPosition(position);
@@ -253,21 +254,20 @@ export class CameraOptions extends React.Component {
     render() {
         const cameraType = this.state.type;
         const zoom = this.state.zoom;
-        const rotating = this.state.rotating;
         const lookAt = [this.state.lookAt.x, this.state.lookAt.y, this.state.lookAt.z];
         const cameraPosition = [this.state.position.r, this.state.position.theta, this.state.position.psi];
 
 
         return (
             <div>
-                <Divider><strong style={dividerStyle}> Camera </strong></Divider>
+               
                 <Row className="show-grid">
                     <Col xs={2} />
                     <Col xs={12}>
 
                         <FormGroup controlId="radioList">
                             <RadioGroup name="radioList" value={cameraType} onChange={this.selectType}>
-                                <p>Type</p>
+                                <p><b>Type</b></p>
                                 <Radio value="perspective">Perspective </Radio>
                                 <Radio value="orthographic">Orthographic </Radio>
                             </RadioGroup>
@@ -275,9 +275,9 @@ export class CameraOptions extends React.Component {
 
                     </Col>
                 </Row>
-                <br />
+              
                 <Grid fluid>
-           
+
                     <Row className="show-grid">
                         <Col xs={2} />
                         <Col xs={12}>
@@ -479,7 +479,7 @@ export class AdditionalLightOptions extends React.Component {
         this.setState({ reset: ++this.reset });
     }
 
-    toggleHelper(){
+    toggleHelper() {
         let helper = !this.state.helper;
         this.setState({
             helper: helper
@@ -701,6 +701,7 @@ export class ReferenceOptions extends React.Component {
         this.toggleGrid = this.toggleGrid.bind(this);
         this.updateColour = this.updateColour.bind(this);
         this.updateGridSize = this.updateGridSize.bind(this);
+        this.toggleMulticolour = this.toggleMulticolour.bind(this);
 
     }
     updateColour(value, type) {
@@ -745,6 +746,14 @@ export class ReferenceOptions extends React.Component {
         this.model.updateBoundingShape(value, this.state.boundingShapeEnabled);
         this.model.update();
     }
+    toggleMulticolour() {
+        this.setState({
+            multicolour: !this.state.multicolour
+        });
+        this.model.toggleAxesMulticolour();
+        this.model.update();
+        View.state.reference.multicolour = !View.state.reference.multicolour;
+    }
     toggleAxes() {
         this.setState({
             showAxes: !this.state.showAxes
@@ -769,16 +778,22 @@ export class ReferenceOptions extends React.Component {
         const showGrid = this.state.showGrid;
         const colour = this.state.gridColour;
         const size = this.state.size;
+        const multicolour = this.state.multicolour;
         return (
             <div>
-                <Divider><strong style={dividerStyle}> Elements </strong></Divider>
 
                 <Grid fluid>
-
+                    <Row className="show-grid">
+                        <Col xs={2} />
+                        <Col xs={12}>
+                            <br />
+                            <p><b> Bounding Shape </b></p>
+                        </Col>
+                    </Row>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox checked={enabled} onClick={this.toggleBoundingShapeEnabled}> Bounding Shape </Checkbox>
+                            <Checkbox style={{ marginLeft: 12 }} checked={enabled} onClick={this.toggleBoundingShapeEnabled}>  Show </Checkbox>
                         </Col>
                     </Row>
                     <Row className="show-grid">
@@ -795,29 +810,61 @@ export class ReferenceOptions extends React.Component {
                             </FormGroup>
                         </Col>
                     </Row>
-                    <br />
+                    <Row className="show-grid">
+                        <Col xs={2} />
+                        <Col xs={12}>
+                            <br />
+                            <p><b> Axes </b></p>
+                        </Col>
+                    </Row>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox style={{ marginLeft: 12 }} checked={showAxes} onClick={this.toggleAxes}> Show</Checkbox>
+
+                        </Col>
+                    </Row>
 
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={12}>
-                            <Checkbox checked={showAxes} onClick={this.toggleAxes}> Show Axes</Checkbox>
-                            <Checkbox checked={showGrid} onClick={this.toggleGrid}> Show Grid</Checkbox>
+
+                            <Checkbox style={{ marginLeft: 12 }} checked={multicolour} onClick={this.toggleMulticolour}> Multi-Colour</Checkbox>
+
+
+                        </Col>
+                        <Col xs={4}>
+                            <Whisper placement="bottom" trigger="hover" speaker={
+                                <Tooltip>
+                                    X : RED <br /> Y : GREEN <br /> Z : BLUE
+                            </Tooltip>
+                            }>
+                                <Icon style={{marginTop: 8}}icon="question-circle" size="lg" />
+                            </Whisper>
                         </Col>
                     </Row>
 
-                    <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Size </p>
-                    <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateGridSize} />
 
+
+
+                    <Row className="show-grid">
+                        <Col xs={2} />
+                        <Col xs={12}>
+                            <br />
+                            <p><b> Grid </b></p>
+                        </Col>
+                    </Row>
+                    <Row className="show-grid">
+                        <Col xs={1} />
+                        <Col xs={12}>
+                            <Checkbox style={{ marginLeft: 12 }} checked={showGrid} onClick={this.toggleGrid}> Show</Checkbox>
+                        </Col>
+                    </Row>
                 </Grid>
-
-                <Divider><strong style={dividerStyle}> Colour </strong></Divider>
-                <Row className="show-grid">
-                    <Col xs={1} />
-                    <Col xs={20}>
-                        <Checkbox disabled={true}> Multi-Colour Axes </Checkbox>
-                    </Col>
-                </Row>
                 <br />
+
+                <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Size </p>
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={size} f={this.updateGridSize} />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
                 <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.r} f={this.updateColour} type={'r'} />
                 <CustomSlider disabled={false} boundaries={[0, 255]} val={colour.g} f={this.updateColour} type={'g'} />

@@ -32,7 +32,7 @@ const CustomNav = ({ active, onSelect, ...props }) => {
                 <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
                 </Nav.Item>
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
-                <Nav.Item eventKey="View" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
+                <Nav.Item eventKey="Camera" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
                 <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
@@ -81,7 +81,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
             case "Models":
                 menuContent.push(<ModelsOptions model={model} />);
                 break;
-            case "View":
+            case "Camera":
                 menuContent.push(<CameraOptions model={model} />);
                 break;
             case "Ambient Light":
@@ -117,7 +117,7 @@ class Side extends Component {
         this.handleSelect = this.handleSelect.bind(this);
         this.toggler = props.toggler;
         
-        this.toggler.force = () => {
+        this.toggler.closeSidemenu = () => {
             if (this.state.expand){
                 this.handleToggle();
             }

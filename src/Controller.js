@@ -1,12 +1,20 @@
 import Model from "./Model/Model";
 import View from "./View/View"
 import 'rsuite/dist/styles/rsuite-dark.css';
+
 import sample1 from './Samples/dummy-vector.json';
 import sample2 from './Samples/dummy-quaternion.json';
-import sample3 from './Samples/fig1.json';
-import sample4 from './Samples/hbc.json';
-import sample5 from './Samples/e5-nematic.json';
-import sample6 from './Samples/bx-crystal.json';
+import sample3 from './Samples/sc4-isotropic.json';
+import sample4 from './Samples/sc4-nematic.json';
+import sample5 from './Samples/sc4-smectic.json';
+import sample6 from './Samples/e5-isotropic.json';
+import sample7 from './Samples/e5-nematic.json';
+import sample8 from './Samples/o5-isotropic.json';
+import sample9 from './Samples/o5-nematic.json';
+import sample10 from './Samples/bx-crystal.json';
+import sample11 from './Samples/bx-crystal-2.json';
+import sample12 from './Samples/fig1.json';
+import sample13 from './Samples/hbc.json';
 
 import { Alert, Notification } from 'rsuite'
 
@@ -16,7 +24,7 @@ class Controller {
     io;
 
     constructor() {
-        this.io = [this.save, this.load, this.export, this.loadSample];
+        this.io = [this.save, this.load, this.export, this.loadSample, this.toggleAutorotate];
         this.chronometer = new this.Chronometer();
         this.externalToggle = new this.ExternalToggle();
         this.model = new Model(this.chronometer);
@@ -25,13 +33,14 @@ class Controller {
         Alert.config(
             ({
                 top: 70,
-                duration: 10000
+                duration: 8000
             })
         );
     }
 
     ExternalToggle = class ExternalToggle {
-        force = () => { }
+        closeSidemenu = () => { }
+        autorotate = () => { }
     }
 
     Chronometer = class Chronometer {
@@ -68,6 +77,7 @@ class Controller {
     };
 
     start = () => {
+
         this.generate(sample2, true);
         this.addListeners();
         this.chronometer.begin();
@@ -122,8 +132,9 @@ class Controller {
         } else {
             this.view.setState(data.state);
         }
-        this.externalToggle.force();
-        console.log(this.model.sets);
+        this.model.update();
+        this.externalToggle.closeSidemenu();
+
     }
 
     load = (file) => {
@@ -145,6 +156,7 @@ class Controller {
 
     loadSample = (id) => {
         let sample;
+
         switch (id) {
             case 1:
                 sample = sample1;
@@ -163,6 +175,27 @@ class Controller {
                 break;
             case 6:
                 sample = sample6;
+                break;
+            case 7:
+                sample = sample7;
+                break;
+            case 8:
+                sample = sample8;
+                break;
+            case 9:
+                sample = sample9;
+                break;
+            case 10:
+                sample = sample10;
+                break;
+            case 11:
+                sample = sample11;
+                break;
+            case 12:
+                sample = sample12;
+                break;
+            case 13:
+                sample = sample13;
                 break;
             default:
                 Alert.error('Error: File does not exist');
@@ -232,7 +265,7 @@ class Controller {
 
     addListeners = () => {
 
-        this.model.controls.addEventListener( 'change', this.render );
+        this.model.controls.addEventListener('change', this.render);
 
         document.body.style.overflow = "hidden";
 
@@ -252,7 +285,7 @@ class Controller {
             //TODO
             //spacebar
             if (key == 32) {
-                this.model.toggleAutorotate();
+                this.externalToggle.autorotate();
             }
             // //a
             // if (key == 65) {

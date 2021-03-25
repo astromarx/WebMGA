@@ -14,7 +14,7 @@ export class View {
         View.state = {}
         this.expanded = false;
         this.model = m;
-        this.header = <Top chronometer={chrono} functions={io} model={this.model} />;
+        this.header = <Top chronometer={chrono} functions={io} model={this.model} toggler ={toggler}/>;
         this.sidebar = <Side model={this.model} sidebarExpanded={this.expanded} toggler={toggler}/>;
     }
 
@@ -118,9 +118,9 @@ export class View {
         }
 
         this.loadLightingAndCamera(View.state);
+        this.loadReferenceAndSlicing(View.state);
 
         if (!starting) {
-            this.loadReferenceAndSlicing(View.state);
             this.loadModel(View.state);
         }
     }
@@ -214,6 +214,7 @@ export class View {
         activeShape: 'box',
         showAxes: false,
         showGrid: false,
+        multicolour: true,
         gridColour: {
             r: 255,
             g: 255,

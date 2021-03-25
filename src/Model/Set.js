@@ -146,6 +146,8 @@ export class Set {
         let geoms = [];
 
         for (let elem of this.elements) {
+            elem.geoms = [];
+
             if (this.shape.isPreset) {
                 geoms.push(this.shape.presetGeometry.clone());
             }
@@ -159,8 +161,6 @@ export class Set {
             this.translate(elem.position, geoms);
             
             elem.setGeometries(geoms);
-
-            geoms = [];
         }
     }
 
@@ -174,43 +174,6 @@ export class Set {
         }
     }
 
-    genElementsDeprecated(elements) {
-        let position, orientation, attributes, euler, nP;
-        let temp = [], colour = [];
-
-        for (let elem of elements) {
-
-            if (elem === "") {
-                return;
-            }
-
-            attributes = elem.split(" ");
-
-            for (let a of attributes) {
-                temp.push(parseFloat(a));
-            }
-
-            attributes = temp;
-            temp = [];
-
-            if (attributes.length !== 6) { break; }
-
-            position = attributes.slice(0, 3);
-            orientation = attributes.slice(3);
-
-            console.log(position);
-            console.log(orientation);
-
-            this.positions.push(position);
-            this.orientations.push(orientation);
-
-            euler = this.getRotations(this.orientationType, orientation);
-            colour = this.colourFromOrientation(euler);
-
-            nP = new this.Element(colour, position, euler);
-            this.elements.push(nP);
-        }
-    }
 
     genGeometries() {
         switch (this.shapeType) {

@@ -142,5 +142,133 @@
                 ]
             }
         ]
+    },
+    "state": {
+        "reference": {
+            "boundingShapeEnabled": true,
+            "activeShape": "box",
+            "showAxes": false,
+            "showGrid": false,
+            "multicolour": true,
+            "gridColour": {
+                "r": 255,
+                "g": 0,
+                "b": 0
+            },
+            "size": 50
+        },
+        "ambientLight": {
+            "ambientLightColour": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "i": 40
+            },
+            "backgroundColour": {
+                "r": 255,
+                "g": 255,
+                "b": 255
+            }
+        },
+        "pointLight": {
+            "reset": 0,
+            "active": "point",
+            "enabled": true,
+            "helper": false,
+            "colour": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "i": 60
+            },
+            "position": {
+                "x": 5,
+                "y": 0,
+                "z": 5
+            }
+        },
+        "directionalLight": {
+            "reset": 0,
+            "active": "directional",
+            "enabled": true,
+            "helper": false,
+            "colour": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "i": 50
+            },
+            "position": {
+                "x": -5,
+                "y": 0,
+                "z": -5
+            }
+        },
+        "camera": {
+            "type": "orthographic",
+            "lookAt": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "position": {
+                "r": 10,
+                "theta": 3.1,
+                "psi": 0
+            },
+            "zoom": 50
+        },
+        "slicing": {
+            "clipIntersection": false,
+            "helpers": [
+                false,
+                false,
+                false
+            ],
+            "x": [
+                -50,
+                50
+            ],
+            "y": [
+                -50,
+                50
+            ],
+            "z": [
+                -50,
+                50
+            ]
+        },
+        "model": {
+            "active": 0,
+            "reset": 0,
+            "sets": [
+                "Set A"
+            ],
+            "configurations": [
+                {
+                    "title": "Set A",
+                    "shape": "Ellipsoid",
+                    "parameters": {
+                        "names": [
+                            "X",
+                            "Y",
+                            "Z"
+                        ],
+                        "vals": [
+                            0.2,
+                            0.5,
+                            1.2
+                        ]
+                    },
+                    "colour": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255
+                    },
+                    "colourFromDirector": true,
+                    "displayAsWireframe": false
+                }
+            ]
+        }
     }
 }
