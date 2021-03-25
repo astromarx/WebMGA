@@ -84,7 +84,7 @@ class Controller {
         this.render();
         this.notify('info', 'Welcome!',
             (<p style={{ width: 320 }} >
-                This application works best on machines with dedicated graphics cards on the Chrome browser. Check out the new 'Notes' feature on the Header.
+                This application works best on the Chrome browser. Check out Liquid Crystal configurations in the Library!
             </p>)
         );
     }

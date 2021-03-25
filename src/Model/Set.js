@@ -4,8 +4,7 @@ import {
     Vector3,
     Quaternion,
     Euler,
-    Color,
-    DoubleSide,
+    Color
 
 } from 'three';
 import {eigs} from 'mathjs';
@@ -61,21 +60,6 @@ export class Set {
         this.genMeshes();
     }
 
-    //deprecated
-    // constructor(name, orientationType, data, cp, ci) {
-    //     this.name = name;
-    //     this.orientationType = orientationType;
-
-    //     this.clippingPlanes = cp;
-    //     this.clipIntersection = ci;
-
-    //     this.setDefaults();
-    //     this.genGeometries();
-    //     this.genElementsDeprecated(data);
-    //     this.setElements();
-    //     this.genMeshes();
-
-    // }
 
     validateData() {
         if (this.positions.length !== this.orientations.length) {
@@ -171,44 +155,6 @@ export class Set {
         this.calculateDirector();
         for(let elem of this.elements){
             elem.setColourIndex(this.calculateColourIndex(elem));
-        }
-    }
-
-    genElementsDeprecated(elements) {
-        let position, orientation, attributes, euler, nP;
-        let temp = [], colour = [];
-
-        for (let elem of elements) {
-
-            if (elem === "") {
-                return;
-            }
-
-            attributes = elem.split(" ");
-
-            for (let a of attributes) {
-                temp.push(parseFloat(a));
-            }
-
-            attributes = temp;
-            temp = [];
-
-            if (attributes.length !== 6) { break; }
-
-            position = attributes.slice(0, 3);
-            orientation = attributes.slice(3);
-
-            console.log(position);
-            console.log(orientation);
-
-            this.positions.push(position);
-            this.orientations.push(orientation);
-
-            euler = this.getRotations(this.orientationType, orientation);
-            colour = this.colourFromOrientation(euler);
-
-            nP = new this.Element(colour, position, euler);
-            this.elements.push(nP);
         }
     }
 
@@ -337,6 +283,7 @@ export class Set {
         let eigen = eigs(orderTensor);
         
         //returns index of max eigenvalue
+        //this line of code is a bit dodgy
         let index = eigen.values.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
 
         this.director = eigen.vectors[index];
