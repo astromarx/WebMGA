@@ -1,6 +1,7 @@
 import Model from "./Model/Model";
 import View from "./View/View"
 import 'rsuite/dist/styles/rsuite-dark.css';
+import {std, mean} from 'mathjs';
 
 import sample1 from './Samples/dummy-vector.json';
 import sample2 from './Samples/dummy-quaternion.json';
@@ -15,6 +16,7 @@ import sample10 from './Samples/bx-crystal.json';
 import sample11 from './Samples/bx-crystal-2.json';
 import sample12 from './Samples/fig1.json';
 import sample13 from './Samples/hbc.json';
+import empty from './Samples/empty-set.json';
 
 import { Alert, Notification } from 'rsuite'
 
@@ -48,7 +50,15 @@ class Controller {
         constructor() {
             this.fps = 0;
             this.frames = 0;
-            this.prevTime = Date.now();
+            this.prevTime = null;
+            this.model = null;
+
+            this.step = 10;
+            this.testing = false;
+            this.counter = 0;
+            this.rawPerformanceData = [];
+            this.avgPerformanceData = [];
+            this.stdPerformanceData = [];
         }
 
         f = (n) => {
@@ -59,28 +69,58 @@ class Controller {
             return this.fps;
         }
 
-        begin = () => {
-            this.prevTime = Date.now();
+        logPerformance = () => {
+            this.rawPerformanceData.push(this.fps);
+            if(this.counter == this.step){
+
+                this.avgPerformanceData.push(mean(this.rawPerformanceData));
+                this.stdPerformanceData.push(std(this.rawPerformanceData));
+                this.rawPerformanceData = [];
+                this.counter = 0;
+
+                console.log('# of Molecules: '+this.model.testTotal.toString() +' FPS - Avg:  ' + this.avgPerformanceData[this.avgPerformanceData.length - 1].toString() 
+                + 'Std: ' + this.stdPerformanceData[this.stdPerformanceData.length - 1].toString())
+
+                if (this.model.addRandomParticles(50)){
+                    this.testing = false;
+                }
+            }
+            this.counter++;
         }
+
 
         click = () => {
             this.frames++;
+
+            if(this.prevTime == null){
+                this.prevTime = Date.now();
+            }
+
             var time = Date.now();
+
 
             if (time > this.prevTime + 1000) {
                 this.fps = (this.frames * 1000) / (time - this.prevTime);
+
+                if(this.testing){
+                    this.logPerformance();
+                }
+                
                 this.prevTime = time;
                 this.frames = 0;
                 this.f(this.fps);
+
+                
             }
         }
     };
 
+
     start = () => {
+        this.chronometer.model = this.model;
 
         this.generate(sample2, true);
         this.addListeners();
-        this.chronometer.begin();
         this.render();
         this.notify('info', 'Welcome!',
             (<p style={{ width: 320 }} >
@@ -242,7 +282,7 @@ class Controller {
 
         this.notify('success', 'Thank you!', (
             <div>
-                <a href="https://www.ucl.ac.uk/prospective-students/undergraduate/degrees/computer-science-bsc" target="_blank" rel="noopener noreferrer">Here</a>
+               Image exported successfully.
             </div>
         ));
     }

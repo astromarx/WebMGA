@@ -5,13 +5,18 @@ import {
     OrthographicCamera,
     Vector3,
     PlaneHelper,
-    Plane
+    Plane,
+    MeshLambertMaterial,
+    Mesh
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Set from './Set.js'
 import Light from './Light.js'
 import Tools from './Tools.js'
-import { Alert } from 'rsuite';
+import { Alert } from 'rsuite'
+import * as SHAPE from './Shapes.js';
+import Parameters from './Parameters';
+
 
 export class Model {
     sets = [];
@@ -80,6 +85,29 @@ export class Model {
         }
         this.scene.add(this.camera);
         this.lod = 1;
+    }
+
+    initTesting(step) {
+
+        for (let i = this.scene.children.length - 1; i >= 0; i--) {
+            if(this.scene.children[i].type === "Mesh")
+                this.scene.remove(this.scene.children[i]);
+        }
+
+        this.testMaterial = new MeshLambertMaterial();
+        this.testShape = new SHAPE.Ellipsoid(...Parameters.Ellipsoid.vals);
+        this.testShape.LOD = 2;
+        this.testShape.generate();
+        this.testTotal = 0;
+        this.testLimit = 3000;
+
+
+        console.log("INITIALISING PERFORMANCE TEST")
+        console.log('Material: MeshLambertMaterial')
+        console.log('Shape: Ellipsoid (Default Parameters)')
+        console.log('LOD: ' + (this.testShape.LOD + 1).toString())
+        console.log('Test Size: '+this.testLimit.toString)
+        console.log('Test Step: '+ step.toString());
     }
 
     getData() {
@@ -280,7 +308,7 @@ export class Model {
         }
     }
 
-    toggleAxesMulticolour(){
+    toggleAxesMulticolour() {
         let passAxes = false;
         if (this.axesEnabled) {
             this.toggleAxes();
@@ -462,12 +490,51 @@ export class Model {
                 this.sets.push(ps);
             }
         }
-
-
         for (let set of this.sets) {
             for (const m of set.meshes) {
                 this.scene.add(m);
             }
+        }
+    }
+
+    addRandomParticles(n) {
+
+        this.testTotal += n;
+
+        if(this.testTotal >= this.testLimit){
+            return true;
+        }
+
+        let geoms = [];
+        let m;
+        for (let i = 0; i < n; i++) {
+
+            if (this.testShape.isPreset) {
+                geoms.push(this.testShape.presetGeometry.clone());
+            }
+            else {
+                geoms.push(this.testShape.stripGeometry.clone());
+                geoms.push(this.testShape.fanGeometries[0].clone());
+                geoms.push(this.testShape.fanGeometries[1].clone());
+            }
+
+
+            this.translate([Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50], geoms);
+            for (let g of geoms) {
+                m = new Mesh(g, this.testMaterial);
+                this.scene.add(m);
+            }
+
+            geoms = [];
+        }
+
+
+        return false;
+    }
+
+    translate(pos, geoms) {
+        for (let g of geoms) {
+            g.translate(pos[0], pos[1], pos[2]);
         }
     }
 

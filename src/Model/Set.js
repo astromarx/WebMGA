@@ -1,6 +1,7 @@
 import {
     Mesh,
     MeshLambertMaterial,
+    MeshPhongMaterial,
     Vector3,
     Quaternion,
     Euler,
@@ -115,9 +116,10 @@ export class Set {
             mat = new MeshLambertMaterial({
                 color: c,
                 clippingPlanes: this.clippingPlanes,
-                clipIntersection: this.clipIntersection
+                clipIntersection: this.clipIntersection,
+                shininess: 30,
+                wireframe : this.wireframe
             });
-            mat.wireframe = this.wireframe;
 
             for (let g of elem.geometries) {
                 m = new Mesh(g, mat);
@@ -190,7 +192,6 @@ export class Set {
     }
 
     translate(pos, geoms) {
-        console.log(pos);
         for (let g of geoms) {
             g.translate(pos[0], pos[1], pos[2]);
         }

@@ -285,7 +285,7 @@ export class CameraOptions extends React.Component {
                             <p><b> Position</b></p>
                         </Col>
                     </Row>
-                    <ParameterSet titles={["r", "theta", "psi"]} values={cameraPosition} f={this.updatePosition} step={0.5} styling={submenuParameterSetStyling} />
+                    <ParameterSet titles={["r", "theta", "psi"]} values={cameraPosition} f={this.updatePosition} step={0.1} styling={submenuParameterSetStyling} />
                     <Row className="show-grid">
                         <Col xs={2} />
                         <Col xs={12}>

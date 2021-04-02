@@ -1,5 +1,5 @@
 
-import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip, Divider } from 'rsuite';
+import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip, Divider, Alert } from 'rsuite';
 import { ParameterSet } from './Tools';
 import React from "react";
 import View from './View';
@@ -121,10 +121,10 @@ class PerformanceDropdown extends React.Component {
     render() {
         const lod = this.state.val;
         return (
-            <Dropdown title="Performance" trigger='click' placement="bottomEnd" icon={<Icon icon="dashboard" />}>
+            <Dropdown title="Level of Detail" trigger='click' placement="bottomEnd" icon={<Icon icon="sliders" />}>
                 <Form style={{ marginLeft: 20, marginTop: 20 }} layout="inline">
                     <FormGroup>
-                        <ControlLabel>Level of Detail</ControlLabel>
+                        <ControlLabel>Adjust LOD</ControlLabel>
                         <Whisper placement="bottom" trigger="hover" speaker={
                             <Tooltip>
                                 Decreasing LOD will increase rendering speed.
@@ -168,6 +168,7 @@ class Top extends React.Component {
         this.updateFPS = this.updateFPS.bind(this);
         this.toggleDrawer = this.toggleDrawer.bind(this);
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
+        this.runPerformanceTest = this.runPerformanceTest.bind(this);
 
         this.chronometer = props.chronometer;
         this.chronometer.f = this.updateFPS;
@@ -175,6 +176,8 @@ class Top extends React.Component {
         this.toggler.autorotate = () => {
             this.toggleAutorotate();
         }
+
+
     }
 
     toggleAutorotate() {
@@ -186,6 +189,18 @@ class Top extends React.Component {
             this.toggler.closeSidemenu();
         }
         this.continuousRender();
+    }
+
+    runPerformanceTest(){
+        Alert.info("Running Performance Test: See browser console for information. To modify testing parameters, see 'initTesting' in Model class.");
+
+        this.model.initTesting(this.chronometer.step);
+
+        if(!this.state.rotating){
+            this.toggleAutorotate();
+        }
+
+        this.chronometer.testing = true;
     }
 
     continuousRender = () => {
@@ -221,10 +236,12 @@ class Top extends React.Component {
                             <Nav pullRight >
                                 <ButtonToolbar>
                                     <Nav.Item active>fps: {fps}</Nav.Item>
-                                    <Nav.Item active={rotating} onClick={this.toggleAutorotate} appearance="subtle" icon={<Icon icon="refresh" />}>Autorotate</Nav.Item>
+                                    <Nav.Item active={rotating} onClick={this.toggleAutorotate} appearance="subtle" icon={<Icon icon="refresh" spin={rotating} />}>Autorotate</Nav.Item>
+                                    <Nav.Item onClick={this.runPerformanceTest} appearance="subtle" icon={<Icon icon="dashboard" />}>Run Performance Test</Nav.Item>
+                                    <PerformanceDropdown model={this.model} />
                                     <Nav.Item appearance="subtle" disabled={true} icon={<Icon icon="info-circle" />}>Manual</Nav.Item>
                                     <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="book" />}>Notes</Nav.Item>
-                                    <PerformanceDropdown model={this.model} />
+                                    
                                     <SamplesDropdown f={this.functions[3]} />
 
                                     <ExportDropdown f={this.functions[2]} />
