@@ -69,6 +69,7 @@ class SamplesDropdown extends React.Component {
                 this.f(eventKey);
 
             }}>
+                <Dropdown.Item eventKey={14}>Single Molecule</Dropdown.Item>
                 <Dropdown.Menu title="Samples">
                     <Dropdown.Item eventKey={1}>Unit Vector Orientations</Dropdown.Item>
                     <Dropdown.Item eventKey={2}>Quaternion Orientations</Dropdown.Item>
@@ -192,7 +193,7 @@ class Top extends React.Component {
     }
 
     runPerformanceTest(){
-        Alert.info("Running Performance Test: See browser console for information. To modify testing parameters, see 'initTesting' in Model class.");
+        Alert.info("To modify testing parameters, see 'initTesting()' in Model class.");
 
         this.model.initTesting(this.chronometer.step);
 

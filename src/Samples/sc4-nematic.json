@@ -6763,15 +6763,15 @@
     },
     "state": {
         "reference": {
-            "boundingShapeEnabled": false,
+            "boundingShapeEnabled": true,
             "activeShape": "box",
             "showAxes": false,
             "showGrid": false,
             "multicolour": true,
             "gridColour": {
                 "r": 255,
-                "g": 255,
-                "b": 255
+                "g": 0,
+                "b": 0
             },
             "size": 50
         },
@@ -6800,9 +6800,9 @@
                 "i": 60
             },
             "position": {
-                "x": 5,
+                "x": 50,
                 "y": 0,
-                "z": 5
+                "z": 50
             }
         },
         "directionalLight": {
@@ -6830,11 +6830,11 @@
                 "z": 0
             },
             "position": {
-                "r": 10,
-                "theta": 9.0,
-                "psi": 2.6
+                "x": -15,
+                "y": "12",
+                "z": -12
             },
-            "zoom": 30
+            "zoom": "15"
         },
         "slicing": {
             "clipIntersection": false,
@@ -6872,8 +6872,8 @@
                             "Length"
                         ],
                         "vals": [
-                            0.5,
-                            4
+                            1,
+                            8
                         ]
                     },
                     "colour": {

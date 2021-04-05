@@ -197,22 +197,26 @@ export class CameraOptions extends React.Component {
         } else {
             this.updateZoom(1);
         }
-        
+
     }
 
     updatePosition(value, type) {
         let position = this.state.position;
 
+        console.log(value);
+        console.log(type);
+
+
         if (value != NaN && value != null) {
             switch (type) {
-                case 0:
-                    position.r = parseFloat(value);
+                case 'x':
+                    position.x = value;
                     break;
-                case 1:
-                    position.theta = parseFloat(value);
+                case 'y':
+                    position.y = value;
                     break;
-                case 2:
-                    position.psi = parseFloat(value);
+                case 'z':
+                    position.z = value;
                     break;
                 default:
                     Alert.error('Error: Unexpected Camera Position Input');
@@ -255,12 +259,12 @@ export class CameraOptions extends React.Component {
         const cameraType = this.state.type;
         const zoom = this.state.zoom;
         const lookAt = [this.state.lookAt.x, this.state.lookAt.y, this.state.lookAt.z];
-        const cameraPosition = [this.state.position.r, this.state.position.theta, this.state.position.psi];
+        const cameraPosition = this.state.position;
 
 
         return (
             <div>
-               
+                <br />
                 <Row className="show-grid">
                     <Col xs={2} />
                     <Col xs={12}>
@@ -275,7 +279,7 @@ export class CameraOptions extends React.Component {
 
                     </Col>
                 </Row>
-              
+
                 <Grid fluid>
 
                     <Row className="show-grid">
@@ -285,7 +289,10 @@ export class CameraOptions extends React.Component {
                             <p><b> Position</b></p>
                         </Col>
                     </Row>
-                    <ParameterSet titles={["r", "theta", "psi"]} values={cameraPosition} f={this.updatePosition} step={0.1} styling={submenuParameterSetStyling} />
+
+                    <CustomSlider boundaries={[-50, 50]} val={cameraPosition.x} f={this.updatePosition} type={'x'} />
+                    <CustomSlider boundaries={[-50, 50]} val={cameraPosition.y} f={this.updatePosition} type={'y'} />
+                    <CustomSlider boundaries={[-50, 50]} val={cameraPosition.z} f={this.updatePosition} type={'z'} />
                     <Row className="show-grid">
                         <Col xs={2} />
                         <Col xs={12}>
@@ -802,8 +809,7 @@ export class ReferenceOptions extends React.Component {
                             <FormGroup controlId="radioList">
                                 <RadioGroup name="radioList" value={activeShape} onChange={this.selectShape}>
                                     <Radio disabled={!enabled} value="box"  >Box </Radio>
-                                    <Radio disabled={!enabled} value="sphere" >Sphere </Radio>
-                                    {/* TO DO CYLINDER */}
+                                    <Radio disabled={true} value="sphere" >Sphere </Radio>
                                     <Radio disabled={true} value="cylinder" >Cylinder </Radio>
 
                                 </RadioGroup>
@@ -839,7 +845,7 @@ export class ReferenceOptions extends React.Component {
                                     X : RED <br /> Y : GREEN <br /> Z : BLUE
                             </Tooltip>
                             }>
-                                <Icon style={{marginTop: 8}}icon="question-circle" size="lg" />
+                                <Icon style={{ marginTop: 8 }} icon="question-circle" size="lg" />
                             </Whisper>
                         </Col>
                     </Row>

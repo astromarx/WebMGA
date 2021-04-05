@@ -6779,15 +6779,15 @@
     },
     "state": {
         "reference": {
-            "boundingShapeEnabled": false,
+            "boundingShapeEnabled": true,
             "activeShape": "box",
             "showAxes": false,
             "showGrid": false,
             "multicolour": true,
             "gridColour": {
                 "r": 255,
-                "g": 255,
-                "b": 255
+                "g": 0,
+                "b": 0
             },
             "size": 50
         },
@@ -6846,11 +6846,11 @@
                 "z": 0
             },
             "position": {
-                "r": 10,
-                "theta": 3.1,
-                "psi": 0
+                "x": "0",
+                "y": "-50",
+                "z": "5"
             },
-            "zoom": 50
+            "zoom": 20
         },
         "slicing": {
             "clipIntersection": false,
@@ -6873,7 +6873,7 @@
             ]
         },
         "model": {
-            "active": 0,
+            "active": 2,
             "reset": 0,
             "sets": [
                 "Set A",
@@ -6890,8 +6890,8 @@
                             "Length"
                         ],
                         "vals": [
-                            0.5,
-                            4
+                            1,
+                            8
                         ]
                     },
                     "colour": {
@@ -6911,8 +6911,8 @@
                             "Length"
                         ],
                         "vals": [
-                            0.5,
-                            4
+                            1,
+                            8
                         ]
                     },
                     "colour": {
@@ -6932,8 +6932,8 @@
                             "Length"
                         ],
                         "vals": [
-                            0.5,
-                            4
+                            1,
+                            8
                         ]
                     },
                     "colour": {

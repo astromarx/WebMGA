@@ -165,9 +165,9 @@ export class View {
             z: 0
         },
         position: {
-            r: 10,
-            theta: 3.1,
-            psi: 0
+            x: 0,
+            y: 0,
+            z: -15
         },
         zoom: 50
     }

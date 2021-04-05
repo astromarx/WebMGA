@@ -31,7 +31,7 @@ export class Shape {
     constructor() {
         this.args = arguments[0];
         this.isPreset = false;
-        this.LOD = 1;
+        this.LOD = 2;
         this.complexity = [6,10,14,20,26];
     }
 
@@ -99,7 +99,7 @@ export class Preset extends Shape {
                 this.presetGeometry = new CylinderBufferGeometry(...this.parameters, this.complexity[this.LOD]);
                 break;
             case 'Torus':
-                this.presetGeometry = new TorusBufferGeometry(...this.parameters, this.complexity[this.LOD]);
+                this.presetGeometry = new TorusBufferGeometry(...this.parameters, 2*this.complexity[this.LOD]);
                 break;
             default:
                 Alert.error('Error: Unknown shape identifier');

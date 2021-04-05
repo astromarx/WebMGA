@@ -7,6 +7,8 @@ import {
     PlaneHelper,
     Plane,
     MeshLambertMaterial,
+    MeshPhongMaterial,
+    MeshStandardMaterial,
     Mesh
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -50,10 +52,11 @@ export class Model {
     clippingHelpers;
     clipIntersections;
 
-    constructor(chronometer) {
+    constructor(chronometer, notify) {
         this.scene = new Scene();
         this.chronometer = chronometer;
         this.setDefault();
+        this.notify = notify;
     }
 
     setDefault() {
@@ -84,30 +87,46 @@ export class Model {
             this.scene.add(l.light);
         }
         this.scene.add(this.camera);
-        this.lod = 1;
+        this.lod = 2;
     }
 
     initTesting(step) {
+        // set desirable testing view
+        this.setCamera('orthographic');
+        this.updateCameraZoom(8);
+        this.updateLightPosition(2, {x: 50, y: 0, z:50});
 
-        for (let i = this.scene.children.length - 1; i >= 0; i--) {
-            if(this.scene.children[i].type === "Mesh")
-                this.scene.remove(this.scene.children[i]);
-        }
+        this.deleteAllMeshes();
 
         this.testMaterial = new MeshLambertMaterial();
-        this.testShape = new SHAPE.Ellipsoid(...Parameters.Ellipsoid.vals);
+        this.testShape = new SHAPE.Preset('Torus', Parameters.Torus.vals);
         this.testShape.LOD = 2;
         this.testShape.generate();
         this.testTotal = 0;
-        this.testLimit = 3000;
+        this.testLimit = 3001;
 
 
-        console.log("INITIALISING PERFORMANCE TEST")
+        this.notify('info', 'Initialising Performance Test',
+        (<p style={{ width: 320 }} >
+            Test Size: {this.testLimit.toString()} <br/>
+            Step: {step.toString()} <br/>
+            Shape: Ellipsoid (Default Parameters) <br/>
+            Level of Detail: {(this.testShape.LOD + 1).toString()} <br/>
+            Material: MeshLambertMaterial
+        </p>));
+
         console.log('Material: MeshLambertMaterial')
         console.log('Shape: Ellipsoid (Default Parameters)')
         console.log('LOD: ' + (this.testShape.LOD + 1).toString())
         console.log('Test Size: '+this.testLimit.toString)
         console.log('Test Step: '+ step.toString());
+    }
+
+    deleteAllMeshes(){
+        for (let i = this.scene.children.length - 1; i >= 0; i--) {
+            if(this.scene.children[i].type === "Mesh")
+                this.scene.remove(this.scene.children[i]);
+        }
     }
 
     getData() {
@@ -224,11 +243,9 @@ export class Model {
     }
 
     updateCameraPosition(p) {
-        let x = p.r * Math.sin(p.psi) * Math.cos(p.theta);
-        let y = p.r * Math.sin(p.psi) * Math.sin(p.theta);
-        let z = p.r * Math.cos(p.psi);
-        this.cameraPosition = [x, y, z];
-        this.camera.position.set(x, y, z);
+        
+        this.cameraPosition = [p.x, p.y, p.z];
+        this.camera.position.set(p.x, p.y, p.z);
         this.controls.update();
     }
 

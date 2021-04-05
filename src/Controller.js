@@ -1,7 +1,7 @@
 import Model from "./Model/Model";
 import View from "./View/View"
 import 'rsuite/dist/styles/rsuite-dark.css';
-import {std, mean} from 'mathjs';
+import { std, mean } from 'mathjs';
 
 import sample1 from './Samples/dummy-vector.json';
 import sample2 from './Samples/dummy-quaternion.json';
@@ -16,7 +16,7 @@ import sample10 from './Samples/bx-crystal.json';
 import sample11 from './Samples/bx-crystal-2.json';
 import sample12 from './Samples/fig1.json';
 import sample13 from './Samples/hbc.json';
-import empty from './Samples/empty-set.json';
+import sample14 from './Samples/single.json'
 
 import { Alert, Notification } from 'rsuite'
 
@@ -27,9 +27,10 @@ class Controller {
 
     constructor() {
         this.io = [this.save, this.load, this.export, this.loadSample, this.toggleAutorotate];
-        this.chronometer = new this.Chronometer();
         this.externalToggle = new this.ExternalToggle();
-        this.model = new Model(this.chronometer);
+        this.chronometer = new this.Chronometer(this.notify, this.externalToggle);
+
+        this.model = new Model(this.chronometer, this.notify);
         this.view = new View(this.model, this.io, this.chronometer, this.externalToggle);
 
         Alert.config(
@@ -47,13 +48,17 @@ class Controller {
 
     Chronometer = class Chronometer {
 
-        constructor() {
+        constructor(notify, externalToggle) {
             this.fps = 0;
             this.frames = 0;
             this.prevTime = null;
             this.model = null;
 
-            this.step = 10;
+            this.notify = notify;
+            this.externalToggle = externalToggle;
+
+            this.step = 200;
+            this.tick = 12;
             this.testing = false;
             this.counter = 0;
             this.rawPerformanceData = [];
@@ -71,18 +76,39 @@ class Controller {
 
         logPerformance = () => {
             this.rawPerformanceData.push(this.fps);
-            if(this.counter == this.step){
+            if (this.counter == this.tick) {
 
                 this.avgPerformanceData.push(mean(this.rawPerformanceData));
                 this.stdPerformanceData.push(std(this.rawPerformanceData));
                 this.rawPerformanceData = [];
                 this.counter = 0;
 
-                console.log('# of Molecules: '+this.model.testTotal.toString() +' FPS - Avg:  ' + this.avgPerformanceData[this.avgPerformanceData.length - 1].toString() 
-                + 'Std: ' + this.stdPerformanceData[this.stdPerformanceData.length - 1].toString())
+                this.notify('info', ' Test Update ('+this.model.testTotal.toString()+' Molecules)',
+                    (<p style={{ width: 320 }} >
+                        <b>FPS</b> <br/>
+                        Average: {this.avgPerformanceData[this.avgPerformanceData.length - 1].toString()} <br />
+                        Standard Deviation: {this.stdPerformanceData[this.stdPerformanceData.length - 1].toString()} <br/>
+                    </p>));
 
-                if (this.model.addRandomParticles(50)){
+                console.log('# of Molecules: ' + this.model.testTotal.toString() + ' FPS - Avg:  ' + this.avgPerformanceData[this.avgPerformanceData.length - 1].toString()
+                    + 'Std: ' + this.stdPerformanceData[this.stdPerformanceData.length - 1].toString())
+
+                if (this.model.addRandomParticles(this.step)) {
                     this.testing = false;
+                    this.model.deleteAllMeshes();
+                    
+                    console.log('Average FPS');
+                    console.log(this.avgPerformanceData);
+                    console.log('Std FPS');
+                    console.log(this.stdPerformanceData);
+
+                    this.externalToggle.autorotate();
+
+                    this.notify('success', 'Test Completed Succesfully',
+                    (<p style={{ width: 320 }} >
+                        All molecules deleted. Please see console output for a list of average FPS and standard deviations.
+                    </p>));
+
                 }
             }
             this.counter++;
@@ -92,7 +118,7 @@ class Controller {
         click = () => {
             this.frames++;
 
-            if(this.prevTime == null){
+            if (this.prevTime == null) {
                 this.prevTime = Date.now();
             }
 
@@ -102,15 +128,15 @@ class Controller {
             if (time > this.prevTime + 1000) {
                 this.fps = (this.frames * 1000) / (time - this.prevTime);
 
-                if(this.testing){
+                if (this.testing) {
                     this.logPerformance();
                 }
-                
+
                 this.prevTime = time;
                 this.frames = 0;
                 this.f(this.fps);
 
-                
+
             }
         }
     };
@@ -133,7 +159,7 @@ class Controller {
         Notification[type]({
             title: title,
             placement: 'bottomEnd',
-            duration: 30000,
+            duration: 15000,
             description: description
         });
     }
@@ -182,6 +208,7 @@ class Controller {
         const read = () => {
             var data = JSON.parse(fileReader.result);
             try {
+                this.model = new Model(this.chronometer, this.notify);
                 this.generate(data, false);
                 Alert.success('File loaded successfully.');
             } catch {
@@ -237,6 +264,9 @@ class Controller {
             case 13:
                 sample = sample13;
                 break;
+            case 14:
+                sample = sample14;
+                break;
             default:
                 Alert.error('Error: File does not exist');
                 return;
@@ -282,7 +312,7 @@ class Controller {
 
         this.notify('success', 'Thank you!', (
             <div>
-               Image exported successfully.
+                Image exported successfully.
             </div>
         ));
     }
@@ -326,11 +356,15 @@ class Controller {
             //spacebar
             if (key == 32) {
                 this.externalToggle.autorotate();
+
+                if (this.chronometer.testing) {
+                    this.chronometer.testing = false;
+                }
             }
             // //a
-            // if (key == 65) {
-            //     this.model.toggleAxes();
-            // }
+            if (key == 65) {
+                console.log(this.model.camera.position);
+            }
             // //g
             // if (key == 71) {
             //     this.model.toggleGrid();

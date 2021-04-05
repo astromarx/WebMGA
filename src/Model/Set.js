@@ -1,6 +1,5 @@
 import {
     Mesh,
-    MeshLambertMaterial,
     MeshPhongMaterial,
     Vector3,
     Quaternion,
@@ -83,7 +82,7 @@ export class Set {
         this.userColour = new Color("#FFFFFF");
         this.colourByDirector = true;
         this.wireframe = true;
-        this.lod = 1;
+        this.lod = 2;
         this.shapeType = 'Ellipsoid';
         this.parameters = Parameters.Ellipsoid.vals;
     }
@@ -113,13 +112,13 @@ export class Set {
                 c = this.userColour;
             }
 
-            mat = new MeshLambertMaterial({
+            mat = new MeshPhongMaterial({
                 color: c,
                 clippingPlanes: this.clippingPlanes,
                 clipIntersection: this.clipIntersection,
-                shininess: 30,
-                wireframe : this.wireframe
+                shininess: 40
             });
+            mat.wireframe = this.wireframe;
 
             for (let g of elem.geometries) {
                 m = new Mesh(g, mat);
@@ -192,16 +191,19 @@ export class Set {
     }
 
     translate(pos, geoms) {
+        console.log(pos);
         for (let g of geoms) {
-            g.translate(pos[0], pos[1], pos[2]);
+            g.translate(2*pos[0], 2*pos[1], 2*pos[2]);
         }
     }
 
     rotate(e, geoms) {
         for (let g of geoms) {
-            g.rotateX(e.x);
-            g.rotateY(e.y);
             g.rotateZ(e.z);
+            g.rotateY(e.y);
+            g.rotateX(e.x);
+            
+            
         }
     }
 
@@ -209,8 +211,9 @@ export class Set {
         let q = new Quaternion();
         switch (type) {
             case 'v':
-                let defaultVector = new Vector3(0, 0, 1);
-                q.setFromUnitVectors(defaultVector, new Vector3(rot[0], rot[1], rot[2]));
+                let orientationVector = new Vector3(rot[0], rot[1], rot[2])
+                orientationVector.normalize();
+                q.setFromUnitVectors(new Vector3(0, 0, 1), orientationVector);
                 break;
             case 'q':
                 q.set(rot[1], rot[2], rot[3], rot[0]);
@@ -226,6 +229,8 @@ export class Set {
             default:
                 throw 'Error: Unexpected rotation type value. \n Found: ' + type + '\n Expected: v | q | a | e';
         }
+
+        q.normalize();
 
         return q;
 
