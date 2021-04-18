@@ -223,9 +223,6 @@ class Controller {
         }
         fileReader.onloadend = read;
         fileReader.readAsText(file);
-
-        console.log('test')
-
     }
 
     loadSample = (id) => {
