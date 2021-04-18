@@ -14,7 +14,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Set from './Set.js'
 import Light from './Light.js'
-import Tools from './Tools.js'
+import ReferenceTools from './ReferenceTools.js'
 import { Alert } from 'rsuite'
 import * as SHAPE from './Shapes.js';
 import Parameters from './Parameters';
@@ -34,8 +34,6 @@ export class Model {
 
     height;
     width;
-
-
 
     gridEnabled = false;
     axesEnabled = false;
@@ -59,15 +57,19 @@ export class Model {
         this.notify = notify;
     }
 
+    /* GENERAL FUNCTIONS */
+
     setDefault() {
+        
+        this.renderer = new WebGLRenderer({ antialias: false, preserveDrawingBuffer: false, powerPreference: "high-performance" });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.localClippingEnabled = true;
+
         this.rotating = false;
         this.cameraPostion = null;
         this.lightHelperWarningGiven = false;
         this.selectedSet = 0;
         this.initClippers();
-        this.renderer = new WebGLRenderer({ antialias: false, preserveDrawingBuffer: false, powerPreference: "high-performance" });
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.localClippingEnabled = true;
 
         this.lookAt = new Vector3(0, 0, 0);
 
@@ -79,7 +81,7 @@ export class Model {
             new Light('directional'),
             new Light('point')];
 
-        this.tools = new Tools(50, 0xffffff);
+        this.tools = new ReferenceTools(50, 0xffffff);
         this.bgColour = "#000000";
         this.renderer.setClearColor(this.bgColour);
 
@@ -90,42 +92,10 @@ export class Model {
         this.lod = 2;
     }
 
-    initTesting(step) {
-        // set desirable testing view
-        this.setCamera('orthographic');
-        this.updateCameraZoom(8);
-        this.updateLightPosition(2, {x: 50, y: 0, z:50});
-
-        this.deleteAllMeshes();
-
-        this.testMaterial = new MeshLambertMaterial();
-        this.testShape = new SHAPE.Preset('Torus', Parameters.Torus.vals);
-        this.testShape.LOD = 2;
-        this.testShape.generate();
-        this.testTotal = 0;
-        this.testLimit = 3001;
-
-
-        this.notify('info', 'Initialising Performance Test',
-        (<p style={{ width: 320 }} >
-            Test Size: {this.testLimit.toString()} <br/>
-            Step: {step.toString()} <br/>
-            Shape: Ellipsoid (Default Parameters) <br/>
-            Level of Detail: {(this.testShape.LOD + 1).toString()} <br/>
-            Material: MeshLambertMaterial
-        </p>));
-
-        console.log('Material: MeshLambertMaterial')
-        console.log('Shape: Ellipsoid (Default Parameters)')
-        console.log('LOD: ' + (this.testShape.LOD + 1).toString())
-        console.log('Test Size: '+this.testLimit.toString)
-        console.log('Test Step: '+ step.toString());
-    }
-
-    deleteAllMeshes(){
-        for (let i = this.scene.children.length - 1; i >= 0; i--) {
-            if(this.scene.children[i].type === "Mesh")
-                this.scene.remove(this.scene.children[i]);
+    update() {
+        this.renderer.render(this.scene, this.camera);
+        if (!this.rotating) {
+            this.chronometer.click();
         }
     }
 
@@ -144,56 +114,135 @@ export class Model {
         return model;
     }
 
-    update() {
-        this.renderer.render(this.scene, this.camera);
-        if (!this.rotating) {
-            this.chronometer.click();
-        }
+    toggleSidebar() {
+        this.sidebarExpanded = !this.sidebarExpanded;
+        this.updateDimensions();
+        this.updateCamera();
     }
 
-    initClippers() {
-        this.clippingIntersections = false;
-
-        this.clippingPlanes = [
-            new Plane(new Vector3(1, 0, 0), 50),
-            new Plane(new Vector3(-1, 0, 0), 50),
-            new Plane(new Vector3(0, 1, 0), 50),
-            new Plane(new Vector3(0, -1, 0), 50),
-            new Plane(new Vector3(0, 0, 1), 50),
-            new Plane(new Vector3(0, 0, -1), 50)
-        ];
-
-        this.clippingHelpers = [
-            new PlaneHelper(this.clippingPlanes[0], 100, 0xff0000),
-            new PlaneHelper(this.clippingPlanes[1], 100, 0xff0000),
-            new PlaneHelper(this.clippingPlanes[2], 100, 0x00ff00),
-            new PlaneHelper(this.clippingPlanes[3], 100, 0x00ff00),
-            new PlaneHelper(this.clippingPlanes[4], 100, 0x0000ff),
-            new PlaneHelper(this.clippingPlanes[5], 100, 0x0000ff)
-        ];
-
-        for (let helper of this.clippingHelpers) {
-            helper.visible = false;
-            this.scene.add(helper);
-        }
+    toggleAutorotate() {
+        this.controls.autoRotate = !this.controls.autoRotate;
+        this.rotating = !this.rotating;
     }
 
-    toggleClipIntersection(toggle) {
+    getParameters(val) {
+        return Set.getParameters(val);
+    }
+
+    static rgbToHex(r, g, b) {
+        function componentToHex(c) {
+            var hex = c.toString(16);
+            return hex.length === 1 ? "0" + hex : hex;
+        }
+        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+    loadDeprecated(data) {
+        // placeholder FILE IO used for initial development
+        let particleSets = data.split("$");
+        let setData, ps;
+        for (let particleSet of particleSets) {
+            if (particleSet == "") {
+                return;
+            }
+            else {
+                setData = particleSet.split("\n");
+                ps = new Set(setData[0], setData[1], setData.slice(2), this.clippingPlanes, this.clippingIntersections);
+                this.sets.push(ps);
+            }
+        }
         for (let set of this.sets) {
-            set.toggleClipIntersection(toggle);
+            for (const m of set.meshes) {
+                this.scene.add(m);
+            }
         }
     }
 
-    toggleHelper(i, toggle) {
-        this.clippingHelpers[2 * i].visible = toggle;
-        this.clippingHelpers[2 * i + 1].visible = toggle;
+    /* UPDATING SETS FUNCTIONS */
+
+    updateSets(id, params, f) {
+        for (const m of this.sets[id].meshes) {
+            this.scene.remove(m);
+        }
+        f(...params);
+        for (const m of this.sets[id].meshes) {
+            this.scene.add(m);
+        }
     }
 
-    updateSlicer(i, vals) {
+    updateUserColour(id, colour) {
+        this.updateSets(id, [id, colour], (id, colour) => {
+            this.sets[id].meshes = [];
+            this.sets[id].setUserColour(Model.rgbToHex(colour.r, colour.g, colour.b));
+            this.sets[id].genMeshes();
+        });
+    }
+
+    updateShape(id, shape, parameters) {
+        this.updateSets(id, [id, shape, parameters], (id, shape, parameters) => {
+            this.sets[id].meshes = [];
+            this.sets[id].shapeType = shape;
+            this.sets[id].parameters = parameters.vals;
+            this.sets[id].genGeometries();
+            this.sets[id].setElements();
+            this.sets[id].genMeshes();
+        });
+    }
+
+    toggleWireframe(id, toggle) {
+        this.updateSets(id, [id, toggle], (id, toggle) => {
+            this.sets[id].meshes = [];
+            this.sets[id].wireframe = toggle;
+            this.sets[id].genMeshes();
+        });
+    }
+
+    toggleUserColour(id, toggle) {
+        this.updateSets(id, [id, toggle], (id, toggle) => {
+            this.sets[id].meshes = [];
+            this.sets[id].colourByDirector = toggle;
+            this.sets[id].genMeshes();
+        });
+    }
+
+    genSets(sets) {
         for (let set of this.sets) {
-            set.updateSlicers(i, vals);
+            for (const m of set.meshes) {
+                this.scene.remove(m);
+            }
+        }
+        this.sets = [];
+        for (let setData of sets) {
+            this.sets.push(new Set(setData, this.clippingPlanes, this.clippingIntersections));
+        }
+        for (let set of this.sets) {
+            for (const m of set.meshes) {
+                this.scene.add(m);
+            }
         }
     }
+
+    /* LOD FUNCTIONS */
+
+    getLOD() {
+        return this.lod;
+    }
+
+    updateLOD(val) {
+        this.lod = val;
+        for (let i = 0; i < this.sets.length; i++) {
+            this.updateSets(i, [i, val], (i, val) => {
+                this.sets[i].lod = val;
+                this.sets[i].meshes = [];
+                this.sets[i].genGeometries();
+                this.sets[i].setElements();
+                this.sets[i].genMeshes();
+            });
+        }
+    }
+
+
+    /* CAMERA AND PROJECTION FUNCTIONS */
 
     updateDimensions() {
         this.height = (window.innerHeight - 56);
@@ -243,7 +292,7 @@ export class Model {
     }
 
     updateCameraPosition(p) {
-        
+
         this.cameraPosition = [p.x, p.y, p.z];
         this.camera.position.set(p.x, p.y, p.z);
         this.controls.update();
@@ -256,11 +305,7 @@ export class Model {
 
     }
 
-    toggleSidebar() {
-        this.sidebarExpanded = !this.sidebarExpanded;
-        this.updateDimensions();
-        this.updateCamera();
-    }
+    /* AMBIENT AND LIGHT FUNCTIONS */
 
     updateBg(colour) {
         this.bgColour = Model.rgbToHex(colour.r, colour.g, colour.b);
@@ -294,6 +339,34 @@ export class Model {
     updateLightPosition(type, pos) {
         this.lighting[type].updatePosition(pos.x, pos.y, pos.z);
         this.lighting[type].helper.update();
+    }
+
+    /* REFERENCE TOOLS FUNCTIONS */
+
+    toggleGrid() {
+        this.gridEnabled = !this.gridEnabled;
+
+        if (this.gridEnabled) {
+            this.scene.add(this.tools.subGrid);
+        } else {
+            this.scene.remove(this.tools.subGrid);
+        }
+    }
+
+    toggleAxes() {
+        this.axesEnabled = !this.axesEnabled;
+
+        if (this.axesEnabled) {
+            for (let a of this.tools.axes) {
+                this.scene.add(a);
+            }
+        } else {
+            for (let a of this.tools.axes) {
+                this.scene.remove(a);
+            }
+        }
+
+
     }
 
     updateReferenceColour(rgb) {
@@ -359,46 +432,6 @@ export class Model {
         }
     }
 
-
-    toggleGrid() {
-        this.gridEnabled = !this.gridEnabled;
-
-        if (this.gridEnabled) {
-            this.scene.add(this.tools.subGrid);
-        } else {
-            this.scene.remove(this.tools.subGrid);
-        }
-    }
-
-    toggleAxes() {
-        this.axesEnabled = !this.axesEnabled;
-
-        if (this.axesEnabled) {
-            for (let a of this.tools.axes) {
-                this.scene.add(a);
-            }
-        } else {
-            for (let a of this.tools.axes) {
-                this.scene.remove(a);
-            }
-        }
-
-
-    }
-
-    toggleAutorotate() {
-        this.controls.autoRotate = !this.controls.autoRotate;
-        this.rotating = !this.rotating;
-    }
-
-    static rgbToHex(r, g, b) {
-        function componentToHex(c) {
-            var hex = c.toString(16);
-            return hex.length === 1 ? "0" + hex : hex;
-        }
-        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-    }
-
     updateBoundingShape(type, enabled) {
         this.boundingShapeEnabled = enabled;
         this.scene.remove(this.tools.boundingShape);
@@ -408,109 +441,92 @@ export class Model {
     }
 
 
-    getParameters(val) {
-        return Set.getParameters(val);
-    }
+    /* SLICING FUNCTIONS */
 
-    updateModel(id, params, f) {
-        for (const m of this.sets[id].meshes) {
-            this.scene.remove(m);
-        }
-        f(...params);
-        for (const m of this.sets[id].meshes) {
-            this.scene.add(m);
-        }
-    }
+    initClippers() {
+        this.clippingIntersections = false;
 
-    getLOD() {
-        return this.lod;
-    }
+        this.clippingPlanes = [
+            new Plane(new Vector3(1, 0, 0), 50),
+            new Plane(new Vector3(-1, 0, 0), 50),
+            new Plane(new Vector3(0, 1, 0), 50),
+            new Plane(new Vector3(0, -1, 0), 50),
+            new Plane(new Vector3(0, 0, 1), 50),
+            new Plane(new Vector3(0, 0, -1), 50)
+        ];
 
-    updateLOD(val) {
-        this.lod = val;
-        for (let i = 0; i < this.sets.length; i++) {
-            this.updateModel(i, [i, val], (i, val) => {
-                this.sets[i].lod = val;
-                this.sets[i].meshes = [];
-                this.sets[i].genGeometries();
-                this.sets[i].setElements();
-                this.sets[i].genMeshes();
-            });
+        this.clippingHelpers = [
+            new PlaneHelper(this.clippingPlanes[0], 100, 0xff0000),
+            new PlaneHelper(this.clippingPlanes[1], 100, 0xff0000),
+            new PlaneHelper(this.clippingPlanes[2], 100, 0x00ff00),
+            new PlaneHelper(this.clippingPlanes[3], 100, 0x00ff00),
+            new PlaneHelper(this.clippingPlanes[4], 100, 0x0000ff),
+            new PlaneHelper(this.clippingPlanes[5], 100, 0x0000ff)
+        ];
+
+        for (let helper of this.clippingHelpers) {
+            helper.visible = false;
+            this.scene.add(helper);
         }
     }
 
-    updateUserColour(id, colour) {
-        this.updateModel(id, [id, colour], (id, colour) => {
-            this.sets[id].meshes = [];
-            this.sets[id].setUserColour(Model.rgbToHex(colour.r, colour.g, colour.b));
-            this.sets[id].genMeshes();
-        });
-    }
-
-    updateShape(id, shape, parameters) {
-        this.updateModel(id, [id, shape, parameters], (id, shape, parameters) => {
-            this.sets[id].meshes = [];
-            this.sets[id].shapeType = shape;
-            this.sets[id].parameters = parameters.vals;
-            this.sets[id].genGeometries();
-            this.sets[id].setElements();
-            this.sets[id].genMeshes();
-        });
-    }
-
-
-    toggleWireframe(id, toggle) {
-        this.updateModel(id, [id, toggle], (id, toggle) => {
-            this.sets[id].meshes = [];
-            this.sets[id].wireframe = toggle;
-            this.sets[id].genMeshes();
-        });
-    }
-
-    toggleUserColour(id, toggle) {
-        this.updateModel(id, [id, toggle], (id, toggle) => {
-            this.sets[id].meshes = [];
-            this.sets[id].colourByDirector = toggle;
-            this.sets[id].genMeshes();
-        });
-    }
-
-    genSets(sets) {
+    toggleClipIntersection(toggle) {
         for (let set of this.sets) {
-            for (const m of set.meshes) {
-                this.scene.remove(m);
-            }
+            set.toggleClipIntersection(toggle);
         }
-        this.sets = [];
-        for (let setData of sets) {
-            this.sets.push(new Set(setData, this.clippingPlanes, this.clippingIntersections));
-        }
+    }
+
+    toggleHelper(i, toggle) {
+        this.clippingHelpers[2 * i].visible = toggle;
+        this.clippingHelpers[2 * i + 1].visible = toggle;
+    }
+
+    updateSlicer(i, vals) {
         for (let set of this.sets) {
-            for (const m of set.meshes) {
-                this.scene.add(m);
-            }
+            set.updateSlicers(i, vals);
         }
     }
 
 
-    //used for qmga conversion
-    load(data) {
-        let particleSets = data.split("$");
-        let setData, ps;
-        for (let particleSet of particleSets) {
-            if (particleSet == "") {
-                return;
-            }
-            else {
-                setData = particleSet.split("\n");
-                ps = new Set(setData[0], setData[1], setData.slice(2), this.clippingPlanes, this.clippingIntersections);
-                this.sets.push(ps);
-            }
-        }
-        for (let set of this.sets) {
-            for (const m of set.meshes) {
-                this.scene.add(m);
-            }
+    /* PERFORMANCE TEST SUITE */
+
+
+    initTesting(step) {
+        // set desirable testing view
+        this.setCamera('orthographic');
+        this.updateCameraZoom(8);
+        this.updateLightPosition(2, { x: 50, y: 0, z: 50 });
+
+        this.deleteAllMeshes();
+
+        this.testMaterial = new MeshLambertMaterial();
+        this.testShape = new SHAPE.Preset('Torus', Parameters.Torus.vals);
+        this.testShape.LOD = 2;
+        this.testShape.generate();
+        this.testTotal = 0;
+        this.testLimit = 3001;
+
+
+        this.notify('info', 'Initialising Performance Test',
+            (<p style={{ width: 320 }} >
+                Test Size: {this.testLimit.toString()} <br />
+            Step: {step.toString()} <br />
+            Shape: Ellipsoid (Default Parameters) <br />
+            Level of Detail: {(this.testShape.LOD + 1).toString()} <br />
+            Material: MeshLambertMaterial
+            </p>));
+
+        console.log('Material: MeshLambertMaterial')
+        console.log('Shape: Ellipsoid (Default Parameters)')
+        console.log('LOD: ' + (this.testShape.LOD + 1).toString())
+        console.log('Test Size: ' + this.testLimit.toString)
+        console.log('Test Step: ' + step.toString());
+    }
+
+    deleteAllMeshes() {
+        for (let i = this.scene.children.length - 1; i >= 0; i--) {
+            if (this.scene.children[i].type === "Mesh")
+                this.scene.remove(this.scene.children[i]);
         }
     }
 
@@ -518,7 +534,7 @@ export class Model {
 
         this.testTotal += n;
 
-        if(this.testTotal >= this.testLimit){
+        if (this.testTotal >= this.testLimit) {
             return true;
         }
 
@@ -554,6 +570,8 @@ export class Model {
             g.translate(pos[0], pos[1], pos[2]);
         }
     }
+
+
 
 }
 

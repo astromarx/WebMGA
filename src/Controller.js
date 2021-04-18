@@ -17,6 +17,8 @@ import sample11 from './Samples/bx-crystal-2.json';
 import sample12 from './Samples/fig1.json';
 import sample13 from './Samples/hbc.json';
 import sample14 from './Samples/single.json'
+import sample15 from './Samples/qmga-shapes.json'
+import sample16 from './Samples/threejs-shapes.json'
 
 import { Alert, Notification } from 'rsuite'
 
@@ -42,8 +44,12 @@ class Controller {
     }
 
     ExternalToggle = class ExternalToggle {
+        // these functions are defined within their respective React components
+
         closeSidemenu = () => { }
         autorotate = () => { }
+        updateCamera = () => { }
+
     }
 
     Chronometer = class Chronometer {
@@ -83,11 +89,11 @@ class Controller {
                 this.rawPerformanceData = [];
                 this.counter = 0;
 
-                this.notify('info', ' Test Update ('+this.model.testTotal.toString()+' Molecules)',
+                this.notify('info', ' Test Update (' + this.model.testTotal.toString() + ' Molecules)',
                     (<p style={{ width: 320 }} >
-                        <b>FPS</b> <br/>
+                        <b>FPS</b> <br />
                         Average: {this.avgPerformanceData[this.avgPerformanceData.length - 1].toString()} <br />
-                        Standard Deviation: {this.stdPerformanceData[this.stdPerformanceData.length - 1].toString()} <br/>
+                        Standard Deviation: {this.stdPerformanceData[this.stdPerformanceData.length - 1].toString()} <br />
                     </p>));
 
                 console.log('# of Molecules: ' + this.model.testTotal.toString() + ' FPS - Avg:  ' + this.avgPerformanceData[this.avgPerformanceData.length - 1].toString()
@@ -96,7 +102,7 @@ class Controller {
                 if (this.model.addRandomParticles(this.step)) {
                     this.testing = false;
                     this.model.deleteAllMeshes();
-                    
+
                     console.log('Average FPS');
                     console.log(this.avgPerformanceData);
                     console.log('Std FPS');
@@ -105,9 +111,9 @@ class Controller {
                     this.externalToggle.autorotate();
 
                     this.notify('success', 'Test Completed Succesfully',
-                    (<p style={{ width: 320 }} >
-                        All molecules deleted. Please see console output for a list of average FPS and standard deviations.
-                    </p>));
+                        (<p style={{ width: 320 }} >
+                            All molecules deleted. Please see console output for a list of average FPS and standard deviations.
+                        </p>));
 
                 }
             }
@@ -194,7 +200,7 @@ class Controller {
         this.model.genSets(data.model.sets);
         if (data.state == null) {
             Alert.info("Setting default viewing state.");
-            this.view.setDefaultStates(starting);
+            this.view.setDefaultState(starting);
         } else {
             this.view.setState(data.state);
         }
@@ -208,7 +214,6 @@ class Controller {
         const read = () => {
             var data = JSON.parse(fileReader.result);
             try {
-                this.model = new Model(this.chronometer, this.notify);
                 this.generate(data, false);
                 Alert.success('File loaded successfully.');
             } catch {
@@ -218,6 +223,8 @@ class Controller {
         }
         fileReader.onloadend = read;
         fileReader.readAsText(file);
+
+        console.log('test')
 
     }
 
@@ -266,6 +273,12 @@ class Controller {
                 break;
             case 14:
                 sample = sample14;
+                break;
+            case 15:
+                sample = sample15;
+                break;
+            case 16:
+                sample = sample16;
                 break;
             default:
                 Alert.error('Error: File does not exist');
@@ -329,8 +342,24 @@ class Controller {
         return this.model.renderer.domElement;
     }
 
+    updateCamera = () => {
+        View.state.camera.position.x = Math.round(this.model.camera.position.x * 100) / 100;
+        View.state.camera.position.y = Math.round(this.model.camera.position.y * 100) / 100;
+        View.state.camera.position.z = Math.round(this.model.camera.position.z * 100) / 100;
+
+        View.state.camera.lookAt.x = Math.round(this.model.controls.target.x * 100) / 100;
+        View.state.camera.lookAt.y = Math.round(this.model.controls.target.y * 100) / 100;
+        View.state.camera.lookAt.z = Math.round(this.model.controls.target.z * 100) / 100;
+
+        View.state.camera.zoom = this.model.camera.zoom;
+
+
+        this.externalToggle.updateCamera();
+    }
+
     render = () => {
         this.model.update();
+        this.updateCamera();
     }
 
     addListeners = () => {

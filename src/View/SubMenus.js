@@ -3,6 +3,7 @@ import { Nav, Divider, Checkbox, FormGroup, RadioGroup, Radio, Grid, Row, Col, A
 import React from "react";
 import { SliceSlider, ParameterInput, ParameterSet, CustomSlider } from './Tools'
 import View from './View'
+import { json } from 'mathjs';
 
 const TITLE_LEFT_MARGIN = 30;
 const dividerStyle = {
@@ -28,18 +29,18 @@ export class ModelsOptions extends React.Component {
     }
 
 
-    updateUserColour(value, type) {
+    updateUserColour(val, type) {
         let colour = this.state.configurations[this.state.active].colour;
 
         switch (type) {
             case 'r':
-                colour.r = value;
+                colour.r = val;
                 break;
             case 'g':
-                colour.g = value;
+                colour.g = val;
                 break;
             case 'b':
-                colour.b = value;
+                colour.b = val;
                 break;
             default:
                 Alert.error('Error: Unexpected RGB Identifier');
@@ -69,14 +70,14 @@ export class ModelsOptions extends React.Component {
         this.model.update();
     }
 
-    updateParameter(val, index) {
+    updateParameter(val, i) {
         let parameter = parseFloat(val);
 
         let globalState = View.state.model.configurations[this.state.active];
-        globalState.parameters.vals[index] = parameter;
+        globalState.parameters.vals[i] = parameter;
 
         let configs = this.state.configurations;
-        configs[this.state.active].parameters.vals[index] = parameter;
+        configs[this.state.active].parameters.vals[i] = parameter;
 
         this.setState({
             configurations: configs
@@ -171,27 +172,38 @@ export class CameraOptions extends React.Component {
         super();
         this.state = View.state.camera;
         this.model = props.model;
+        this.toggler = props.toggler;
         this.selectType = this.selectType.bind(this);
         this.updateLookat = this.updateLookat.bind(this);
         this.updatePosition = this.updatePosition.bind(this);
         this.updateZoom = this.updateZoom.bind(this);
+        this.updateState = this.updateState.bind(this);
+        
+        this.toggler.updateCamera = () => {
+            this.updateState()
+        }
     }
 
-    updateZoom(value) {
-        this.setState({
-            zoom: value
-        });
-        this.model.updateCameraZoom(value);
-        this.model.update();
-        View.state.camera.zoom = value;
+    updateState(){
+        this.setState(View.state.camera);
     }
-    selectType(value) {
+
+    updateZoom(val) {
         this.setState({
-            type: value
+            zoom: val
         });
-        View.state.camera.type = value;
-        this.model.setCamera(value);
-        if (value == "orthographic") {
+        this.model.updateCameraZoom(val);
+        this.model.update();
+        View.state.camera.zoom = val;
+    }
+
+    selectType(val) {
+        this.setState({
+            type: val
+        });
+        View.state.camera.type = val;
+        this.model.setCamera(val);
+        if (val == "orthographic") {
             this.updateZoom(50);
 
         } else {
@@ -200,23 +212,19 @@ export class CameraOptions extends React.Component {
 
     }
 
-    updatePosition(value, type) {
+    updatePosition(val, type) {
         let position = this.state.position;
 
-        console.log(value);
-        console.log(type);
-
-
-        if (value != NaN && value != null) {
+        if (val != NaN && val != null) {
             switch (type) {
                 case 'x':
-                    position.x = value;
+                    position.x = val;
                     break;
                 case 'y':
-                    position.y = value;
+                    position.y = val;
                     break;
                 case 'z':
-                    position.z = value;
+                    position.z = val;
                     break;
                 default:
                     Alert.error('Error: Unexpected Camera Position Input');
@@ -229,19 +237,19 @@ export class CameraOptions extends React.Component {
         View.state.camera.position = position;
     }
 
-    updateLookat(value, type) {
+    updateLookat(val, type) {
         let lookAt = this.state.lookAt;
 
-        if (value != NaN && value != null) {
+        if (val != NaN && val != null) {
             switch (type) {
                 case 0:
-                    lookAt.x = parseFloat(value);
+                    lookAt.x = parseFloat(val);
                     break;
                 case 1:
-                    lookAt.y = parseFloat(value);
+                    lookAt.y = parseFloat(val);
                     break;
                 case 2:
-                    lookAt.z = parseFloat(value);
+                    lookAt.z = parseFloat(val);
                     break;
                 default:
                     Alert.error('Error: Unexpected Look At Input');
@@ -263,7 +271,7 @@ export class CameraOptions extends React.Component {
 
 
         return (
-            <div>
+            <div key={JSON.stringify(this.state)}>
                 <br />
                 <Row className="show-grid">
                     <Col xs={2} />
@@ -382,22 +390,22 @@ export class SlicingOptions extends React.Component {
         this.model.update();
     }
 
-    updateSlicer(i, vals) {
+    updateSlicer(i, val) {
         switch (i) {
             case 0:
-                View.state.slicing.x = vals;
+                View.state.slicing.x = val;
                 break;
             case 1:
-                View.state.slicing.y = vals;
+                View.state.slicing.y = val;
                 break;
             case 2:
-                View.state.slicing.z = vals;
+                View.state.slicing.z = val;
                 break;
             default:
                 Alert.error('Error: Unexpected Slicing Identifier');
         }
 
-        this.model.updateSlicer(i, vals);
+        this.model.updateSlicer(i, val);
         this.model.update();
     }
     render() {
@@ -405,14 +413,14 @@ export class SlicingOptions extends React.Component {
         return (
             <div>
                 <br />
-                <Grid fluid>
+                {/* <Grid fluid>
                     <Row className="show-grid">
                         <Col xs={1} />
                         <Col xs={20}>
                             <Checkbox disabled={true} checked={state.clipIntersection} onClick={this.toggleIntersection}> Slice Intersection</Checkbox>
                         </Col>
                     </Row>
-                </Grid>
+                </Grid> */}
                 {/* TO DO */}
                 <SliceSlider title="X : " f={this.updateSlicer} index={0} vals={state.x} />
                 <br />
@@ -531,21 +539,21 @@ export class AdditionalLightOptions extends React.Component {
         }
     }
 
-    updateColour(value, type) {
+    updateColour(val, type) {
         let colour = this.state.colour;
 
         switch (type) {
             case 'r':
-                colour.r = value;
+                colour.r = val;
                 break;
             case 'g':
-                colour.g = value;
+                colour.g = val;
                 break;
             case 'b':
-                colour.b = value;
+                colour.b = val;
                 break;
             case 'i':
-                colour.i = value;
+                colour.i = val;
                 break;
             default:
                 Alert.error('Error: Unexpected RGB Identifier');
@@ -560,18 +568,18 @@ export class AdditionalLightOptions extends React.Component {
         }
         this.model.update();
     }
-    updatePosition(value, type) {
+    updatePosition(val, type) {
         let position = this.state.position;
 
         switch (type) {
             case 'x':
-                position.x = value;
+                position.x = val;
                 break;
             case 'y':
-                position.y = value;
+                position.y = val;
                 break;
             case 'z':
-                position.z = value;
+                position.z = val;
                 break;
             default:
                 Alert.error('Error: Unexpected Position Identifier');
@@ -628,24 +636,24 @@ export class AmbientLightOptions extends React.Component {
 
         this.model = props.model;
 
-        this.updateAmbientLightColour = this.updateAmbientLightColour.bind(this);
-        this.updateBackgroundColour = this.updateBackgroundColour.bind(this);
+        this.updateColour = this.updateColour.bind(this);
+        this.updateBg = this.updateBg.bind(this);
     }
-    updateAmbientLightColour(value, type) {
+    updateColour(val, i) {
         let colour = this.state.ambientLightColour;
 
-        switch (type) {
+        switch (i) {
             case 'r':
-                colour.r = value;
+                colour.r = val;
                 break;
             case 'g':
-                colour.g = value;
+                colour.g = val;
                 break;
             case 'b':
-                colour.b = value;
+                colour.b = val;
                 break;
             case 'i':
-                colour.i = value;
+                colour.i = val;
                 break;
             default:
                 Alert.error('Error: Unexpected RGB Identifier');
@@ -654,18 +662,18 @@ export class AmbientLightOptions extends React.Component {
         this.model.update();
         View.state.ambientLight.ambientLightColour = colour;
     }
-    updateBackgroundColour(value, type) {
+    updateBg(val, i) {
         let colour = this.state.backgroundColour;
 
-        switch (type) {
+        switch (i) {
             case 'r':
-                colour.r = value;
+                colour.r = val;
                 break;
             case 'g':
-                colour.g = value;
+                colour.g = val;
                 break;
             case 'b':
-                colour.b = value;
+                colour.b = val;
                 break;
             default:
                 Alert.error('Error: Unexpected RGB Identifier');
@@ -681,16 +689,16 @@ export class AmbientLightOptions extends React.Component {
             <div>
                 <Divider><strong style={dividerStyle}> Ambient Light </strong></Divider>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.r} f={this.updateAmbientLightColour} type={'r'} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.g} f={this.updateAmbientLightColour} type={'g'} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.b} f={this.updateAmbientLightColour} type={'b'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.r} f={this.updateColour} type={'r'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.g} f={this.updateColour} type={'g'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={ambientLightColour.b} f={this.updateColour} type={'b'} />
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> Intensity </p>
-                <CustomSlider disabled={false} boundaries={[0, 100]} val={ambientLightColour.i} f={this.updateAmbientLightColour} type={'i'} />
+                <CustomSlider disabled={false} boundaries={[0, 100]} val={ambientLightColour.i} f={this.updateColour} type={'i'} />
                 <Divider><strong style={dividerStyle}> Background Colour</strong></Divider>
                 <p style={{ marginLeft: TITLE_LEFT_MARGIN }}> RGB </p>
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.r} f={this.updateBackgroundColour} type={'r'} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.g} f={this.updateBackgroundColour} type={'g'} />
-                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.b} f={this.updateBackgroundColour} type={'b'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.r} f={this.updateBg} type={'r'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.g} f={this.updateBg} type={'g'} />
+                <CustomSlider disabled={false} boundaries={[0, 255]} val={backgroundColour.b} f={this.updateBg} type={'b'} />
             </div>
         );
     }
@@ -711,18 +719,18 @@ export class ReferenceOptions extends React.Component {
         this.toggleMulticolour = this.toggleMulticolour.bind(this);
 
     }
-    updateColour(value, type) {
+    updateColour(val, type) {
         let rgb = this.state.gridColour;
 
         switch (type) {
             case 'r':
-                rgb.r = value;
+                rgb.r = val;
                 break;
             case 'g':
-                rgb.g = value;
+                rgb.g = val;
                 break;
             case 'b':
-                rgb.b = value;
+                rgb.b = val;
                 break;
             default:
                 Alert.error('Error: Unexpected RGB Identifier');
@@ -731,10 +739,10 @@ export class ReferenceOptions extends React.Component {
         this.model.update();
         View.state.reference.gridColour = rgb;
     }
-    updateGridSize(value) {
-        this.model.updateGridSize(value);
+    updateGridSize(val) {
+        this.model.updateGridSize(val);
         this.model.update();
-        View.state.reference.size = value;
+        View.state.reference.size = val;
     }
     toggleBoundingShapeEnabled() {
         let toggle = !View.state.reference.boundingShapeEnabled;
@@ -745,12 +753,12 @@ export class ReferenceOptions extends React.Component {
         this.model.updateBoundingShape(this.state.activeShape, toggle);
         this.model.update();
     }
-    selectShape(value) {
+    selectShape(val) {
         this.setState({
-            activeShape: value
+            activeShape: val
         });
-        View.state.reference.activeShape = value;
-        this.model.updateBoundingShape(value, this.state.boundingShapeEnabled);
+        View.state.reference.activeShape = val;
+        this.model.updateBoundingShape(val, this.state.boundingShapeEnabled);
         this.model.update();
     }
     toggleMulticolour() {
@@ -809,8 +817,8 @@ export class ReferenceOptions extends React.Component {
                             <FormGroup controlId="radioList">
                                 <RadioGroup name="radioList" value={activeShape} onChange={this.selectShape}>
                                     <Radio disabled={!enabled} value="box"  >Box </Radio>
-                                    <Radio disabled={true} value="sphere" >Sphere </Radio>
-                                    <Radio disabled={true} value="cylinder" >Cylinder </Radio>
+                                    {/* <Radio disabled={true} value="sphere" >Sphere </Radio>
+                                    <Radio disabled={true} value="cylinder" >Cylinder </Radio> */}
 
                                 </RadioGroup>
                             </FormGroup>

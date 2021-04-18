@@ -18,7 +18,7 @@ export class Shape {
     complexity;
 
     //shape model attributes
-    args;
+    parameters;
 
     //graphics components
     stripGeometries = [];
@@ -29,7 +29,7 @@ export class Shape {
     isPreset;
 
     constructor() {
-        this.args = arguments[0];
+        this.parameters = arguments[0];
         this.isPreset = false;
         this.LOD = 2;
         this.complexity = [6,10,14,20,26];
@@ -122,7 +122,7 @@ export class Ellipsoid extends Shape {
     genGeometries() {
         let actComplexity = [],
             piece = [],
-            scale = this.args,
+            scale = this.parameters,
             vertices = [],
             normals = [],
             temp = [];
@@ -253,8 +253,8 @@ export class Spherocylinder extends Shape {
     genGeometries() {
         let actComplexity = [],
             piece = [],
-            radius = this.args[0],
-            length = this.args[1],
+            radius = this.parameters[0],
+            length = this.parameters[1],
             vertices,
             normals,
             temp = [];
@@ -453,8 +453,8 @@ export class Spheroplatelet extends Shape {
     }
 
     genGeometries() {
-        let radSphere = this.args[0],
-            radCircle = this.args[1],
+        let radSphere = this.parameters[0],
+            radCircle = this.parameters[1],
             plusZ = [0, 0, 1],
             minusZ = [0, 0, -1],
             projectionUp = 0,
@@ -610,8 +610,8 @@ export class CutSphere extends Shape {
     }
 
     genGeometries() {
-        let radius = this.args[0],
-            zCut = this.args[1],
+        let radius = this.parameters[0],
+            zCut = this.parameters[1],
             plusZ = [0, 0, 1],
             minusZ = [0, 0, -1],
             angle = Math.acos(zCut / radius),

@@ -2,8 +2,8 @@
 import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip, Divider, Alert } from 'rsuite';
 import { ParameterSet } from './Tools';
 import React from "react";
-import View from './View';
-import { render } from '@testing-library/react';
+import manual from './AboutFiles/WebMGAUserManual.txt'
+import fs from 'fs';
 
 class ExportDropdown extends React.Component {
 
@@ -11,11 +11,11 @@ class ExportDropdown extends React.Component {
         super();
         this.dimensions = [1000, 1000];
         this.f = props.f;
-        this.updateDimensions = this.updateDimensions.bind(this);
+        this.setDimensions = this.setDimensions.bind(this);
         this.export = this.export.bind(this);
     }
 
-    updateDimensions(val, index) {
+    setDimensions(val, index) {
         this.dimensions[index] = parseInt(val);
     }
 
@@ -27,7 +27,7 @@ class ExportDropdown extends React.Component {
         return (
             <Dropdown title="Export" trigger='click' placement="bottomEnd" icon={<Icon icon="export" />} >
 
-                <ParameterSet f={this.updateDimensions} titles={['Height', 'Width']} values={this.dimensions} step={5} positive
+                <ParameterSet f={this.setDimensions} titles={['Height', 'Width']} values={this.dimensions} step={5} positive
                     styling={[
                         { marginRight: 25 },
                         { marginTop: 18, marginLeft: 35 }
@@ -39,7 +39,7 @@ class ExportDropdown extends React.Component {
 
 };
 
-class SamplesDropdown extends React.Component {
+class LibraryDropdown extends React.Component {
 
     constructor(props) {
         super(props);
@@ -50,27 +50,30 @@ class SamplesDropdown extends React.Component {
         this.updateKey = this.updateKey.bind(this);
     }
 
-    updateKey(val) {
+    updateKey(key) {
         this.setState({
-            active: val
+            active: key
         });
     }
 
     render() {
         const state = this.state;
         return (
-            <Dropdown 
-            title="Library"
-            trigger='click'
-            placement="bottomEnd"
-            icon={<Icon icon="database" />}
-            appearance='subtle'
-            onSelect={(eventKey) => {
-                this.f(eventKey);
+            <Dropdown
+                title="Library"
+                trigger='click'
+                placement="bottomEnd"
+                icon={<Icon icon="database" />}
+                appearance='subtle'
+                onSelect={(eventKey) => {
+                    this.f(eventKey);
 
-            }}>
-                <Dropdown.Item eventKey={14}>Single Molecule</Dropdown.Item>
+                }}>
+
                 <Dropdown.Menu title="Samples">
+                    <Dropdown.Item eventKey={14}>Single Molecule</Dropdown.Item>
+                    <Dropdown.Item eventKey={15}>QMGA Geometries</Dropdown.Item>
+                    <Dropdown.Item eventKey={16}>Threejs Geometries</Dropdown.Item>
                     <Dropdown.Item eventKey={1}>Unit Vector Orientations</Dropdown.Item>
                     <Dropdown.Item eventKey={2}>Quaternion Orientations</Dropdown.Item>
                 </Dropdown.Menu>
@@ -86,14 +89,14 @@ class SamplesDropdown extends React.Component {
                     <Dropdown.Item eventKey={9}>O5 Nematic</Dropdown.Item>
                 </Dropdown.Menu>
                 <Dropdown.Menu title="Dense Crystal Packings">
-                    <Dropdown.Item eventKey={10}>Box Crystal (Small)</Dropdown.Item>
-                    <Dropdown.Item eventKey={11}>Box Crystal (Large)</Dropdown.Item>
+                    <Dropdown.Item eventKey={10}>Biaxial Crystal (Small)</Dropdown.Item>
+                    <Dropdown.Item eventKey={11}>Biaxial Crystal (Large)</Dropdown.Item>
                 </Dropdown.Menu>
                 <Dropdown.Menu title="Other">
                     <Dropdown.Item eventKey={12}>Fig1</Dropdown.Item>
                     <Dropdown.Item eventKey={13}>HBC</Dropdown.Item>
                 </Dropdown.Menu>
-                
+
                 <Dropdown.Item panel style={{ padding: 5, width: 120 }}></Dropdown.Item>
 
 
@@ -158,7 +161,8 @@ class PerformanceDropdown extends React.Component {
 
 }
 
-class Top extends React.Component {
+
+class GeneralMenu extends React.Component {
 
     constructor(props) {
         super(props);
@@ -166,6 +170,7 @@ class Top extends React.Component {
         this.functions = props.functions;
         this.toggler = props.toggler;
         this.state = { fps: 0, showDrawer: false, rotating: false };
+
         this.updateFPS = this.updateFPS.bind(this);
         this.toggleDrawer = this.toggleDrawer.bind(this);
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
@@ -192,12 +197,12 @@ class Top extends React.Component {
         this.continuousRender();
     }
 
-    runPerformanceTest(){
+    runPerformanceTest() {
         Alert.info("To modify testing parameters, see 'initTesting()' in Model class.");
 
         this.model.initTesting(this.chronometer.step);
 
-        if(!this.state.rotating){
+        if (!this.state.rotating) {
             this.toggleAutorotate();
         }
 
@@ -239,12 +244,9 @@ class Top extends React.Component {
                                     <Nav.Item active>fps: {fps}</Nav.Item>
                                     <Nav.Item active={rotating} onClick={this.toggleAutorotate} appearance="subtle" icon={<Icon icon="refresh" spin={rotating} />}>Autorotate</Nav.Item>
                                     <Nav.Item onClick={this.runPerformanceTest} appearance="subtle" icon={<Icon icon="dashboard" />}>Run Performance Test</Nav.Item>
+                                    <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="question-circle" />}>About</Nav.Item>
                                     <PerformanceDropdown model={this.model} />
-                                    <Nav.Item appearance="subtle" disabled={true} icon={<Icon icon="info-circle" />}>Manual</Nav.Item>
-                                    <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="book" />}>Notes</Nav.Item>
-                                    
-                                    <SamplesDropdown f={this.functions[3]} />
-
+                                    <LibraryDropdown f={this.functions[3]} />
                                     <ExportDropdown f={this.functions[2]} />
                                     <Nav.Item appearance="subtle" icon={<Icon icon="file-download" />} onSelect={this.functions[0]}>Save</Nav.Item>
                                     <input type="file"
@@ -267,28 +269,51 @@ class Top extends React.Component {
                     </Navbar>
                 </Header>
                 <Drawer
-                    size={'xs'}
+                    size={'sm'}
                     placement={'right'}
                     show={showDrawer}
                     onHide={this.toggleDrawer}
                     backdrop={false}
                 >
                     <Drawer.Header>
-                        <Drawer.Title>Information About System</Drawer.Title>
+                        <Drawer.Title>About</Drawer.Title>
+                        <br />
+                        <ButtonToolbar >
+                        <Button color="cyan" >
+                                <Icon icon="mortar-board" /> Liquid Crystals Info
+                        </Button>
+                        <Button key="man" color="cyan" href="https://astromarx.github.io/WebMGA/src/View/AboutFiles/WebMGAUserManual.txt" download="hello.txt">
+                                <Icon icon="info-circle" /> User Manual
+                        </Button>
+                        <Button color="cyan">
+                                <Icon icon="book" /> Dissertation
+                        </Button>
+                            <Button color="cyan" href="https://github.com/astromarx/WebMGA" target="_blank" rel="noopener noreferrer">
+                                <Icon icon="github" /> Github
+                        </Button>
+                        </ButtonToolbar>
+            
                     </Drawer.Header>
-                    <Drawer.Body>
-                        Coarse-grained modeling of molecular fluids is often based on non-spherical convex rigid bodies like ellipsoids or spherocylinders representing rodlike or platelike molecules or groups of atoms, with site-site interaction potentials depending both on the distance among the particles and the relative orientation. In this category of potentials, the Gay-Berne family has been studied most extensively.<br /><br />
-                     However, conventional molecular graphics programs are not designed to visualize such objects. Usually the basic units are atoms displayed as spheres, or as vertices in a graph. Atomic aggregates can be highlighted through an increasing amount of stylized representations, e.g., Richardson ribbon diagrams for the secondary structure of a protein, Connolly molecular surfaces, density maps, etc., but ellipsoids
-                     and spherocylinders are generally missing, especially as elementary simulation units. <br /><br /> We fill this gap providing and discussing a customized OpenGL-based program for the interactive, rendered representation of large ensembles of convex bodies, useful especially in liquid crystal research. We pay particular attention to the performance issues for typical system sizes in this feld. The code is distributed as open source.
-                    <br /><br />
-                        <a href="http://qmga.sourceforge.net/" target="_blank" rel="noopener noreferrer">QMGA Homepage</a>
+
+                    <div style={{ margin: 25 }}>
+                        <h2>WebMGA </h2>
+                        <br />
+                        WebMGA was developed by Eduardo Battistini in 2020-21 for his final project within the BSc Computer Science at University College London, supervised by Guido Germano, Michael P. Allen, and Tobias Ritschel.
                         <br /><br />
-                        <a href="https://pubs.acs.org/doi/10.1021/ct700192z" target="_blank" rel="noopener noreferrer">DOI 10.1021/ct700192z</a>
-                    </Drawer.Body>
+                        The WebGL Molecular Graphics Application, or WebMGA, is a web-based visualisation tool for coarse-grained molecular models that utilises prolated and elongated convex bodies as the elementary units of simulation.
+                        <br /><br />
+                        Given the prevalence of said geometries in the modelling of liquid crystal systems and the lack of available visualisation platforms suitable for this niche, WebMGA provides a unique, out-of-the-box solution for researchers and educators to generate, stylise, and interact with three-dimensional renders of molecular simulations.
+                        <br /><br />
+                        WebMGA is written in Javascript, and implements the graphics library <a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">Threejs</a> for rendering images and the <a href="https://rsuitejs.com/" target="_blank" rel="noopener noreferrer">rSuite</a> library to provide a sleek user interface that is intuitively compartmentalised and easy to learn.
+                        <br /><br />
+                        WebMGA is an evolution of <a href="http://qmga.sourceforge.net/" target="_blank" rel="noopener noreferrer">QMGA</a>, an OpenGL and Qt3 based application written in C++, that filled this gap in molecular graphics in 2008.
+                        <br /><br />
+                        For information on how to upload a custom configuration or how to cite WebMGA in a scientific publication, see the user manual. For information about the liquid crystal models in the library, see 'Liquid Crystals Info'.
+                    </div>
                 </Drawer>
             </div>
         );
     }
 };
 
-export default Top;
+export default GeneralMenu;

@@ -14,7 +14,7 @@ import {
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {Alert} from 'rsuite';
 
-export class Tools {
+export class ReferenceTools {
     subGrid;
     axes = [];
     boundingShape;
@@ -160,4 +160,4 @@ export class Tools {
 
 }
 
-export default Tools;
+export default ReferenceTools;

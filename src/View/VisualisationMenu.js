@@ -32,19 +32,19 @@ const CustomNav = ({ active, onSelect, ...props }) => {
                 <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
                 </Nav.Item>
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
-                <Nav.Item eventKey="Camera" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
+                <Nav.Item title="Camera" tooltip eventKey="Camera" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
-                <Nav.Item eventKey="Ambient Light" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
+                <Nav.Item title="Ambient" tooltip eventKey="Ambient" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
-                <Nav.Item eventKey="Other Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
+                <Nav.Item title="Lighting" tooltip eventKey="Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
-                <Nav.Item eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
+                <Nav.Item title="Slicing" tooltip eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Reference Frame Frame</Tooltip>)}> */}
-                <Nav.Item eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
+                <Nav.Item title="Reference" tooltip eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
                 {/* </Whisper> */}
 
             </Nav>
@@ -52,7 +52,7 @@ const CustomNav = ({ active, onSelect, ...props }) => {
     );
 };
 
-const MenuContent = ({ active, expand, onChange, model }) => {
+const MenuContent = ({ active, expand, onChange, model, toggler }) => {
 
     var menuContent = [];
 
@@ -82,12 +82,12 @@ const MenuContent = ({ active, expand, onChange, model }) => {
                 menuContent.push(<ModelsOptions model={model} />);
                 break;
             case "Camera":
-                menuContent.push(<CameraOptions model={model} />);
+                menuContent.push(<CameraOptions model={model} toggler={toggler} />);
                 break;
-            case "Ambient Light":
+            case "Ambient":
                 menuContent.push(<AmbientLightOptions model={model} />);
                 break;
-            case "Other Lighting":
+            case "Lighting":
                 menuContent.push(<AdditionalLightOptions model={model} />);
                 break;
             case "Slicing":
@@ -105,7 +105,7 @@ const MenuContent = ({ active, expand, onChange, model }) => {
 
 }
 
-class Side extends Component {
+class VisualisationMenu extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -155,7 +155,7 @@ class Side extends Component {
                             <CustomNav vertical appearance="subtle" active={active} onSelect={this.handleSelect} />
                         </Sidebar>
                         <Content >
-                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} model={this.model} />
+                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} model={this.model} toggler={this.toggler}/>
                         </Content>
 
                     </Container>
@@ -168,4 +168,4 @@ class Side extends Component {
 }
 
 
-export default Side;
+export default VisualisationMenu;

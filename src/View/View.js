@@ -1,6 +1,6 @@
 import React from "react";
-import Top from './Top';
-import Side from './Side';
+import GeneralMenu from './GeneralMenu';
+import VisualisationMenu from './VisualisationMenu';
 
 export class View {
     header;
@@ -11,16 +11,14 @@ export class View {
     static state;
 
     constructor(m, io, chrono, toggler) {
-        View.state = {}
+        View.state = {
+        }
         this.expanded = false;
         this.model = m;
-        this.header = <Top chronometer={chrono} functions={io} model={this.model} toggler ={toggler}/>;
-        this.sidebar = <Side model={this.model} sidebarExpanded={this.expanded} toggler={toggler}/>;
+        this.header = <GeneralMenu chronometer={chrono} functions={io} model={this.model} toggler ={toggler}/>;
+        this.sidebar = <VisualisationMenu model={this.model} sidebarExpanded={this.expanded} toggler={toggler}/>;
     }
 
-    updateFPS(fps){
-        this.fps = fps;
-    }
 
     getData() {
         return View.state;
@@ -44,10 +42,10 @@ export class View {
         }
     }
 
-    xor(a, b) {
-        return (a && !b) || (!a && b);
+    loadState(state){
+        this.loadReferenceAndSlicing(state);
+        this.loadLightingAndCamera(state);
     }
-
 
     loadReferenceAndSlicing(state) {
 
@@ -97,7 +95,8 @@ export class View {
         this.model.updateCameraZoom(state.camera.zoom);
     }
 
-    setDefaultStates(starting) {
+
+    setDefaultState(init) {
         View.state = {};
         View.state.reference = this.ReferenceDefaultState;
         View.state.ambientLight = this.AmbientLightDefaultState;
@@ -117,14 +116,16 @@ export class View {
             View.state.model.configurations.push(set);
         }
 
-        this.loadLightingAndCamera(View.state);
-        this.loadReferenceAndSlicing(View.state);
+        this.loadState(View.state)
 
-        if (!starting) {
+        if (!init) {
             this.loadModel(View.state);
         }
     }
 
+    xor(a, b) {
+        return (a && !b) || (!a && b);
+    }
 
     ModelDefaultState = {
         active: 0,

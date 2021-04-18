@@ -191,7 +191,6 @@ export class Set {
     }
 
     translate(pos, geoms) {
-        console.log(pos);
         for (let g of geoms) {
             g.translate(2*pos[0], 2*pos[1], 2*pos[2]);
         }
