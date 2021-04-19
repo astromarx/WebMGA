@@ -1,8 +1,6 @@
 # WebMGA
 ### WebGL Molecular Graphics Application
 
- is an evolution of [QMGA](http://qmga.sourceforce.net). It is based on WebGL and written in JavaScript with [Three.js](https://threejs.org/) and [React Suite](https://rsuitejs.com/), while QMGA is based on OpenGL and Qt 3 and written in C++. The main advantage of WebMGA is that it can be run straight away in a web browser, while QMGA needs to be compiled and installed, which may reveal cumbersome and currently is supported only for Linux.
-
 [WebMGA](https://astromarx.github.io/WebMGA) was developed by Eduardo Battistini in 2020-21 for his final project within the BSc Computer Science at University College London, supervised by Guido Germano, Michael P. Allen, and Tobias Ritschel.
                         
 The WebGL Molecular Graphics Application, or WebMGA, is a web-based visualisation tool for coarse-grained molecular models that utilprolated and elongated convex bodies as the elementary units of simulation.

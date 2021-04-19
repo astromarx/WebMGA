@@ -43,7 +43,6 @@ class Controller {
             })
         );
 
-        console.warn = () => {};
     }
 
     ExternalToggle = class ExternalToggle {
