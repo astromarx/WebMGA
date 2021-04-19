@@ -2,9 +2,7 @@
 import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip, Divider, Alert } from 'rsuite';
 import { ParameterSet } from './Tools';
 import React from "react";
-import manual from './AboutFiles/WebMGAUserManual.txt'
 import fs from 'fs';
-
 class ExportDropdown extends React.Component {
 
     constructor(props) {
@@ -175,6 +173,7 @@ class GeneralMenu extends React.Component {
         this.toggleDrawer = this.toggleDrawer.bind(this);
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
         this.runPerformanceTest = this.runPerformanceTest.bind(this);
+        this.download = this.download.bind(this);
 
         this.chronometer = props.chronometer;
         this.chronometer.f = this.updateFPS;
@@ -230,6 +229,19 @@ class GeneralMenu extends React.Component {
         });
     }
 
+    download() {
+        const url = window.URL.createObjectURL(new File(["/home/padrino-eduardo/Desktop/webmga/src/View/manual.txt"], "man.txt"));
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'hello.txt';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+
+    }
+
     render() {
         const fps = this.state.fps;
         const showDrawer = this.state.showDrawer;
@@ -279,20 +291,20 @@ class GeneralMenu extends React.Component {
                         <Drawer.Title>About</Drawer.Title>
                         <br />
                         <ButtonToolbar >
-                        <Button color="cyan" >
+                            <Button color="cyan" >
                                 <Icon icon="mortar-board" /> Liquid Crystals Info
                         </Button>
-                        <Button key="man" color="cyan" href="https://astromarx.github.io/WebMGA/src/View/AboutFiles/WebMGAUserManual.txt" download="hello.txt">
+                            <Button key="man" color="cyan" href="" onClick={this.download}>
                                 <Icon icon="info-circle" /> User Manual
                         </Button>
-                        <Button color="cyan">
+                            <Button color="cyan">
                                 <Icon icon="book" /> Dissertation
                         </Button>
                             <Button color="cyan" href="https://github.com/astromarx/WebMGA" target="_blank" rel="noopener noreferrer">
                                 <Icon icon="github" /> Github
                         </Button>
                         </ButtonToolbar>
-            
+
                     </Drawer.Header>
 
                     <div style={{ margin: 25 }}>

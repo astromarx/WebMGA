@@ -10,7 +10,7 @@ export const ParameterSet = (props) => {
     for (let i = 0; i < props.titles.length; i++) {
 
         set.push(
-            <ParameterInput title={props.titles[i]} values={props.values[i]} numerical f={props.f} index={i} step={props.step} positive={props.positive} styling={props.styling}/>
+            <ParameterInput key={i} title={props.titles[i]} values={props.values[i]} numerical f={props.f} index={i} step={props.step} positive={props.positive} styling={props.styling}/>
         );
     }
 

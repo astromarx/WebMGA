@@ -29,22 +29,22 @@ const CustomNav = ({ active, onSelect, ...props }) => {
     return (
         <div>
             <Nav {...props} activeKey={active} onSelect={onSelect} style={{ backgroundColor: '#101010', height: sidebarHeight }}>
-                <Nav.Item title="Models" tooltip eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
+                <Nav.Item title="Models"  eventKey="Models" icon={<Icon style={navItemStyle} size="lg" icon="shapes" />}>
                 </Nav.Item>
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>View</Tooltip>)}> */}
-                <Nav.Item title="Camera" tooltip eventKey="Camera" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
+                <Nav.Item title="Camera"  eventKey="Camera" icon={<Icon style={navItemStyle} size="lg" icon="eye" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Ambient Light</Tooltip>)}> */}
-                <Nav.Item title="Ambient" tooltip eventKey="Ambient" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
+                <Nav.Item title="Ambient"  eventKey="Ambient" icon={<Icon style={navItemStyle} size="lg" icon="sun-o" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Other Lighting</Tooltip>)}> */}
-                <Nav.Item title="Lighting" tooltip eventKey="Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
+                <Nav.Item title="Lighting"  eventKey="Lighting" icon={<Icon style={navItemStyle} size="lg" icon="creative" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Slicing</Tooltip>)}> */}
-                <Nav.Item title="Slicing" tooltip eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
+                <Nav.Item title="Slicing"  eventKey="Slicing" icon={<Icon style={navItemStyle} size="lg" icon="cut" />} />
                 {/* </Whisper> */}
                 {/* <Whisper placement="right" trigger="hover" speaker={(<Tooltip>Reference Frame Frame</Tooltip>)}> */}
-                <Nav.Item title="Reference" tooltip eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
+                <Nav.Item title="Reference"  eventKey="Reference" icon={<Icon style={navItemStyle} size="lg" icon="cube" />} />
                 {/* </Whisper> */}
 
             </Nav>
@@ -63,7 +63,7 @@ const MenuContent = ({ active, expand, onChange, model, toggler }) => {
             <div style={{ backgroundColor: '#0F131B' }}>
                 <Nav>
                     <Navbar appearance="subtle">
-                        <Nav pullLeft>
+                        <Nav >
                             <h3 style={{ marginTop: 15, marginLeft: 30 }}>{active}</h3>
                         </Nav>
                         <Nav pullRight>
@@ -79,22 +79,22 @@ const MenuContent = ({ active, expand, onChange, model, toggler }) => {
     if (expand) {
         switch (active) {
             case "Models":
-                menuContent.push(<ModelsOptions model={model} />);
+                menuContent.push(<ModelsOptions key={active} model={model} />);
                 break;
             case "Camera":
-                menuContent.push(<CameraOptions model={model} toggler={toggler} />);
+                menuContent.push(<CameraOptions key={active} model={model} toggler={toggler} />);
                 break;
             case "Ambient":
-                menuContent.push(<AmbientLightOptions model={model} />);
+                menuContent.push(<AmbientLightOptions key={active} model={model} />);
                 break;
             case "Lighting":
-                menuContent.push(<AdditionalLightOptions model={model} />);
+                menuContent.push(<AdditionalLightOptions key={active} model={model} />);
                 break;
             case "Slicing":
-                menuContent.push(<SlicingOptions model={model} />);
+                menuContent.push(<SlicingOptions key={active} model={model} />);
                 break;
             case "Reference":
-                menuContent.push(<ReferenceOptions model={model} />);
+                menuContent.push(<ReferenceOptions key={active} model={model} />);
                 break;
             default:
                 Alert.error('Error: Unknown Submenu Identifier');
@@ -155,7 +155,7 @@ class VisualisationMenu extends Component {
                             <CustomNav vertical appearance="subtle" active={active} onSelect={this.handleSelect} />
                         </Sidebar>
                         <Content >
-                            <MenuContent active={active} expand={expand} onChange={this.handleToggle} model={this.model} toggler={this.toggler}/>
+                            <MenuContent key={10} active={active} expand={expand} onChange={this.handleToggle} model={this.model} toggler={this.toggler}/>
                         </Content>
 
                     </Container>

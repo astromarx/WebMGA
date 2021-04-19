@@ -28,6 +28,7 @@ class Controller {
     io;
 
     constructor() {
+        
         this.io = [this.save, this.load, this.export, this.loadSample, this.toggleAutorotate];
         this.externalToggle = new this.ExternalToggle();
         this.chronometer = new this.Chronometer(this.notify, this.externalToggle);
@@ -41,6 +42,8 @@ class Controller {
                 duration: 8000
             })
         );
+
+        console.warn = () => {};
     }
 
     ExternalToggle = class ExternalToggle {
@@ -360,6 +363,7 @@ class Controller {
     }
 
     addListeners = () => {
+
 
         this.model.controls.addEventListener('change', this.render);
 
