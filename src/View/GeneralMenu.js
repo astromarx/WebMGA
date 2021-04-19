@@ -173,7 +173,7 @@ class GeneralMenu extends React.Component {
         this.toggleDrawer = this.toggleDrawer.bind(this);
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
         this.runPerformanceTest = this.runPerformanceTest.bind(this);
-        this.download = this.download.bind(this);
+        
 
         this.chronometer = props.chronometer;
         this.chronometer.f = this.updateFPS;
@@ -229,19 +229,6 @@ class GeneralMenu extends React.Component {
         });
     }
 
-    download() {
-        const url = window.URL.createObjectURL(new File(["/home/padrino-eduardo/Desktop/webmga/src/View/manual.txt"], "man.txt"));
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'hello.txt';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-
-
-    }
-
     render() {
         const fps = this.state.fps;
         const showDrawer = this.state.showDrawer;
@@ -291,13 +278,13 @@ class GeneralMenu extends React.Component {
                         <Drawer.Title>About</Drawer.Title>
                         <br />
                         <ButtonToolbar >
-                            <Button color="cyan" >
+                            <Button color="cyan" href="http://students.cs.ucl.ac.uk/2019/group3/WebMGA/notes.pdf" target="_blank" rel="noopener noreferrer">
                                 <Icon icon="mortar-board" /> Liquid Crystals Info
                         </Button>
-                            <Button key="man" color="cyan" href="" onClick={this.download}>
+                            <Button key="man" color="cyan" href="https://github.com/astromarx/WebMGA/blob/main/public/files/manual.txt" target="_blank" rel="noopener noreferrer">
                                 <Icon icon="info-circle" /> User Manual
                         </Button>
-                            <Button color="cyan">
+                            <Button color="cyan" href="http://students.cs.ucl.ac.uk/2019/group3/WebMGA/diss.pdf" target="_blank" rel="noopener noreferrer">
                                 <Icon icon="book" /> Dissertation
                         </Button>
                             <Button color="cyan" href="https://github.com/astromarx/WebMGA" target="_blank" rel="noopener noreferrer">
