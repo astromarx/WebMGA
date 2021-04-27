@@ -3,15 +3,15 @@
 
 [WebMGA](https://astromarx.github.io/WebMGA) was developed by Eduardo Battistini in 2020-21 for his final project within the BSc Computer Science at University College London, supervised by Guido Germano, Michael P. Allen, and Tobias Ritschel.
                         
-The WebGL Molecular Graphics Application, or WebMGA, is a web-based visualisation tool for coarse-grained molecular models that utilprolated and elongated convex bodies as the elementary units of simulation.
+The WebGL Molecular Graphics Application, or WebMGA, is a web-based visualisation tool for coarse-grained molecular models that utilises prolated and elongated convex bodies as the elementary units of simulation.
     
-Given the prevalence of said geometries in the modelling of liquid crystal systems and the lack of available visualisation platforms suitfor this niche, WebMGA provides a unique, out-of-the-box solution for researchers and educators to generate, stylise, and interact three-dimensional renders of molecular simulations.
+Given the prevalence of said geometries in the modelling of liquid crystal systems and the lack of available visualisation platforms suitable for this niche, WebMGA provides a unique, out-of-the-box solution for researchers and educators to generate, stylise, and interact with three-dimensional renders of molecular simulations.
     
-WebMGA is written in Javascript, and implements the graphics library [Three.js](https://threejs.org/) for rendering images and the [React Suite](https://rsuitejs.com/) rSuitelibrary to provide a sleek user interface that is intuitively compartmentalised and easy to learn.
+WebMGA is written in Javascript, and implements the graphics library [Three.js](https://threejs.org/) for rendering images and the [React Suite](https://rsuitejs.com/) library to provide a sleek user interface that is intuitively compartmentalised and easy to learn.
 
 WebMGA is an evolution of [QMGA](http://qmga.sourceforce.net), an OpenGL and Qt3 bapplication written in C++, that filled this gap in molecular graphics in 2008.
-    
-For information on how to upload a custom configuration or how to cite WebMGA in a scientific publication, see the user manual. For informaabout the liquid crystal models in the library, see 'Liquid Crystals Info'.
+
+### Citing WebMGA
 
 If you use pictures produced with WebMGA in a scientific publication, please cite with a text like:
 
@@ -19,7 +19,6 @@ If you use pictures produced with WebMGA in a scientific publication, please cit
 
 1. Eduardo Battistini Parra, “WebMGA, a WebGL Molecular Graphics Application for the Interactive Rendering of Coarse-Grained Liquid Crystal Models”, BSc Thesis in Computer Science, UCL, 2021, https://astromarx.github.io/WebMGA.
 2. Adrian T. Gabriel, Timm Meyer, Guido Germano, "Molecular graphics of convex-body fluids", Journal of Chemical Theory and Computation 4, 468-476, 2008,  DOI 10.1021/ct700192z, http://qmga.sourceforce.net.
-
 
 
 ### License
