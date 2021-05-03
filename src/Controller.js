@@ -156,10 +156,19 @@ class Controller {
         this.generate(sample2, true);
         this.addListeners();
         this.render();
-        this.notify('info', 'Welcome!',
-            (<p style={{ width: 320 }} >
-                This application works best on the Chrome browser. Check out Liquid Crystal configurations in the Library!
-            </p>)
+        this.notify('info', 'Welcome to WebMGA',
+            (<div>
+            <p style={{ width: 320 }} >
+                Check out the liquid crystal configurations in the Library, and head to the About section to learn more!
+                
+            </p>
+            <p style={{ width: 320 }} >
+                This application works best on the Chrome browser.
+             </p></div>
+            )
+
+
+
         );
     }
 
@@ -206,6 +215,7 @@ class Controller {
         } else {
             this.view.setState(data.state);
         }
+        this.model.updateLOD(this.model.lod);
         this.model.update();
         this.externalToggle.closeSidemenu();
 

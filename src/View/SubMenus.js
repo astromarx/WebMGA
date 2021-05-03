@@ -3,7 +3,6 @@ import { Nav, Divider, Checkbox, FormGroup, RadioGroup, Radio, Grid, Row, Col, A
 import React from "react";
 import { SliceSlider, ParameterInput, ParameterSet, CustomSlider } from './Tools'
 import View from './View'
-import { json } from 'mathjs';
 
 const TITLE_LEFT_MARGIN = 30;
 const dividerStyle = {

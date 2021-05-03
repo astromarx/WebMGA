@@ -511,9 +511,11 @@ export class Model {
             (<p style={{ width: 320 }} >
                 Test Size: {this.testLimit.toString()} <br />
             Step: {step.toString()} <br />
-            Shape: Ellipsoid (Default Parameters) <br />
+            Shape: Torus (Default Parameters) <br />
             Level of Detail: {(this.testShape.LOD + 1).toString()} <br />
-            Material: MeshLambertMaterial
+            Material: MeshPhongMaterial
+                <br/> <br/>
+            <b>Please do not change any settings while the performance test is running!</b>
             </p>));
 
         console.log('Material: MeshLambertMaterial')
@@ -570,8 +572,6 @@ export class Model {
             g.translate(pos[0], pos[1], pos[2]);
         }
     }
-
-
 
 }
 

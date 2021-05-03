@@ -2,7 +2,7 @@
 import { Header, Dropdown, FormGroup, Drawer, Nav, Navbar, Icon, Button, ButtonToolbar, Slider, Form, ControlLabel, Whisper, Tooltip, Divider, Alert } from 'rsuite';
 import { ParameterSet } from './Tools';
 import React from "react";
-import fs from 'fs';
+
 class ExportDropdown extends React.Component {
 
     constructor(props) {
@@ -81,23 +81,18 @@ class LibraryDropdown extends React.Component {
                     <Dropdown.Item eventKey={5}>SC4 Smectic</Dropdown.Item>
                 </Dropdown.Menu>
                 <Dropdown.Menu title="Prolate and Oblate Ellipsoids">
+                    <Dropdown.Item eventKey={12}>E3 Chiral Nematic</Dropdown.Item>
                     <Dropdown.Item eventKey={6}>E5 Isotropic</Dropdown.Item>
                     <Dropdown.Item eventKey={7}>E5 Nematic</Dropdown.Item>
                     <Dropdown.Item eventKey={8}>O5 Isotropic</Dropdown.Item>
                     <Dropdown.Item eventKey={9}>O5 Nematic</Dropdown.Item>
                 </Dropdown.Menu>
-                <Dropdown.Menu title="Dense Crystal Packings">
+                <Dropdown.Menu title="Dense Packings">
                     <Dropdown.Item eventKey={10}>Biaxial Crystal (Small)</Dropdown.Item>
                     <Dropdown.Item eventKey={11}>Biaxial Crystal (Large)</Dropdown.Item>
+                    <Dropdown.Item eventKey={13}>HBC (in Cylinder)</Dropdown.Item>
                 </Dropdown.Menu>
-                <Dropdown.Menu title="Other">
-                    <Dropdown.Item eventKey={12}>Fig1</Dropdown.Item>
-                    <Dropdown.Item eventKey={13}>HBC</Dropdown.Item>
-                </Dropdown.Menu>
-
-                <Dropdown.Item panel style={{ padding: 5, width: 120 }}></Dropdown.Item>
-
-
+                <Dropdown.Item panel style={{ width: 120 }}></Dropdown.Item>
             </Dropdown>
         );
 
@@ -173,7 +168,7 @@ class GeneralMenu extends React.Component {
         this.toggleDrawer = this.toggleDrawer.bind(this);
         this.toggleAutorotate = this.toggleAutorotate.bind(this);
         this.runPerformanceTest = this.runPerformanceTest.bind(this);
-        
+
 
         this.chronometer = props.chronometer;
         this.chronometer.f = this.updateFPS;
@@ -240,12 +235,22 @@ class GeneralMenu extends React.Component {
                         <Navbar.Body>
                             <Nav pullRight >
                                 <ButtonToolbar>
+                                
                                     <Nav.Item active>fps: {fps}</Nav.Item>
+                                    <Nav.Item onClick={this.runPerformanceTest} appearance="active" icon={<Icon icon="dashboard" />}>Run Performance Test</Nav.Item>
+                                    {/* <Whisper placement="bottom" trigger="hover" speaker={
+                                        <Tooltip>
+                                            The performance test was included for completeness and will be removed after submission.
+                                        </Tooltip>
+                                    }>
+                                        <Icon style={{marginTop: 18}}icon="question-circle" size="lg" />
+                                    </Whisper> */}
                                     <Nav.Item active={rotating} onClick={this.toggleAutorotate} appearance="subtle" icon={<Icon icon="refresh" spin={rotating} />}>Autorotate</Nav.Item>
-                                    <Nav.Item onClick={this.runPerformanceTest} appearance="subtle" icon={<Icon icon="dashboard" />}>Run Performance Test</Nav.Item>
-                                    <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="question-circle" />}>About</Nav.Item>
+                                
+                                    
                                     <PerformanceDropdown model={this.model} />
                                     <LibraryDropdown f={this.functions[3]} />
+                                    <Nav.Item onClick={this.toggleDrawer} appearance="subtle" icon={<Icon icon="info" />}>About</Nav.Item>
                                     <ExportDropdown f={this.functions[2]} />
                                     <Nav.Item appearance="subtle" icon={<Icon icon="file-download" />} onSelect={this.functions[0]}>Save</Nav.Item>
                                     <input type="file"
@@ -279,9 +284,9 @@ class GeneralMenu extends React.Component {
                         <br />
                         <ButtonToolbar >
                             <Button color="cyan" href="http://students.cs.ucl.ac.uk/2019/group3/WebMGA/notes.pdf" target="_blank" rel="noopener noreferrer">
-                                <Icon icon="mortar-board" /> Liquid Crystals Info
+                                <Icon icon="mortar-board" /> Liquid Crystals
                         </Button>
-                            <Button key="man" color="cyan" href="https://github.com/astromarx/WebMGA/blob/main/public/files/manual.txt" target="_blank" rel="noopener noreferrer">
+                            <Button key="man" color="cyan" href="http://students.cs.ucl.ac.uk/2019/group3/WebMGA/manual.txt" target="_blank" rel="noopener noreferrer">
                                 <Icon icon="info-circle" /> User Manual
                         </Button>
                             <Button color="cyan" href="http://students.cs.ucl.ac.uk/2019/group3/WebMGA/diss.pdf" target="_blank" rel="noopener noreferrer">
@@ -291,6 +296,10 @@ class GeneralMenu extends React.Component {
                                 <Icon icon="github" /> Github
                         </Button>
                         </ButtonToolbar>
+                        <br />
+                        <p><i>See 'Liquid Crystals' for a scientific explanation of the liquid crystal configurations included in the library.</i></p>
+
+                        <p><i>For information on how to upload a custom configuration or how to cite WebMGA in a scientific publication, see 'User Manual'.</i></p>
 
                     </Drawer.Header>
 
@@ -305,9 +314,8 @@ class GeneralMenu extends React.Component {
                         <br /><br />
                         WebMGA is written in Javascript, and implements the graphics library <a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">Threejs</a> for rendering images and the <a href="https://rsuitejs.com/" target="_blank" rel="noopener noreferrer">rSuite</a> library to provide a sleek user interface that is intuitively compartmentalised and easy to learn.
                         <br /><br />
-                        WebMGA is an evolution of <a href="http://qmga.sourceforge.net/" target="_blank" rel="noopener noreferrer">QMGA</a>, an OpenGL and Qt3 based application written in C++, that filled this gap in molecular graphics in 2008.
-                        <br /><br />
-                        For information on how to upload a custom configuration or how to cite WebMGA in a scientific publication, see the user manual. For information about the liquid crystal models in the library, see 'Liquid Crystals Info'.
+                        WebMGA is an evolution of <a href="http://qmga.sourceforge.net/" target="_blank" rel="noopener noreferrer">QMGA</a>, an OpenGL and Qt3 based application written in C++ that filled this gap in molecular graphics in 2008.
+                    
                     </div>
                 </Drawer>
             </div>
